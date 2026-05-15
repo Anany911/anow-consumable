@@ -1,0 +1,1208 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Anow • Consumables Operations Center</title>
+<link href="https://fonts.googleapis.com/css2?family=Amazon+Ember:wght@400;500;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --amz-navy:#131A22; --amz-navy-2:#232F3E; --amz-orange:#FF9900; --amz-orange-dark:#E88B00;
+  --amz-orange-light:#FFAC31; --amz-blue:#146EB4; --bg:#EAEDED; --surface:#FFFFFF;
+  --surface-alt:#F7F8F8; --surface-hover:#F0F2F2; --border:#D5D9D9; --border-light:#E7E9EC;
+  --text:#0F1111; --text-mut:#565959; --text-dim:#848A8C; --link:#007185; --link-hover:#C7511F;
+  --success:#067D62; --success-bg:#D5F5E3; --warn:#B66A00; --warn-bg:#FFF3CD;
+  --danger:#B12704; --danger-bg:#FCE4E4; --info:#146EB4; --info-bg:#D9EDF7;
+  --shadow-xs:0 1px 2px rgba(0,0,0,.08); --shadow-sm:0 2px 5px rgba(15,17,17,.15);
+  --shadow:0 4px 12px rgba(15,17,17,.1); --shadow-lg:0 8px 24px rgba(15,17,17,.15);
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Amazon Ember','Inter','Helvetica Neue',Arial,sans-serif}
+body{background:var(--bg);color:var(--text);font-size:14px;line-height:1.4}
+a{color:var(--link);text-decoration:none}
+a:hover{color:var(--link-hover);text-decoration:underline}
+::-webkit-scrollbar{width:12px;height:12px}
+::-webkit-scrollbar-track{background:#F0F2F2}
+::-webkit-scrollbar-thumb{background:#C0C4C4;border-radius:6px;border:2px solid #F0F2F2}
+::-webkit-scrollbar-thumb:hover{background:#A0A4A4}
+.topnav{background:var(--amz-navy);color:#fff;position:sticky;top:0;z-index:100;box-shadow:0 2px 5px rgba(0,0,0,.15)}
+.topnav-inner{display:flex;align-items:center;gap:20px;padding:0 24px;height:60px;max-width:1600px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid transparent;border-radius:3px;cursor:pointer}
+.brand:hover{border-color:#fff}
+.brand-logo{font-size:22px;font-weight:700;letter-spacing:-.5px;color:#fff;display:flex;align-items:baseline;gap:2px}
+.brand-logo .smile{color:var(--amz-orange);font-size:26px}
+.brand-sub{font-size:10px;color:#ccc;font-weight:500;letter-spacing:.5px}
+.nav-divider{width:1px;height:30px;background:#485769}
+.nav-section-title{color:#DDD;font-size:13px;font-weight:700}
+.nav-section-title span{color:var(--amz-orange)}
+.nav-actions{margin-left:auto;display:flex;gap:10px;align-items:center}
+.nav-btn{padding:8px 14px;background:transparent;color:#fff;border:1px solid transparent;border-radius:3px;cursor:pointer;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:8px}
+.nav-btn:hover{border-color:#fff}
+.nav-btn.primary{background:var(--amz-orange);color:var(--amz-navy);font-weight:700;border-color:var(--amz-orange-dark)}
+.nav-btn.primary:hover{background:var(--amz-orange-light)}
+.user-chip{display:flex;align-items:center;gap:10px;padding:6px 12px;border:1px solid transparent;border-radius:3px;cursor:pointer}
+.user-chip:hover{border-color:#fff}
+.user-chip .avatar{width:32px;height:32px;border-radius:50%;background:var(--amz-orange);display:grid;place-items:center;font-weight:700;color:var(--amz-navy);font-size:13px}
+.user-info{line-height:1.2}
+.user-info .greet{font-size:11px;color:#ccc}
+.user-info .name{font-size:13px;font-weight:700}
+.subnav{background:var(--amz-navy-2);border-top:1px solid rgba(255,255,255,.08)}
+.subnav-inner{display:flex;padding:0 24px;max-width:1600px;margin:0 auto;overflow-x:auto}
+.tab{padding:12px 20px;background:transparent;color:#fff;border:none;cursor:pointer;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:8px;border-bottom:3px solid transparent;white-space:nowrap;font-family:inherit}
+.tab:hover{background:rgba(255,255,255,.06)}
+.tab.active{border-bottom-color:var(--amz-orange);font-weight:700;background:rgba(255,153,0,.08)}
+.tab .badge{background:var(--danger);color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700}
+.page{max-width:1600px;margin:0 auto;padding:20px 24px}
+.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:12px;color:var(--text-mut)}
+.breadcrumb a{color:var(--link);font-weight:500}
+.breadcrumb .sep{color:var(--text-dim)}
+.page-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:16px}
+.page-head h1{font-size:24px;font-weight:700;letter-spacing:-.3px}
+.page-head p{color:var(--text-mut);font-size:14px}
+.page-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{padding:8px 16px;border-radius:8px;border:1px solid #D5D9D9;background:linear-gradient(to bottom,#F7F8FA,#E7E9EC);color:var(--text);cursor:pointer;font-size:13px;display:inline-flex;align-items:center;gap:6px;font-family:inherit;box-shadow:var(--shadow-xs)}
+.btn:hover{background:linear-gradient(to bottom,#F0F2F2,#DDE0E3)}
+.btn-cta{background:linear-gradient(to bottom,#FFD814,#F7CA00);border-color:#FCD200 #F2C200 #A88734;font-weight:500}
+.btn-cta:hover{background:linear-gradient(to bottom,#F7CA00,#F0BE00)}
+.btn-action{background:linear-gradient(to bottom,#FFA41C,#FF8F00);border-color:#FF8F00;font-weight:500}
+.btn-action:hover{background:linear-gradient(to bottom,#FF9500,#F08804)}
+.btn-danger{color:var(--danger);font-weight:500}
+.btn-danger:hover{background:#FCE4E4;border-color:#B12704}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:6px}
+.btn-link{background:transparent;border:none;box-shadow:none;color:var(--link);padding:4px 8px}
+.btn-link:hover{color:var(--link-hover);text-decoration:underline}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:16px;overflow:hidden}
+.card-head{padding:14px 20px;border-bottom:1px solid var(--border-light);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;background:var(--surface-alt)}
+.card-title{font-size:16px;font-weight:700;display:flex;align-items:center;gap:10px}
+.card-title .icon{width:28px;height:28px;border-radius:6px;background:var(--amz-navy);color:var(--amz-orange);display:grid;place-items:center;font-size:14px}
+.card-sub{font-size:12px;color:var(--text-mut);font-weight:400;margin-left:4px}
+.card-body{padding:16px 20px}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:20px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px}
+.kpi:hover{border-color:var(--amz-orange);box-shadow:var(--shadow-sm)}
+.kpi-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.kpi-icon{width:36px;height:36px;border-radius:8px;display:grid;place-items:center;font-size:16px}
+.kpi.navy .kpi-icon{background:var(--amz-navy);color:var(--amz-orange)}
+.kpi.orange .kpi-icon{background:#FFF4E0;color:var(--amz-orange-dark)}
+.kpi.blue .kpi-icon{background:#E3F2FD;color:var(--amz-blue)}
+.kpi.green .kpi-icon{background:var(--success-bg);color:var(--success)}
+.kpi.red .kpi-icon{background:var(--danger-bg);color:var(--danger)}
+.kpi.yellow .kpi-icon{background:var(--warn-bg);color:var(--warn)}
+.kpi-trend{font-size:11px;padding:2px 8px;border-radius:12px;font-weight:700}
+.kpi-trend.up{background:var(--success-bg);color:var(--success)}
+.kpi-trend.down{background:var(--danger-bg);color:var(--danger)}
+.kpi-trend.neutral{background:var(--border-light);color:var(--text-mut)}
+.kpi-label{font-size:11px;color:var(--text-mut);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.kpi-value{font-size:26px;font-weight:700;letter-spacing:-.5px;line-height:1.1}
+.kpi-sub{font-size:12px;color:var(--text-mut);margin-top:4px}
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:12px 20px;background:var(--surface-alt);border-bottom:1px solid var(--border-light)}
+.input,.select{padding:7px 12px;background:#fff;border:1px solid #888C8C;border-radius:3px;font-size:13px;font-family:inherit;min-width:200px;box-shadow:inset 0 1px 2px rgba(0,0,0,.05)}
+.input:focus,.select:focus{outline:none;border-color:var(--amz-orange);box-shadow:0 0 3px 2px rgba(255,153,0,.5)}
+.search{position:relative}
+.search::before{content:'🔍';position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;opacity:.5}
+.search .input{padding-left:32px}
+.tbl-wrap{overflow-x:auto;background:var(--surface)}
+.tbl-scroll{max-height:650px;overflow-y:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--surface-alt);padding:10px 14px;text-align:left;font-weight:700;font-size:12px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:5;white-space:nowrap}
+td{padding:10px 14px;border-bottom:1px solid var(--border-light)}
+tr:hover td{background:var(--surface-hover)}
+tr:last-child td{border-bottom:none}
+.mono{font-variant-numeric:tabular-nums}
+.nums{text-align:right;font-variant-numeric:tabular-nums}
+.cell-sub{font-size:11px;color:var(--text-mut);margin-top:2px}
+.cell-link{color:var(--link);cursor:pointer}
+.cell-link:hover{color:var(--link-hover);text-decoration:underline}
+.cell-input{width:75px;padding:5px 8px;background:#fff;border:1px solid #888C8C;border-radius:3px;font-size:12px;font-variant-numeric:tabular-nums;text-align:right;box-shadow:inset 0 1px 2px rgba(0,0,0,.05)}
+.cell-input:focus{outline:none;border-color:var(--amz-orange);box-shadow:0 0 3px 2px rgba(255,153,0,.4)}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:3px;font-size:11px;font-weight:700;border:1px solid}
+.pill-live{background:var(--success-bg);color:var(--success);border-color:#A9D5BE}
+.pill-nl{background:var(--warn-bg);color:var(--warn);border-color:#F5D99C}
+.pill-crit{background:var(--danger-bg);color:var(--danger);border-color:#F5B7B1}
+.pill-low{background:var(--warn-bg);color:var(--warn);border-color:#F5D99C}
+.pill-ok{background:var(--success-bg);color:var(--success);border-color:#A9D5BE}
+.pill-hi{background:var(--info-bg);color:var(--info);border-color:#AED6F1}
+.pill-dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+.grid-2{display:grid;grid-template-columns:1.3fr 1fr;gap:16px}
+@media(max-width:1100px){.grid-2{grid-template-columns:1fr}}
+.heatmap{width:100%;border-collapse:separate;border-spacing:2px;padding:16px}
+.heatmap th{background:transparent;padding:8px 4px;border:none;font-size:11px;color:var(--text-mut);position:static}
+.heatmap td{padding:10px 6px;text-align:center;border-radius:4px;font-weight:700;font-size:12px;font-variant-numeric:tabular-nums;border:1px solid;cursor:default;min-width:60px}
+.heatmap td:hover{transform:scale(1.05);z-index:5;position:relative;box-shadow:var(--shadow-sm)}
+.heatmap td.code{background:var(--surface-alt);text-align:left;padding:10px 12px}
+.legend{display:flex;gap:14px;font-size:11px;align-items:center;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:6px}
+.legend-swatch{width:14px;height:14px;border-radius:3px;border:1px solid rgba(0,0,0,.1)}
+.alert-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--border-light);cursor:pointer}
+.alert-item:last-child{border-bottom:none}
+.alert-item:hover{background:var(--surface-hover)}
+.alert-item.crit{border-left:3px solid var(--danger)}
+.alert-item.low{border-left:3px solid var(--warn)}
+.alert-icon{width:36px;height:36px;border-radius:6px;background:var(--surface-alt);display:grid;place-items:center;font-size:16px;flex-shrink:0}
+.alert-body{flex:1;min-width:0}
+.alert-title{font-weight:700;font-size:13px;color:var(--link)}
+.alert-meta{font-size:11px;color:var(--text-mut);margin-top:2px}
+.alert-val{text-align:right;flex-shrink:0}
+.bar{height:8px;background:var(--border-light);border-radius:4px;overflow:hidden;margin-top:6px}
+.bar>span{display:block;height:100%;transition:width .4s}
+.bar.success>span{background:var(--success)}
+.bar.warn>span{background:var(--amz-orange)}
+.modal{position:fixed;inset:0;background:rgba(15,17,17,.6);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.modal.show{display:flex;animation:fadeIn .15s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal-box{background:#fff;border-radius:8px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.modal-head h3{font-size:17px;font-weight:700}
+.modal-close{width:28px;height:28px;border-radius:4px;border:1px solid var(--border);background:#fff;cursor:pointer}
+.modal-body{padding:20px}
+.modal-actions{padding:14px 20px;border-top:1px solid var(--border);background:var(--surface-alt);display:flex;gap:10px;justify-content:flex-end}
+.field label{display:block;font-size:12px;font-weight:700;margin-bottom:4px}
+.field label .req{color:var(--danger)}
+.field input,.field select{width:100%;padding:8px 12px;background:#fff;border:1px solid #888C8C;border-radius:3px;font-size:13px;font-family:inherit;box-shadow:inset 0 1px 2px rgba(0,0,0,.05)}
+.field input:focus,.field select:focus{outline:none;border-color:var(--amz-orange);box-shadow:0 0 3px 2px rgba(255,153,0,.5)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid{display:grid;gap:14px}
+.pane{display:none}
+.pane.active{display:block;animation:fadeIn .2s}
+.cfg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;padding:16px 20px}
+.cfg-card{background:var(--surface-alt);border:1px solid var(--border);border-radius:6px;padding:14px}
+.cfg-card h4{font-size:13px;font-weight:700;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.type-tag{font-size:10px;padding:2px 8px;border-radius:10px;background:var(--info-bg);color:var(--info);font-weight:700;text-transform:uppercase}
+.cfg-field{margin-bottom:8px}
+.cfg-field label{display:block;font-size:11px;color:var(--text-mut);margin-bottom:3px;font-weight:600}
+.cfg-field input{width:100%;padding:6px 10px;background:#fff;border:1px solid #888C8C;border-radius:3px;font-size:12px;box-shadow:inset 0 1px 2px rgba(0,0,0,.05)}
+.empty{text-align:center;padding:40px 20px;color:var(--text-mut)}
+.empty .ic{font-size:38px;margin-bottom:10px;opacity:.4}
+.toast{position:fixed;top:80px;right:24px;background:#fff;border:1px solid var(--border);border-left:4px solid var(--success);border-radius:4px;padding:12px 18px;box-shadow:var(--shadow-lg);z-index:2000;display:flex;align-items:center;gap:10px;min-width:260px;transform:translateX(400px);transition:transform .25s}
+.toast.show{transform:translateX(0)}
+.toast.error{border-left-color:var(--danger)}
+.toast-ic{font-size:18px}
+.toast-body{flex:1;font-size:13px;font-weight:500}
+.banner{background:linear-gradient(135deg,var(--amz-navy) 0%,var(--amz-navy-2) 100%);color:#fff;padding:20px 24px;border-radius:8px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;position:relative;overflow:hidden}
+.banner::after{content:'';position:absolute;right:-40px;top:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(255,153,0,.15) 0%,transparent 70%)}
+.banner-text{position:relative;z-index:1}
+.banner-text h3{font-size:18px;font-weight:700;margin-bottom:4px}
+.banner-text p{color:#ccc;font-size:13px}
+.banner-stat{position:relative;z-index:1;text-align:right}
+.banner-stat .num{font-size:28px;font-weight:700;color:var(--amz-orange)}
+.banner-stat .lbl{font-size:11px;color:#ccc;text-transform:uppercase;letter-spacing:.5px}
+.import-report{background:var(--surface-alt);border:1px solid var(--border);border-radius:6px;padding:12px 14px;font-size:12px;max-height:480px;overflow-y:auto;font-family:'Amazon Ember',monospace}
+.import-report .ok{color:var(--success)}
+.import-report .warn{color:var(--warn)}
+.import-report .err{color:var(--danger)}
+.import-report .info{color:var(--info)}
+.import-report div{margin-bottom:3px;line-height:1.5}
+
+/* Login Screen */
+.login-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#131A22 0%,#232F3E 100%);display:flex;align-items:center;justify-content:center;z-index:9999;padding:20px}
+.login-box{background:#fff;border-radius:12px;padding:40px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.login-logo{text-align:center;margin-bottom:30px}
+.login-logo .l1{font-size:32px;font-weight:700;color:var(--amz-navy)}
+.login-logo .l1 span{color:var(--amz-orange)}
+.login-logo .l2{font-size:12px;color:var(--text-mut);letter-spacing:2px;margin-top:4px}
+.login-title{font-size:22px;font-weight:700;text-align:center;margin-bottom:8px}
+.login-sub{text-align:center;color:var(--text-mut);font-size:13px;margin-bottom:24px}
+.login-field{margin-bottom:14px}
+.login-field label{display:block;font-size:12px;font-weight:700;margin-bottom:6px}
+.login-field input{width:100%;padding:11px 14px;border:1px solid #888C8C;border-radius:6px;font-size:14px;font-family:inherit}
+.login-field input:focus{outline:none;border-color:var(--amz-orange);box-shadow:0 0 3px 2px rgba(255,153,0,.3)}
+.login-btn{width:100%;padding:12px;background:linear-gradient(to bottom,#FFD814,#F7CA00);border:1px solid #FCD200;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;margin-top:8px}
+.login-btn:hover{background:linear-gradient(to bottom,#F7CA00,#F0BE00)}
+.login-btn:disabled{opacity:.6;cursor:not-allowed}
+.login-toggle{text-align:center;margin-top:16px;font-size:13px;color:var(--text-mut)}
+.login-toggle a{color:var(--link);cursor:pointer;font-weight:600}
+.login-error{background:var(--danger-bg);color:var(--danger);padding:10px;border-radius:6px;font-size:12px;margin-bottom:14px;display:none}
+.login-error.show{display:block}
+.sync-indicator{position:fixed;bottom:20px;right:20px;background:#fff;border:1px solid var(--border);border-radius:20px;padding:8px 14px;font-size:12px;box-shadow:var(--shadow);display:none;align-items:center;gap:8px;z-index:500}
+.sync-indicator.show{display:flex}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--success);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+@media(max-width:768px){.topnav-inner{padding:0 12px}.page{padding:14px}.brand-sub{display:none}.nav-divider{display:none}.user-info{display:none}.page-head h1{font-size:20px}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div class="login-overlay" id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="l1">Anow<span>.</span></div>
+      <div class="l2">OPERATIONS</div>
+    </div>
+    <h2 class="login-title" id="loginTitle">Sign In</h2>
+    <p class="login-sub" id="loginSub">Welcome back to Consumables Operations</p>
+    <div class="login-error" id="loginError"></div>
+    <div class="login-field">
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="you@company.com">
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')handleAuth()">
+    </div>
+    <button class="login-btn" id="loginBtn" onclick="handleAuth()">Sign In</button>
+    <div class="login-toggle">
+      <span id="toggleText">Don't have an account?</span>
+      <a id="toggleLink" onclick="toggleAuthMode()">Sign Up</a>
+    </div>
+  </div>
+</div>
+
+<nav class="topnav" style="display:none" id="mainNav">
+  <div class="topnav-inner">
+    <div class="brand">
+      <div>
+        <div class="brand-logo">Anow<span class="smile">.</span></div>
+        <div class="brand-sub">OPERATIONS</div>
+      </div>
+    </div>
+    <div class="nav-divider"></div>
+    <div class="nav-section-title">Consumables <span>Intelligence</span></div>
+    <div class="nav-actions">
+      <button class="nav-btn primary" onclick="document.getElementById('xlsFile').click()">📊 Upload Excel</button>
+      <input type="file" id="xlsFile" accept=".xlsx,.xls" style="display:none" onchange="importExcel(event)">
+      <button class="nav-btn" onclick="exportAll()">💾 Export</button>
+      <button class="nav-btn" onclick="logout()" title="Logout">🚪 Logout</button>
+      <div class="user-chip">
+        <div class="avatar" id="userAvatar">??</div>
+        <div class="user-info">
+          <div class="greet">Hello,</div>
+          <div class="name" id="userName">User</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="subnav">
+    <div class="subnav-inner">
+      <button class="tab active" data-tab="overview">📊 Overview</button>
+      <button class="tab" data-tab="doc">🧮 DOC Analysis</button>
+      <button class="tab" data-tab="replen">🚚 Replenishment <span class="badge" id="repBadge">0</span></button>
+      <button class="tab" data-tab="stores">🏪 Stores</button>
+      <button class="tab" data-tab="stock">📦 Stock Count</button>
+      <button class="tab" data-tab="forecast">📈 Forecast</button>
+      <button class="tab" data-tab="config">⚙️ Configuration</button>
+    </div>
+  </div>
+</nav>
+
+<div class="page" id="mainPage" style="display:none">
+
+<section class="pane active" id="overview">
+  <div class="breadcrumb"><a>Operations</a><span class="sep">›</span><a>Consumables</a><span class="sep">›</span><span>Dashboard</span></div>
+  <div class="banner">
+    <div class="banner-text">
+      <h3>Consumables Operations Center</h3>
+      <p>Real-time inventory intelligence • Last refresh: <span id="lastUpd" class="mono">—</span></p>
+    </div>
+    <div class="banner-stat">
+      <div class="num" id="bannerNum">—</div>
+      <div class="lbl">Days of Coverage Avg</div>
+    </div>
+  </div>
+  <div class="kpi-grid" id="kpiBox"></div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><span class="icon">⚠</span>Priority Alerts <span class="card-sub">DOC &lt; 3 days</span></div>
+        <button class="btn-link" onclick="document.querySelector('[data-tab=replen]').click()">View all →</button>
+      </div>
+      <div id="critList"></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><span class="icon">🏪</span>Network Status</div>
+      </div>
+      <div class="card-body" id="statusBreakdown"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title"><span class="icon">🌡</span>DOC Heatmap</div>
+      <div class="legend">
+        <div class="legend-item"><span class="legend-swatch" style="background:#FCE4E4;border-color:#B12704"></span>Critical (&lt;1d)</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:#FFF3CD;border-color:#B66A00"></span>Low (&lt;3d)</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:#D5F5E3;border-color:#067D62"></span>Healthy (&lt;7d)</div>
+        <div class="legend-item"><span class="legend-swatch" style="background:#D9EDF7;border-color:#146EB4"></span>High (≥7d)</div>
+      </div>
+    </div>
+    <div class="tbl-wrap"><div class="tbl-scroll" id="heatmap"></div></div>
+  </div>
+</section>
+
+<section class="pane" id="stores">
+  <div class="breadcrumb"><a>Operations</a><span class="sep">›</span><span>Stores</span></div>
+  <div class="page-head">
+    <div><h1>Store Network Management</h1><p>Manage locations, capacities, and launch status</p></div>
+    <div class="page-actions"><button class="btn btn-action" onclick="openStore()">+ Add New Store</button></div>
+  </div>
+  <div class="card">
+    <div class="filters">
+      <div class="search"><input class="input" type="text" id="srchSt" placeholder="Search..." oninput="renderStores()"></div>
+      <select class="select" id="fltSt" onchange="renderStores()">
+        <option value="">All Status</option><option>Live</option><option>Not Live</option>
+      </select>
+      <div style="margin-left:auto;color:var(--text-mut);font-size:12px;font-weight:500" id="stCount"></div>
+    </div>
+    <div class="tbl-wrap"><div class="tbl-scroll"><table id="tblStores"></table></div></div>
+  </div>
+</section>
+
+<section class="pane" id="stock">
+  <div class="breadcrumb"><a>Operations</a><span class="sep">›</span><span>Stock Count</span></div>
+  <div class="page-head">
+    <div><h1>Stock Count Entry</h1><p>Cartons on hand per store</p></div>
+    <div class="page-actions">
+      <label style="font-size:12px;color:var(--text-mut);font-weight:500;align-self:center">Date:</label>
+      <input class="input" type="date" id="stkDate" style="min-width:160px" onchange="saveStkDate()">
+    </div>
+  </div>
+  <div class="card">
+    <div class="filters"><div class="search"><input class="input" type="text" id="srchStk" placeholder="Search..." oninput="renderStock()"></div></div>
+    <div class="tbl-wrap"><div class="tbl-scroll"><table id="tblStock"></table></div></div>
+  </div>
+</section>
+
+<section class="pane" id="forecast">
+  <div class="breadcrumb"><a>Operations</a><span class="sep">›</span><span>Forecast</span></div>
+  <div class="page-head">
+    <div><h1>Demand Forecast</h1><p>Monthly orders & units projections</p></div>
+<div class="page-actions">
+  <button class="btn btn-action" onclick="document.getElementById('fcXlsFile').click()">📊 Upload Forecast Excel</button>
+  <input type="file" id="fcXlsFile" accept=".xlsx,.xls" style="display:none" onchange="importForecastExcel(event)">
+  <button class="btn" onclick="bulkFc()">📋 Bulk Paste</button>
+</div>
+  </div>
+  <div class="card">
+    <div class="filters">
+      <div class="search"><input class="input" type="text" id="srchFc" placeholder="Search..." oninput="renderForecast()"></div>
+      <div style="margin-left:auto;font-size:12px;font-weight:500">Buffer: <span id="bufDisp" class="mono" style="color:var(--amz-orange-dark);font-weight:700">1.30x</span></div>
+    </div>
+    <div class="tbl-wrap"><div class="tbl-scroll"><table id="tblFc"></table></div></div>
+  </div>
+</section>
+
+<section class="pane" id="doc">
+  <div class="breadcrumb"><a>Operations</a><span class="sep">›</span><span>DOC Analysis</span></div>
+  <div class="page-head"><div><h1>Days of Cover Analysis</h1><p>Per-SKU breakdown</p></div></div>
+  <div class="card">
+    <div class="filters">
+      <label style="font-size:12px;font-weight:700">Consumable:</label>
+      <select class="select" id="docCons" onchange="onDocConsChange()"></select>
+      <div class="search"><input class="input" type="text" id="srchDoc" placeholder="Filter..." oninput="renderDOC()"></div>
+    </div>
+    <div class="tbl-wrap"><div class="tbl-scroll"><table id="tblDoc"></table></div></div>
+  </div>
+</section>
+
+<section class="pane" id="replen">
+  <div class="breadcrumb"><a>Operations</a><span class="sep">›</span><span>Replenishment</span></div>
+  <div class="page-head">
+    <div><h1>Weekly Replenishment Plan</h1><p>Cartons required for coming week</p></div>
+    <div class="page-actions"><button class="btn btn-cta" onclick="expReplenCSV()">📥 Export CSV</button></div>
+  </div>
+  <div class="card"><div class="tbl-wrap"><div class="tbl-scroll"><table id="tblRep"></table></div></div></div>
+</section>
+
+<section class="pane" id="config">
+  <div class="breadcrumb"><a>Operations</a><span class="sep">›</span><span>Configuration</span></div>
+  <div class="page-head"><div><h1>System Configuration</h1><p>Tuning parameters</p></div></div>
+  <div class="card">
+    <div class="card-head"><div class="card-title"><span class="icon">⚙</span>Global Parameters</div></div>
+    <div class="card-body">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">
+        <div class="field"><label>Buffer Multiplier</label><input type="number" id="bufMul" step="0.01" onchange="saveBuf()"></div>
+        <div class="field"><label>Avg Units per Order (fallback)</label><input type="number" id="upo" step="0.01" onchange="saveUpo()"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title"><span class="icon">📦</span>Consumable Definitions</div>
+      <button class="btn btn-cta btn-sm" onclick="saveCfg()">💾 Save Changes</button>
+    </div>
+    <div class="cfg-grid" id="cfgBox"></div>
+  </div>
+  <div class="card" style="border-color:#F5B7B1">
+    <div class="card-head" style="background:#FCE4E4">
+      <div class="card-title" style="color:var(--danger)"><span class="icon" style="background:var(--danger);color:#fff">!</span>Danger Zone</div>
+    </div>
+    <div class="card-body">
+      <p style="color:var(--text-mut);font-size:12px;margin-bottom:10px">⚠️ Reset will delete all data permanently from cloud.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-danger" onclick="resetAll()">🗑️ Reset All Data</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<div class="modal" id="mdStore">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="mdTitle">Add New Store</h3><button class="modal-close" onclick="closeStore()">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field"><label>Store Code <span class="req">*</span></label><input id="mCode" placeholder="e.g., QCA1"></div>
+        <div class="field"><label>Area / Location <span class="req">*</span></label><input id="mArea" placeholder="e.g., New Cairo"></div>
+        <div class="field-row">
+          <div class="field"><label>Status</label><select id="mStat"><option>Live</option><option>Not Live</option></select></div>
+          <div class="field"><label>OB Launch</label><input id="mLaunch"></div>
+        </div>
+        <div class="field"><label>Store Capacity</label><input type="number" id="mCap"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeStore()">Cancel</button>
+      <button class="btn btn-cta" onclick="saveStore()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="mdImport">
+  <div class="modal-box" style="max-width:760px">
+    <div class="modal-head"><h3 id="mdImportTitle">📊 Import Report</h3><button class="modal-close" onclick="document.getElementById('mdImport').classList.remove('show')">✕</button></div>
+    <div class="modal-body"><div id="importReport" class="import-report"></div></div>
+    <div class="modal-actions"><button class="btn btn-cta" onclick="document.getElementById('mdImport').classList.remove('show')">Done</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span class="toast-ic">✓</span><div class="toast-body">Saved</div></div>
+
+<div class="sync-indicator" id="syncIndicator">
+  <span class="sync-dot"></span>
+  <span id="syncText">Syncing...</span>
+</div>
+
+<script>
+// ============================================
+// SUPABASE CONFIGURATION - عدّل القيمتين دول
+// ============================================
+const SUPABASE_URL = 'https://borpelpxgrbpwhwtunns.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvcnBlbHB4Z3JicHdod3R1bm5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3ODk3MDIsImV4cCI6MjA5NDM2NTcwMn0.2eTRhtIih6QxuDQrUqA_PymewB85bmHJSWHZXpCVZOQ';
+// ============================================
+
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const DEFAULT_CONS = {
+  'PaperBag-L':   {trend:1.8,   units:250,   box:20, type:'BPO',       icon:'🛍️'},
+  'PaperBag-M':   {trend:1.6,   units:400,   box:20, type:'BPO',       icon:'🛍️'},
+  'SPOOLabel':    {trend:4.95,  units:16000, box:20, type:'perOrder',  icon:'🏷️'},
+  'SealTape':     {trend:3.3,   units:18000, box:20, type:'perOrder',  icon:'📼'},
+  'BubbleWrap-S': {trend:0.0033,units:300,   box:20, type:'pctUnits',  icon:'🫧'},
+  'BubbleWrap-M': {trend:0.0083,units:200,   box:20, type:'pctUnits',  icon:'🫧'},
+  'BubbleWrap-L': {trend:0.0096,units:100,   box:20, type:'pctUnits',  icon:'🫧'},
+  'IceCreamBags': {trend:0.03,  units:40,    box:20, type:'pctOrders', icon:'🧊'},
+  'GelPads':      {trend:3,     units:40,    box:80, type:'xIcBags',   icon:'❄️'}
+};
+const CONS_KEYS = ['PaperBag-L','PaperBag-M','SealTape','SPOOLabel','BubbleWrap-L','BubbleWrap-M','BubbleWrap-S','IceCreamBags','GelPads'];
+
+let state = {cons:JSON.parse(JSON.stringify(DEFAULT_CONS)),stores:[],stock:{},fc:{},fcUnits:{},buffer:1.30,upo:8.58,stkDate:new Date().toISOString().slice(0,10)};
+let docSelected = null;
+let currentUser = null;
+let isSignUpMode = false;
+let saveTimers = {};
+
+function stockKey(c){return String(c).replace(/[-\s_]/g,'')}
+function readStock(s,c){const r=state.stock[s];if(!r)return 0;return +r[stockKey(c)]||0}
+function writeStock(s,c,v){if(!state.stock[s])state.stock[s]={};state.stock[s][stockKey(c)]=+v||0}
+
+// ============================================
+// AUTHENTICATION
+// ============================================
+function showSync(text='Syncing...'){const el=document.getElementById('syncIndicator');document.getElementById('syncText').textContent=text;el.classList.add('show')}
+function hideSync(){document.getElementById('syncIndicator').classList.remove('show')}
+
+function toggleAuthMode(){
+  isSignUpMode=!isSignUpMode;
+  document.getElementById('loginTitle').textContent=isSignUpMode?'Create Account':'Sign In';
+  document.getElementById('loginSub').textContent=isSignUpMode?'Join your team operations':'Welcome back to Consumables Operations';
+  document.getElementById('loginBtn').textContent=isSignUpMode?'Create Account':'Sign In';
+  document.getElementById('toggleText').textContent=isSignUpMode?'Already have an account?':"Don't have an account?";
+  document.getElementById('toggleLink').textContent=isSignUpMode?'Sign In':'Sign Up';
+  document.getElementById('loginError').classList.remove('show');
+}
+
+async function handleAuth(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const pass=document.getElementById('loginPass').value;
+  const errEl=document.getElementById('loginError');
+  const btn=document.getElementById('loginBtn');
+  if(!email||!pass){errEl.textContent='Please fill all fields';errEl.classList.add('show');return}
+  if(pass.length<6){errEl.textContent='Password must be at least 6 characters';errEl.classList.add('show');return}
+  btn.disabled=true;btn.textContent='Please wait...';
+  try{
+    let result;
+    if(isSignUpMode){
+      result=await supabaseClient.auth.signUp({email,password:pass});
+      if(result.error)throw result.error;
+      if(result.data.user&&!result.data.session){
+        errEl.textContent='✓ Account created! Check your email to confirm, then sign in.';
+        errEl.style.background='var(--success-bg)';errEl.style.color='var(--success)';
+        errEl.classList.add('show');
+        toggleAuthMode();
+        btn.disabled=false;btn.textContent='Sign In';
+        return;
+      }
+    } else {
+      result=await supabaseClient.auth.signInWithPassword({email,password:pass});
+      if(result.error)throw result.error;
+    }
+    currentUser=result.data.user;
+    await onLoginSuccess();
+  }catch(err){
+    errEl.style.background='var(--danger-bg)';errEl.style.color='var(--danger)';
+    errEl.textContent=err.message||'Authentication failed';
+    errEl.classList.add('show');
+    btn.disabled=false;btn.textContent=isSignUpMode?'Create Account':'Sign In';
+  }
+}
+
+async function onLoginSuccess(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('mainNav').style.display='block';
+  document.getElementById('mainPage').style.display='block';
+  const email=currentUser.email;
+  const name=email.split('@')[0];
+  const initials=name.slice(0,2).toUpperCase();
+  document.getElementById('userName').textContent=name;
+  document.getElementById('userAvatar').textContent=initials;
+  showSync('Loading data...');
+  await loadFromCloud();
+  hideSync();
+  render();
+}
+
+async function logout(){
+  if(!confirm('Sign out?'))return;
+  await supabaseClient.auth.signOut();
+  location.reload();
+}
+
+async function checkSession(){
+  const {data}=await supabaseClient.auth.getSession();
+  if(data.session){
+    currentUser=data.session.user;
+    await onLoginSuccess();
+  }
+}
+
+// ============================================
+// CLOUD DATA OPERATIONS
+// ============================================
+async function loadFromCloud(){
+  try{
+    const [stores,stock,forecasts,settings]=await Promise.all([
+      supabaseClient.from('stores').select('*'),
+      supabaseClient.from('stock').select('*'),
+      supabaseClient.from('forecasts').select('*'),
+      supabaseClient.from('settings').select('*')
+    ]);
+    if(stores.error)throw stores.error;
+    state.stores=stores.data||[];
+    state.stock={};(stock.data||[]).forEach(r=>{state.stock[r.store_code]=r.data||{}});
+    state.fc={};state.fcUnits={};
+    (forecasts.data||[]).forEach(r=>{
+      if(r.orders!=null)state.fc[r.store_code]=+r.orders;
+      if(r.units!=null)state.fcUnits[r.store_code]=+r.units;
+    });
+    (settings.data||[]).forEach(s=>{
+      if(s.key==='buffer')state.buffer=+s.value||1.3;
+      else if(s.key==='upo')state.upo=+s.value||8.58;
+      else if(s.key==='stkDate')state.stkDate=s.value||new Date().toISOString().slice(0,10);
+      else if(s.key==='cons'&&s.value)state.cons=s.value;
+    });
+    document.getElementById('lastUpd').textContent=new Date().toLocaleString();
+  }catch(e){
+    console.error('Load error',e);
+    toast('Load failed: '+e.message,'error');
+  }
+}
+
+async function saveStoreCloud(store){
+  showSync();
+  try{
+    const {error}=await supabaseClient.from('stores').upsert({code:store.code,area:store.area,status:store.status,launch:store.launch,cap:store.cap,updated_at:new Date().toISOString()});
+    if(error)throw error;
+  }catch(e){toast('Sync error: '+e.message,'error')}
+  hideSync();
+}
+
+async function deleteStoreCloud(code){
+  showSync();
+  try{
+    await supabaseClient.from('stores').delete().eq('code',code);
+  }catch(e){toast('Delete failed','error')}
+  hideSync();
+}
+
+async function saveStockCloud(code){
+  showSync();
+  try{
+    const {error}=await supabaseClient.from('stock').upsert({store_code:code,data:state.stock[code]||{},updated_at:new Date().toISOString()});
+    if(error)throw error;
+  }catch(e){toast('Stock sync error','error')}
+  hideSync();
+}
+
+async function saveForecastCloud(code){
+  showSync();
+  try{
+    const payload={store_code:code,orders:state.fc[code]||0,units:state.fcUnits[code]||null,updated_at:new Date().toISOString()};
+    const {error}=await supabaseClient.from('forecasts').upsert(payload);
+    if(error)throw error;
+  }catch(e){toast('Forecast sync error','error')}
+  hideSync();
+}
+
+async function saveSettingCloud(key,value){
+  showSync();
+  try{
+    await supabaseClient.from('settings').upsert({key,value,updated_at:new Date().toISOString()});
+  }catch(e){toast('Settings sync error','error')}
+  hideSync();
+}
+
+function debouncedSave(key,fn,delay=500){
+  if(saveTimers[key])clearTimeout(saveTimers[key]);
+  saveTimers[key]=setTimeout(fn,delay);
+}
+
+async function bulkSyncAll(){
+  showSync('Syncing all data...');
+  try{
+    if(state.stores.length){
+      await supabaseClient.from('stores').upsert(state.stores.map(s=>({code:s.code,area:s.area,status:s.status,launch:s.launch,cap:s.cap,updated_at:new Date().toISOString()})));
+    }
+    const stockRows=Object.entries(state.stock).map(([code,data])=>({store_code:code,data,updated_at:new Date().toISOString()}));
+    if(stockRows.length)await supabaseClient.from('stock').upsert(stockRows);
+    const fcCodes=new Set([...Object.keys(state.fc),...Object.keys(state.fcUnits)]);
+    const fcRows=[...fcCodes].map(code=>({store_code:code,orders:state.fc[code]||0,units:state.fcUnits[code]||null,updated_at:new Date().toISOString()}));
+    if(fcRows.length)await supabaseClient.from('forecasts').upsert(fcRows);
+    await supabaseClient.from('settings').upsert([
+      {key:'buffer',value:state.buffer,updated_at:new Date().toISOString()},
+      {key:'upo',value:state.upo,updated_at:new Date().toISOString()},
+      {key:'stkDate',value:state.stkDate,updated_at:new Date().toISOString()},
+      {key:'cons',value:state.cons,updated_at:new Date().toISOString()}
+    ]);
+    toast('✓ All data synced to cloud');
+  }catch(e){
+    console.error(e);
+    toast('Bulk sync failed: '+e.message,'error');
+  }
+  hideSync();
+}
+
+async function resetAll(){
+  if(!confirm('⚠️ DELETE ALL data from cloud? This cannot be undone!'))return;
+  if(!confirm('Are you ABSOLUTELY sure?'))return;
+  showSync('Deleting...');
+  try{
+    await supabaseClient.from('stores').delete().neq('code','___never___');
+    await supabaseClient.from('forecasts').delete().neq('store_code','___never___');
+    await supabaseClient.from('stock').delete().neq('store_code','___never___');
+    state={cons:JSON.parse(JSON.stringify(DEFAULT_CONS)),stores:[],stock:{},fc:{},fcUnits:{},buffer:1.30,upo:8.58,stkDate:new Date().toISOString().slice(0,10)};
+    docSelected=null;
+    render();
+    toast('✓ All data wiped');
+  }catch(e){toast('Reset failed','error')}
+  hideSync();
+}
+
+function toast(msg,type='success'){const t=document.getElementById('toast');t.className='toast show '+(type==='error'?'error':'');t.querySelector('.toast-ic').textContent=type==='success'?'✓':'✕';t.querySelector('.toast-body').textContent=msg;setTimeout(()=>t.className='toast',2500)}
+
+// ============================================
+// CALCULATIONS (نفس الأصل)
+// ============================================
+function calcNeeded(sc,ck){
+  const orders=(state.fc[sc]||0)*state.buffer;
+  const iU=state.fcUnits[sc];
+  const units=(iU!=null&&iU>0)?iU*state.buffer:orders*state.upo;
+  const c=state.cons[ck];if(!c)return{monthEA:0,weekEA:0,dayEA:0};
+  let m=0;
+  if(c.type==='BPO'||c.type==='perOrder'||c.type==='pctOrders')m=orders*c.trend;
+  else if(c.type==='pctUnits')m=units*c.trend;
+  else if(c.type==='xIcBags')m=orders*(state.cons['IceCreamBags']?.trend||0)*c.trend;
+  return{monthEA:m,weekEA:m/4,dayEA:m/28};
+}
+function calcSOH(s,c){const ct=readStock(s,c);return{cartons:ct,ea:ct*(state.cons[c]?.units||0)}}
+function calcDOC(s,c){const so=calcSOH(s,c),ne=calcNeeded(s,c);return ne.dayEA>0?so.ea/ne.dayEA:0}
+function calcReplen(s,c){const so=calcSOH(s,c),ne=calcNeeded(s,c);const sh=Math.max(0,ne.weekEA-so.ea);const u=state.cons[c]?.units||1;return{ea:Math.round(sh),ct:Math.ceil(sh/u)}}
+function n(x,d=0){return x==null||isNaN(x)?'—':Number(x).toLocaleString(undefined,{maximumFractionDigits:d,minimumFractionDigits:d})}
+function docColor(d){if(!d||d<1)return{bg:'#FCE4E4',fg:'#B12704',br:'#F5B7B1'};if(d<3)return{bg:'#FFF3CD',fg:'#B66A00',br:'#F5D99C'};if(d<7)return{bg:'#D5F5E3',fg:'#067D62',br:'#A9D5BE'};return{bg:'#D9EDF7',fg:'#146EB4',br:'#AED6F1'}}
+function docPill(d){if(!d||isNaN(d)||d===0)return'<span class="pill pill-nl">NO DATA</span>';if(d<1)return`<span class="pill pill-crit">${d.toFixed(1)}d</span>`;if(d<3)return`<span class="pill pill-low">${d.toFixed(1)}d</span>`;if(d<7)return`<span class="pill pill-ok">${d.toFixed(1)}d</span>`;return`<span class="pill pill-hi">${d.toFixed(1)}d</span>`}
+
+document.querySelectorAll('.tab').forEach(el=>{el.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));document.getElementById(el.dataset.tab).classList.add('active');window.scrollTo(0,0)}});
+
+// ============================================
+// RENDER FUNCTIONS (نفس الأصل تقريباً)
+// ============================================
+function renderOverview(){
+  const live=state.stores.filter(s=>s.status==='Live');
+  let crit=0,low=0,ok=0,hi=0,totalRep=0,docSum=0,docCount=0;
+  live.forEach(s=>CONS_KEYS.forEach(c=>{if(!state.fc[s.code])return;const d=calcDOC(s.code,c);if(d>0){docSum+=d;docCount++}if(d<1)crit++;else if(d<3)low++;else if(d<7)ok++;else hi++;totalRep+=calcReplen(s.code,c).ct}));
+  const avgDoc=docCount?docSum/docCount:0;
+  document.getElementById('bannerNum').textContent=docCount?avgDoc.toFixed(1)+'d':'—';
+  const totalOrders=Object.values(state.fc).reduce((a,b)=>a+b,0);
+  document.getElementById('repBadge').textContent=crit+low;
+  document.getElementById('kpiBox').innerHTML=`
+    <div class="kpi navy"><div class="kpi-head"><div class="kpi-icon">🏪</div><span class="kpi-trend up">${live.length}/${state.stores.length}</span></div><div class="kpi-label">Live Stores</div><div class="kpi-value">${live.length}</div><div class="kpi-sub">${state.stores.length-live.length} not live</div></div>
+    <div class="kpi red"><div class="kpi-head"><div class="kpi-icon">🚨</div><span class="kpi-trend down">URGENT</span></div><div class="kpi-label">Critical</div><div class="kpi-value">${crit}</div><div class="kpi-sub">Below 1 day</div></div>
+    <div class="kpi yellow"><div class="kpi-head"><div class="kpi-icon">⚠️</div><span class="kpi-trend neutral">WATCH</span></div><div class="kpi-label">Low Stock</div><div class="kpi-value">${low}</div><div class="kpi-sub">1–3 days</div></div>
+    <div class="kpi green"><div class="kpi-head"><div class="kpi-icon">✅</div><span class="kpi-trend up">HEALTHY</span></div><div class="kpi-label">Healthy</div><div class="kpi-value">${ok+hi}</div><div class="kpi-sub">Above 3 days</div></div>
+    <div class="kpi orange"><div class="kpi-head"><div class="kpi-icon">📦</div></div><div class="kpi-label">Replen Cartons</div><div class="kpi-value">${totalRep}</div><div class="kpi-sub">This week</div></div>
+    <div class="kpi blue"><div class="kpi-head"><div class="kpi-icon">📈</div></div><div class="kpi-label">Monthly Orders</div><div class="kpi-value">${n(totalOrders)}</div><div class="kpi-sub">Network</div></div>`;
+  const alerts=[];
+  live.forEach(s=>CONS_KEYS.forEach(c=>{if(!state.fc[s.code])return;const d=calcDOC(s.code,c);if(d<3&&d>0)alerts.push({s:s.code,area:s.area,c,d,r:calcReplen(s.code,c)})}));
+  alerts.sort((a,b)=>a.d-b.d);
+  document.getElementById('critList').innerHTML=alerts.length?alerts.slice(0,7).map(a=>`<div class="alert-item ${a.d<1?'crit':'low'}"><div class="alert-icon">${state.cons[a.c]?.icon||'📦'}</div><div class="alert-body"><div class="alert-title">${a.s} — ${a.c}</div><div class="alert-meta">${a.area}</div></div><div class="alert-val">${docPill(a.d)}<div class="cell-sub mono">Need: <b>${a.r.ct} ct</b></div></div></div>`).join(''):'<div class="empty"><div class="ic">✅</div><p>'+(state.stores.length?'All systems normal':'Upload Excel to begin')+'</p></div>';
+  const byStat={};state.stores.forEach(s=>byStat[s.status]=(byStat[s.status]||0)+1);
+  const total=state.stores.length;
+  const liveCap=state.stores.filter(s=>s.status==='Live').reduce((a,b)=>a+(+b.cap||0),0);
+  document.getElementById('statusBreakdown').innerHTML=total?Object.entries(byStat).map(([k,v])=>{const pct=(v/total*100).toFixed(0);return`<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span class="pill ${k==='Live'?'pill-live':'pill-nl'}">${k}</span><span class="mono" style="font-weight:700">${v} (${pct}%)</span></div><div class="bar ${k==='Live'?'success':'warn'}"><span style="width:${pct}%"></span></div></div>`}).join('')+`<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border-light);font-size:12px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--text-mut)">Total Live Capacity</span><span class="mono" style="font-weight:700">${n(liveCap)} BPO</span></div><div style="display:flex;justify-content:space-between"><span style="color:var(--text-mut)">Avg per Store</span><span class="mono" style="font-weight:700">${n(liveCap/(live.length||1),0)} BPO</span></div></div>`:'<div class="empty"><div class="ic">🏪</div><p>No stores yet</p></div>';
+  let h='<table class="heatmap"><tr><th style="min-width:180px"></th>'+CONS_KEYS.map(c=>`<th>${state.cons[c]?.icon||''}<br>${c.replace('Wrap','').replace('Label','Lbl')}</th>`).join('')+'</tr>';
+  if(live.length){
+    live.forEach(s=>{
+      h+=`<tr><td class="code"><b>${s.code}</b><div class="cell-sub">${(s.area||'').slice(0,26)}</div></td>`;
+      CONS_KEYS.forEach(c=>{
+        if(!state.fc[s.code]){h+=`<td style="background:#F7F8F8;color:var(--text-dim)">—</td>`;return}
+        const d=calcDOC(s.code,c);const col=docColor(d);
+        h+=`<td style="background:${col.bg};color:${col.fg};border-color:${col.br}">${d>0?d.toFixed(1):'—'}</td>`;
+      });
+      h+='</tr>';
+    });
+  }else{h+=`<tr><td colspan="${CONS_KEYS.length+1}" style="padding:30px;text-align:center;color:var(--text-mut)">No live stores</td></tr>`}
+  h+='</table>';
+  document.getElementById('heatmap').innerHTML=h;
+}
+
+let editStore=null;
+function openStore(code){editStore=code;const s=code?state.stores.find(x=>x.code===code):{code:'',area:'',status:'Live',launch:'',cap:100};document.getElementById('mdTitle').textContent=code?'Edit '+code:'Add Store';mCode.value=s.code;mArea.value=s.area;mStat.value=s.status;mLaunch.value=s.launch||'';mCap.value=s.cap;mCode.disabled=!!code;document.getElementById('mdStore').classList.add('show')}
+function closeStore(){document.getElementById('mdStore').classList.remove('show')}
+async function saveStore(){
+  const d={code:mCode.value.trim().toUpperCase(),area:mArea.value.trim(),status:mStat.value,launch:mLaunch.value,cap:+mCap.value||0};
+  if(!d.code||!d.area)return toast('Required','error');
+  if(editStore){Object.assign(state.stores.find(x=>x.code===editStore),d)}
+  else{if(state.stores.find(x=>x.code===d.code))return toast('Exists','error');state.stores.push(d);state.stock[d.code]={}}
+  await saveStoreCloud(d);
+  closeStore();toast('Saved');render();
+}
+async function delStore(code){
+  if(!confirm(`Delete ${code}?`))return;
+  state.stores=state.stores.filter(s=>s.code!==code);
+  delete state.stock[code];delete state.fc[code];delete state.fcUnits[code];
+  await deleteStoreCloud(code);
+  render();
+}
+function renderStores(){
+  const q=(document.getElementById('srchSt')?.value||'').toLowerCase();
+  const f=document.getElementById('fltSt')?.value||'';
+  const filtered=state.stores.filter(s=>(!q||s.code.toLowerCase().includes(q)||(s.area||'').toLowerCase().includes(q))&&(!f||s.status===f));
+  document.getElementById('stCount').textContent=`${filtered.length} of ${state.stores.length}`;
+  let h='<tr><th>Code</th><th>Location</th><th>Status</th><th>Launch</th><th>Capacity</th><th style="text-align:right">Actions</th></tr>';
+  if(!filtered.length){h+=`<tr><td colspan="6" style="padding:40px;text-align:center;color:var(--text-mut)">${state.stores.length?'No matches':'No stores yet — upload Excel'}</td></tr>`}
+  else{filtered.forEach(s=>{h+=`<tr><td><b class="cell-link" onclick="openStore('${s.code}')">${s.code}</b></td><td>${s.area||''}</td><td><span class="pill ${s.status==='Live'?'pill-live':'pill-nl'}">${s.status}</span></td><td class="mono">${s.launch||'—'}</td><td><input class="cell-input" type="number" value="${s.cap}" onchange="updCap('${s.code}',this.value)"></td><td style="text-align:right"><button class="btn btn-sm" onclick="openStore('${s.code}')">Edit</button> <button class="btn btn-sm btn-danger" onclick="delStore('${s.code}')">Del</button></td></tr>`})}
+  document.getElementById('tblStores').innerHTML=h;
+}
+async function updCap(code,v){
+  const store=state.stores.find(s=>s.code===code);
+  store.cap=+v||0;
+  debouncedSave('cap_'+code,()=>saveStoreCloud(store));
+}
+
+function renderStock(){
+  const q=(document.getElementById('srchStk')?.value||'').toLowerCase();
+  document.getElementById('stkDate').value=state.stkDate;
+  let h='<tr><th>Store</th>'+CONS_KEYS.map(c=>`<th style="text-align:center">${state.cons[c]?.icon||''}<br>${c.replace('BubbleWrap','BW').replace('PaperBag','PB')}</th>`).join('')+'</tr>';
+  const live=state.stores.filter(s=>s.status==='Live'&&(!q||s.code.toLowerCase().includes(q)));
+  if(!live.length){h+=`<tr><td colspan="${CONS_KEYS.length+1}" style="padding:40px;text-align:center;color:var(--text-mut)">No live stores</td></tr>`}
+  else{live.forEach(s=>{h+=`<tr><td><b>${s.code}</b><div class="cell-sub">${s.area||''}</div></td>`;CONS_KEYS.forEach(c=>{const v=readStock(s.code,c);h+=`<td style="text-align:center"><input class="cell-input" type="number" value="${v}" onchange="updStk('${s.code}','${c}',this.value)"></td>`});h+='</tr>'})}
+  document.getElementById('tblStock').innerHTML=h;
+}
+function updStk(code,c,v){
+  writeStock(code,c,v);
+  debouncedSave('stk_'+code,()=>saveStockCloud(code));
+}
+function saveStkDate(){
+  state.stkDate=document.getElementById('stkDate').value;
+  saveSettingCloud('stkDate',state.stkDate);
+}
+
+function renderForecast(){
+  const q=(document.getElementById('srchFc')?.value||'').toLowerCase();
+  document.getElementById('bufDisp').textContent=state.buffer.toFixed(2)+'x';
+  let h='<tr><th>Code</th><th>Location</th><th class="nums">Orders</th><th class="nums">Units</th><th class="nums">Orders×B</th><th class="nums">Units×B</th><th style="text-align:center">Source</th></tr>';
+  const list=state.stores.filter(s=>!q||s.code.toLowerCase().includes(q)||(s.area||'').toLowerCase().includes(q));
+  if(!list.length){h+=`<tr><td colspan="7" style="padding:40px;text-align:center;color:var(--text-mut)">No stores</td></tr>`}
+  else{list.forEach(s=>{const o=state.fc[s.code]||0;const iU=state.fcUnits[s.code];const hasI=iU!=null&&iU>0;const u=hasI?iU:o*state.upo;h+=`<tr><td><b>${s.code}</b></td><td>${s.area||''}</td><td class="nums"><input class="cell-input" type="number" value="${o}" onchange="updFc('${s.code}',this.value)" style="width:100px"></td><td class="nums"><input class="cell-input" type="number" value="${hasI?iU:''}" placeholder="auto" onchange="updFcUnits('${s.code}',this.value)" style="width:100px"></td><td class="nums">${n(o*state.buffer)}</td><td class="nums">${n(u*state.buffer)}</td><td style="text-align:center">${hasI?'<span class="pill pill-ok">📊</span>':'<span class="pill pill-nl">🧮</span>'}</td></tr>`})}
+  document.getElementById('tblFc').innerHTML=h;
+}
+function updFc(c,v){
+  state.fc[c]=+v||0;
+  debouncedSave('fc_'+c,()=>{saveForecastCloud(c);render()});
+}
+function updFcUnits(c,v){
+  if(!v||+v<=0)delete state.fcUnits[c];else state.fcUnits[c]=+v;
+  debouncedSave('fcu_'+c,()=>{saveForecastCloud(c);render()});
+}
+async function bulkFc(){
+  const txt=prompt('CSV (Code,Orders[,Units]):');
+  if(!txt)return;
+  txt.split('\n').forEach(l=>{const p=l.split(',').map(x=>x.trim());if(p.length>=2&&p[0]){const c=p[0].toUpperCase();if(!isNaN(+p[1]))state.fc[c]=+p[1];if(p[2]&&!isNaN(+p[2])&&+p[2]>0)state.fcUnits[c]=+p[2]}});
+  await bulkSyncAll();
+  render();
+}
+
+function onDocConsChange(){docSelected=document.getElementById('docCons').value;renderDOC()}
+function renderDOC(){
+  const sel=document.getElementById('docCons');
+  const keys=Object.keys(state.cons);
+  if(sel.options.length!==keys.length){sel.innerHTML='';keys.forEach(k=>{const o=document.createElement('option');o.value=k;o.text=(state.cons[k].icon||'')+' '+k;sel.add(o)})}
+  if(docSelected&&keys.includes(docSelected))sel.value=docSelected;
+  else if(keys.length)sel.value=keys[0];
+  docSelected=sel.value;
+  const c=sel.value;if(!c){document.getElementById('tblDoc').innerHTML='';return}
+  const q=(document.getElementById('srchDoc')?.value||'').toLowerCase();
+  let h=`<tr><th>Store</th><th class="nums">Cap</th><th class="nums">SOH ct</th><th class="nums">SOH ea</th><th class="nums">Need/Mo</th><th class="nums">Need/Wk</th><th class="nums">Need/Day</th><th class="nums">Replen</th><th>DOC</th></tr>`;
+  const rows=state.stores.filter(s=>s.status==='Live'&&(!q||s.code.toLowerCase().includes(q)||(s.area||'').toLowerCase().includes(q)));
+  if(!rows.length)h+='<tr><td colspan="9" style="padding:30px;text-align:center;color:var(--text-mut)">No matches</td></tr>';
+  else rows.forEach(s=>{const so=calcSOH(s.code,c),ne=calcNeeded(s.code,c),r=calcReplen(s.code,c),d=calcDOC(s.code,c);h+=`<tr><td><b>${s.code}</b><div class="cell-sub">${s.area||''}</div></td><td class="nums">${s.cap}</td><td class="nums">${so.cartons}</td><td class="nums">${n(so.ea)}</td><td class="nums">${n(ne.monthEA)}</td><td class="nums">${n(ne.weekEA)}</td><td class="nums">${n(ne.dayEA)}</td><td class="nums" style="color:${r.ct>0?'var(--amz-orange-dark)':'var(--text-mut)'};font-weight:700">${r.ct||'—'}</td><td>${docPill(d)}</td></tr>`});
+  document.getElementById('tblDoc').innerHTML=h;
+}
+
+function renderReplen(){
+  let h='<tr><th>Store</th>'+CONS_KEYS.map(c=>`<th style="text-align:center">${state.cons[c]?.icon||''}<br><span style="font-size:10px">${c.replace('BubbleWrap','BW').replace('PaperBag','PB')}</span></th>`).join('')+'<th style="text-align:right;background:var(--amz-navy);color:#fff">Total</th></tr>';
+  let gt=0;
+  const list=state.stores.filter(s=>s.status==='Live'&&state.fc[s.code]);
+  if(!list.length)h+=`<tr><td colspan="${CONS_KEYS.length+2}" style="padding:40px;text-align:center;color:var(--text-mut)">No data</td></tr>`;
+  else{list.forEach(s=>{let t=0;h+=`<tr><td><b>${s.code}</b><div class="cell-sub">${s.area||''}</div></td>`;CONS_KEYS.forEach(c=>{const r=calcReplen(s.code,c).ct;t+=r;const bg=r>0?`background:rgba(255,153,0,${Math.min(r/20,1)*0.18})`:'';h+=`<td class="nums" style="${bg};text-align:center">${r||'—'}</td>`});gt+=t;h+=`<td class="nums" style="font-weight:700;color:var(--amz-orange-dark);background:#FFF4E0">${t}</td></tr>`});h+=`<tr style="background:var(--amz-navy);color:#fff;font-weight:700"><td style="color:#fff">TOTAL</td>`;CONS_KEYS.forEach(c=>{const sm=list.reduce((a,s)=>a+calcReplen(s.code,c).ct,0);h+=`<td class="nums" style="text-align:center;color:#fff">${sm}</td>`});h+=`<td class="nums" style="color:var(--amz-orange);font-size:15px">${gt}</td></tr>`}
+  document.getElementById('tblRep').innerHTML=h;
+}
+function expReplenCSV(){let csv='Store,Location,'+CONS_KEYS.map(c=>c+' (ct)').join(',')+',Total\n';state.stores.filter(s=>s.status==='Live'&&state.fc[s.code]).forEach(s=>{const row=[s.code,`"${s.area||''}"`];let t=0;CONS_KEYS.forEach(c=>{const r=calcReplen(s.code,c).ct;row.push(r);t+=r});row.push(t);csv+=row.join(',')+'\n'});const b=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`replen_${new Date().toISOString().slice(0,10)}.csv`;a.click()}
+
+function renderCfg(){let h='';Object.keys(state.cons).forEach(k=>{const c=state.cons[k];h+=`<div class="cfg-card"><h4><span>${c.icon} ${k}</span><span class="type-tag">${c.type}</span></h4><div class="cfg-field"><label>Trend</label><input type="number" step="0.0001" id="tr_${k}" value="${c.trend}"></div><div class="cfg-field"><label>Units/Box</label><input type="number" id="un_${k}" value="${c.units}"></div><div class="cfg-field"><label>Boxes/Pallet</label><input type="number" id="bx_${k}" value="${c.box}"></div></div>`});document.getElementById('cfgBox').innerHTML=h;document.getElementById('bufMul').value=state.buffer;document.getElementById('upo').value=state.upo}
+async function saveCfg(){
+  Object.keys(state.cons).forEach(k=>{state.cons[k].trend=+document.getElementById('tr_'+k).value;state.cons[k].units=+document.getElementById('un_'+k).value;state.cons[k].box=+document.getElementById('bx_'+k).value});
+  await saveSettingCloud('cons',state.cons);
+  toast('Config saved');render();
+}
+function saveBuf(){state.buffer=+document.getElementById('bufMul').value||1.3;saveSettingCloud('buffer',state.buffer);render()}
+function saveUpo(){state.upo=+document.getElementById('upo').value||8.58;saveSettingCloud('upo',state.upo);render()}
+
+function exportAll(){const b=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`anow_${new Date().toISOString().slice(0,10)}.json`;a.click()}
+
+// ============================================
+// EXCEL PARSER (نفس الأصل)
+// ============================================
+function normStr(s){return String(s==null?'':s).trim()}
+function normKey(s){return normStr(s).toLowerCase().replace(/[^a-z0-9]/g,'')}
+function toNum(v){
+  if(v==null||v==='')return null;
+  if(typeof v==='number')return isNaN(v)?null:v;
+  const s=String(v).trim();
+  if(!s)return null;
+  if(/^(error|#n\/?a|na|#ref|#div|#value|#name|#null)/i.test(s))return null;
+  if(s==='-'||s==='- 0'||s==='—')return null;
+  if(s.endsWith('%')){const p=parseFloat(s.replace(/[%,\s]/g,''));return isNaN(p)?null:p/100}
+  const cleaned=s.replace(/,/g,'').replace(/\s/g,'').replace(/[()]/g,'');
+  const num=parseFloat(cleaned);
+  return isNaN(num)?null:num;
+}
+function isStoreCode(s){return /^Q[A-Z]{1,3}\d+[A-Z]?$/i.test(normStr(s).trim())}
+function normalizeStatus(raw){const s=normKey(raw);if(!s)return'Live';if(['live','launched','active','open','running'].includes(s))return'Live';return'Not Live'}
+
+function resolveConsKey(header){
+  if(!header)return null;
+  const k=normKey(header);
+  if(!k)return null;
+  if(/sp[o0][o0]/.test(k))return'SPOOLabel';
+  if(k==='label'||k==='labels')return'SPOOLabel';
+  if(k.includes('sealtape')||(k.includes('seal')&&k.includes('tape')))return'SealTape';
+  if(k.includes('bubble')){
+    if(k.endsWith('l')||k.includes('large'))return'BubbleWrap-L';
+    if(k.endsWith('m')||k.includes('medium'))return'BubbleWrap-M';
+    if(k.endsWith('s')||k.includes('small'))return'BubbleWrap-S';
+  }
+  if(k.includes('paperbag')||k.includes('brownbag')){
+    if(k.endsWith('l')||k.includes('large'))return'PaperBag-L';
+    if(k.endsWith('m')||k.includes('medium'))return'PaperBag-M';
+  }
+  if(k.includes('icecream'))return'IceCreamBags';
+  if(k.includes('gelpad')||k.includes('gelpack'))return'GelPads';
+  return null;
+}
+
+function sheetToRows(wb,name){if(!name||!wb.Sheets[name])return[];return XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:null,raw:true})}
+
+function parseCapacity(rows,name,log){
+  let hdrIdx=-1;
+  for(let i=0;i<Math.min(rows.length,15);i++){
+    if(!rows[i])continue;
+    const cells=rows[i].map(c=>normKey(c));
+    if(cells.includes('storecode')||cells.includes('store')){hdrIdx=i;break}
+  }
+  if(hdrIdx===-1){log('warn',`<b>${name}</b>: no header`);return 0}
+  const hdr=rows[hdrIdx].map(c=>normKey(c));
+  const codeCol=hdr.findIndex(c=>c==='storecode'||c==='store');
+  const areaCol=hdr.findIndex(c=>c==='area'||c==='location');
+  const statusCol=hdr.findIndex(c=>c==='status');
+  const launchCol=hdr.findIndex(c=>c==='oblaunch'||c==='launch');
+  const capCol=hdr.findIndex(c=>c==='storecapacity'||c==='capacity');
+  let updated=0,added=0;
+  for(let i=hdrIdx+1;i<rows.length;i++){
+    const row=rows[i];if(!row)continue;
+    const code=normStr(row[codeCol]).toUpperCase();
+    if(!isStoreCode(code))continue;
+    const area=areaCol>=0?normStr(row[areaCol]):'';
+    const status=normalizeStatus(statusCol>=0?row[statusCol]:'Live');
+    const launch=launchCol>=0?normStr(row[launchCol]):'';
+    const cap=capCol>=0?toNum(row[capCol]):null;
+    const ex=state.stores.find(s=>s.code===code);
+    if(ex){if(area)ex.area=area;ex.status=status;ex.launch=launch;if(cap!=null)ex.cap=cap;updated++}
+    else{state.stores.push({code,area:area||'(no area)',status,launch,cap:cap||0});added++}
+  }
+  log('ok',`<b>${name}</b>: ${updated} updated, ${added} added`);
+  return updated+added;
+}
+
+function parseForecast(rows,name,log){
+  let hdrIdx=-1,isOrders=false,isUnits=false;
+  for(let i=0;i<Math.min(rows.length,10);i++){
+    if(!rows[i])continue;
+    const cells=rows[i].map(c=>normKey(c));
+    const hasStore=cells.includes('store')||cells.includes('storecode');
+    const hasOrders=cells.includes('totalorders');
+    const hasUnits=cells.includes('totalunits');
+    if(hasStore&&(hasOrders||hasUnits)){hdrIdx=i;isOrders=hasOrders;isUnits=hasUnits;break}
+  }
+  if(hdrIdx===-1)return 0;
+  const hdr=rows[hdrIdx].map(c=>normKey(c));
+  const codeCol=hdr.findIndex(c=>c==='store'||c==='storecode');
+  const totalCol=hdr.findIndex(c=>c==='totalorders'||c==='totalunits');
+  if(codeCol===-1||totalCol===-1)return 0;
+  const target=isUnits?'units':'orders';
+  let count=0;
+  const newCodes=new Set();
+  for(let i=hdrIdx+1;i<rows.length;i++){
+    const row=rows[i];if(!row)continue;
+    const code=normStr(row[codeCol]).toUpperCase();
+    if(!isStoreCode(code))continue;
+    const v=toNum(row[totalCol]);
+    if(v==null||v<=0)continue;
+    if(target==='orders')state.fc[code]=v;
+    else state.fcUnits[code]=v;
+    count++;newCodes.add(code);
+  }
+  newCodes.forEach(code=>{
+    if(!state.stores.find(s=>s.code===code)){
+      state.stores.push({code,area:'(Auto-added)',status:'Live',launch:'',cap:0});
+      if(!state.stock[code])state.stock[code]={};
+    }
+  });
+  log('ok',`<b>${name}</b> [${target}]: ${count} stores`);
+  return count;
+}
+
+function parseStock(rows,name,log){
+  let hdrIdx=-1;
+  for(let i=0;i<Math.min(rows.length,10);i++){
+    if(!rows[i])continue;
+    const consCount=rows[i].filter(c=>resolveConsKey(c)).length;
+    if(consCount>=3){hdrIdx=i;break}
+  }
+  if(hdrIdx===-1){log('warn',`<b>${name}</b>: no consumable header found`);return 0}
+  const hdr=rows[hdrIdx];
+  const codeCol=0;
+  const colMap={};
+  const mapped=[],skipped=[];
+  hdr.forEach((h,i)=>{
+    if(i===codeCol||!h)return;
+    const ck=resolveConsKey(h);
+    if(ck){colMap[i]=ck;mapped.push(`${normStr(h)}→${ck}`)}
+    else{skipped.push(normStr(h))}
+  });
+  if(mapped.length)log('info',`<b>${name}</b> mapped: ${mapped.map(s=>`<code>${s}</code>`).join(', ')}`);
+  if(skipped.length)log('warn',`Skipped: ${skipped.map(s=>`<code>${s}</code>`).join(', ')}`);
+  let updated=0;
+  for(let i=hdrIdx+1;i<rows.length;i++){
+    const row=rows[i];if(!row)continue;
+    const code=normStr(row[codeCol]).toUpperCase();
+    if(!isStoreCode(code))continue;
+    if(!state.stores.find(s=>s.code===code)){
+      state.stores.push({code,area:'(Auto-added)',status:'Live',launch:'',cap:0});
+    }
+    if(!state.stock[code])state.stock[code]={};
+    const tempStock={};
+    Object.entries(colMap).forEach(([ciStr,ck])=>{
+      const ci=+ciStr;
+      const v=toNum(row[ci]);
+      if(v==null)return;
+      const key=stockKey(ck);
+      tempStock[key]=(tempStock[key]||0)+v;
+    });
+    Object.entries(tempStock).forEach(([k,v])=>{state.stock[code][k]=v});
+    updated++;
+  }
+  log('ok',`<b>${name}</b>: ${updated} stores`);
+  return updated;
+}
+
+function parseTrends(rows,name,log){
+  let updated=0;
+  for(const row of rows){
+    if(!row)continue;
+    for(let ci=0;ci<row.length;ci++){
+      const cell=normStr(row[ci]);
+      if(!cell)continue;
+      const ck=resolveConsKey(cell);
+      if(!ck)continue;
+      const trendVal=toNum(row[ci+2]);
+      let unitsVal=row[ci+3];
+      if(typeof unitsVal==='string'){const m=unitsVal.match(/\d+/g);unitsVal=m?parseFloat(m[m.length-1]):null}
+      else unitsVal=toNum(unitsVal);
+      const boxVal=toNum(row[ci+4]);
+      if(state.cons[ck]&&trendVal!=null&&trendVal>0&&trendVal<100){
+        state.cons[ck].trend=trendVal;
+        if(unitsVal!=null&&unitsVal>0)state.cons[ck].units=unitsVal;
+        if(boxVal!=null&&boxVal>0)state.cons[ck].box=boxVal;
+        updated++;
+      }
+      break;
+    }
+  }
+  if(updated>0)log('ok',`<b>${name}</b> [Trends]: ${updated} consumables`);
+}
+
+async function importExcel(e){
+  const f=e.target.files[0];if(!f)return;
+  const report=[];
+  const log=(t,m)=>report.push(`<div class="${t}">${t==='ok'?'✓':t==='warn'?'⚠':t==='info'?'ℹ':'✗'} ${m}</div>`);
+  const r=new FileReader();
+  r.onload=async ev=>{
+    try{
+      const data=new Uint8Array(ev.target.result);
+      const wb=XLSX.read(data,{type:'array'});
+      log('info',`<b>📊 Workbook loaded</b> — ${wb.SheetNames.length} sheets`);
+      log('info',`Sheets: ${wb.SheetNames.map(n=>`<code>${n}</code>`).join(', ')}`);
+      
+      for(const sheetName of wb.SheetNames){
+        const rows=sheetToRows(wb,sheetName);
+        if(!rows.length)continue;
+        const lower=sheetName.toLowerCase();
+        if(lower.includes('capacity')){
+          parseCapacity(rows,sheetName,log);
+          parseTrends(rows,sheetName,log);
+          continue;
+        }
+        if(lower.includes('stock')||lower==='stockcount'){
+          parseStock(rows,sheetName,log);
+          continue;
+        }
+        if(lower.includes('forecast')||lower==='orders'||lower==='units'||lower==='untis'){
+          parseForecast(rows,sheetName,log);
+          continue;
+        }
+        if(lower.includes('doc')||lower.includes('paper bag')||lower.includes('seal tape')||lower.includes('sp00')||lower.includes('bubble pouches')){
+          log('info',`<code>${sheetName}</code> → skipped (DOC analysis sheet)`);
+          continue;
+        }
+        if(parseForecast(rows,sheetName,log)>0)continue;
+        parseStock(rows,sheetName,log);
+      }
+      
+      for(const sheetName of wb.SheetNames){
+        const lower=sheetName.toLowerCase();
+        if(lower.includes('capacity')||lower.includes('stock')||lower.includes('doc'))continue;
+        if(lower.includes('forecast')||lower==='orders'||lower==='units'||lower==='untis')continue;
+        const rows=sheetToRows(wb,sheetName);
+        parseForecast(rows,sheetName,log);
+      }
+      
+      state.stkDate=new Date().toISOString().slice(0,10);
+      
+      log('info',`<b>☁️ Syncing to cloud...</b>`);
+      await bulkSyncAll();
+      
+      log('ok',`<b>✅ Final state</b>:`);
+      log('ok',`&nbsp;&nbsp;• ${state.stores.length} stores`);
+      log('ok',`&nbsp;&nbsp;• ${Object.keys(state.fc).length} forecasts (orders)`);
+      log('ok',`&nbsp;&nbsp;• ${Object.keys(state.fcUnits).length} forecasts (units)`);
+      log('ok',`&nbsp;&nbsp;• ${Object.keys(state.stock).length} stock entries`);
+      
+      docSelected=null;
+      render();
+      
+      toast(`✅ ${state.stores.length} stores synced to cloud`);
+      document.getElementById('mdImportTitle').textContent='📊 Import Report';
+      document.getElementById('importReport').innerHTML=report.join('');
+      document.getElementById('mdImport').classList.add('show');
+    }catch(err){
+      console.error(err);
+      log('err',`<b>Failed</b>: ${err.message}`);
+      document.getElementById('importReport').innerHTML=report.join('');
+      document.getElementById('mdImport').classList.add('show');
+      toast('Failed','error');
+    }
+  };
+  r.onerror=()=>toast('Cannot read','error');
+  r.readAsArrayBuffer(f);
+  e.target.value='';
+}
+
+async function importForecastExcel(e){
+  const f=e.target.files[0];if(!f)return;
+  const report=[];
+  const log=(t,m)=>report.push(`<div class="${t}">${t==='ok'?'✓':t==='warn'?'⚠':t==='info'?'ℹ':'✗'} ${m}</div>`);
+  const r=new FileReader();
+  r.onload=async ev=>{
+    try{
+      const data=new Uint8Array(ev.target.result);
+      const wb=XLSX.read(data,{type:'array'});
+      log('info',`<b>📊 Forecast workbook loaded</b> — ${wb.SheetNames.length} sheet(s)`);
+      
+      let totalParsed=0;
+      for(const sheetName of wb.SheetNames){
+        const rows=sheetToRows(wb,sheetName);
+        if(!rows.length)continue;
+        const result=parseForecast(rows,sheetName,log);
+        if(result>0)totalParsed++;
+      }
+      
+      if(totalParsed===0){
+        log('err','<b>No forecast data found</b>');
+        toast('No forecast data','error');
+      } else {
+        log('info',`<b>☁️ Syncing to cloud...</b>`);
+        await bulkSyncAll();
+        log('ok',`<b>✅ Done</b>: ${Object.keys(state.fc).length} stores synced`);
+        toast(`✅ Synced to cloud`);
+      }
+      
+      render();
+      document.getElementById('mdImportTitle').textContent='📊 Forecast Import Report';
+      document.getElementById('importReport').innerHTML=report.join('');
+      document.getElementById('mdImport').classList.add('show');
+    }catch(err){
+      console.error(err);
+      log('err',`<b>Failed</b>: ${err.message}`);
+      document.getElementById('importReport').innerHTML=report.join('');
+      document.getElementById('mdImport').classList.add('show');
+      toast('Failed','error');
+    }
+  };
+  r.onerror=()=>toast('Cannot read','error');
+  r.readAsArrayBuffer(f);
+  e.target.value='';
+}
+
+function render(){renderOverview();renderStores();renderStock();renderForecast();renderDOC();renderReplen();renderCfg()}
+
+// ============================================
+// AUTO-START
+// ============================================
+checkSession();
+</script>
+</body>
+</html>
