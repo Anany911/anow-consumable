@@ -272,7 +272,43 @@ tr:last-child td{border-bottom:none}
 .member-info{flex:1;min-width:0}
 .member-email{font-weight:600;font-size:13px}
 .member-meta{font-size:11px;color:var(--text-mut)}
+/* Activity Log */
+.log-entry{display:flex;gap:14px;padding:14px 20px;border-bottom:1px solid var(--border-light);transition:background .15s}
+.log-entry:last-child{border-bottom:none}
+.log-entry:hover{background:var(--surface-hover)}
+.log-icon{width:40px;height:40px;border-radius:8px;display:grid;place-items:center;font-size:18px;flex-shrink:0;background:var(--surface-alt)}
+.log-icon.create{background:var(--success-bg)}
+.log-icon.update{background:var(--warn-bg)}
+.log-icon.delete{background:var(--danger-bg)}
+.log-icon.import{background:var(--info-bg)}
+.log-icon.config{background:#FFF4E0}
+.log-icon.reset{background:#FCE4E4}
+.log-body{flex:1;min-width:0}
+.log-header{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.log-user{font-weight:600;font-size:13px;color:var(--link)}
+.log-action{font-size:11px;font-weight:700;padding:2px 8px;border-radius:3px;letter-spacing:.5px}
+.log-action.create{background:var(--success-bg);color:var(--success)}
+.log-action.update{background:var(--warn-bg);color:var(--warn)}
+.log-action.delete{background:var(--danger-bg);color:var(--danger)}
+.log-action.import{background:var(--info-bg);color:var(--info)}
+.log-action.config{background:#FFF4E0;color:var(--amz-orange-dark)}
+.log-action.reset{background:#FCE4E4;color:var(--danger)}
+.log-entity{font-weight:600;font-size:13px;color:var(--text)}
+.log-time{font-size:11px;color:var(--text-mut);margin-left:auto;white-space:nowrap}
+.log-detail{font-size:12px;color:var(--text-mut);margin-top:4px;line-height:1.5}
+.log-change{display:inline-flex;align-items:center;gap:6px;background:var(--surface-alt);padding:4px 10px;border-radius:4px;margin-top:4px;font-size:12px;font-family:monospace}
+.log-change .old{color:var(--danger);text-decoration:line-through}
+.log-change .arrow{color:var(--text-dim)}
+.log-change .new{color:var(--success);font-weight:600}
+.log-meta{font-size:11px;color:var(--text-dim);margin-top:4px}
 
+/* History Modal */
+.history-list{max-height:400px;overflow-y:auto;border:1px solid var(--border-light);border-radius:6px}
+.history-entry{padding:10px 14px;border-bottom:1px solid var(--border-light);font-size:12px}
+.history-entry:last-child{border-bottom:none}
+.history-entry:hover{background:var(--surface-hover)}
+.history-time{color:var(--text-mut);font-size:11px}
+.history-change{margin-top:4px}
 @media(max-width:768px){.topnav-inner{padding:0 12px}.page{padding:14px}.brand-sub{display:none}.nav-divider{display:none}.user-info{display:none}.page-head h1{font-size:20px}}
 </style>
 </head>
@@ -381,6 +417,7 @@ tr:last-child td{border-bottom:none}
       <button class="tab" data-tab="stock">📦 Stock Count</button>
       <button class="tab" data-tab="forecast">📈 Forecast</button>
       <button class="tab" data-tab="config">⚙️ Configuration</button>
+      <button class="tab" data-tab="activity">📜 Activity Log</button>
       <button class="tab admin-only" data-tab="admin" id="adminTab" style="display:none">👑 Admin</button>
     </div>
   </div>
@@ -536,6 +573,55 @@ tr:last-child td{border-bottom:none}
   </div>
 </section>
 
+
+<!-- ACTIVITY LOG -->
+<section class="pane" id="activity">
+  <div class="breadcrumb"><a>Operations</a><span class="sep">›</span><span>Activity Log</span></div>
+  <div class="page-head">
+    <div><h1>📜 Activity Log</h1><p>All changes in <span id="logWsName">this workspace</span></p></div>
+    <div class="page-actions">
+      <button class="btn" onclick="renderActivity()">🔄 Refresh</button>
+      <button class="btn btn-cta" onclick="exportActivityCSV()">📥 Export CSV</button>
+    </div>
+  </div>
+  
+  <!-- Stats Cards -->
+  <div class="kpi-grid" id="logStats"></div>
+  
+  <div class="card">
+    <div class="filters">
+      <select class="select" id="logActionFilter" onchange="renderActivity()" style="min-width:150px">
+        <option value="">All Actions</option>
+        <option value="create">🟢 Created</option>
+        <option value="update">🟡 Updated</option>
+        <option value="delete">🔴 Deleted</option>
+        <option value="bulk_import">📊 Imported</option>
+        <option value="config_change">⚙️ Config</option>
+        <option value="workspace_reset">🗑️ Reset</option>
+      </select>
+      <select class="select" id="logTypeFilter" onchange="renderActivity()" style="min-width:150px">
+        <option value="">All Types</option>
+        <option value="store">🏪 Store</option>
+        <option value="stock">📦 Stock</option>
+        <option value="forecast">📈 Forecast</option>
+        <option value="settings">⚙️ Settings</option>
+        <option value="consumable">🛍️ Consumable</option>
+        <option value="workspace">🌍 Workspace</option>
+      </select>
+      <select class="select" id="logDaysFilter" onchange="renderActivity()" style="min-width:150px">
+        <option value="1">Last 24 hours</option>
+        <option value="7" selected>Last 7 days</option>
+        <option value="30">Last 30 days</option>
+        <option value="90">Last 90 days</option>
+        <option value="">All time</option>
+      </select>
+      <div class="search"><input class="input" type="text" id="logSearch" placeholder="Search store/user..." oninput="renderActivity()"></div>
+      <div style="margin-left:auto;color:var(--text-mut);font-size:12px;font-weight:500" id="logCount"></div>
+    </div>
+    <div id="logList"></div>
+  </div>
+</section>  
+  
 <!-- ADMIN PANEL -->
 <section class="pane" id="admin">
   <div class="breadcrumb"><a>Operations</a><span class="sep">›</span><span>Admin Panel</span></div>
@@ -1354,7 +1440,7 @@ function n(x,d=0){return x==null||isNaN(x)?'—':Number(x).toLocaleString(undefi
 function docColor(d){if(!d||d<1)return{bg:'#FCE4E4',fg:'#B12704',br:'#F5B7B1'};if(d<3)return{bg:'#FFF3CD',fg:'#B66A00',br:'#F5D99C'};if(d<7)return{bg:'#D5F5E3',fg:'#067D62',br:'#A9D5BE'};return{bg:'#D9EDF7',fg:'#146EB4',br:'#AED6F1'}}
 function docPill(d){if(!d||isNaN(d)||d===0)return'<span class="pill pill-nl">NO DATA</span>';if(d<1)return`<span class="pill pill-crit">${d.toFixed(1)}d</span>`;if(d<3)return`<span class="pill pill-low">${d.toFixed(1)}d</span>`;if(d<7)return`<span class="pill pill-ok">${d.toFixed(1)}d</span>`;return`<span class="pill pill-hi">${d.toFixed(1)}d</span>`}
 
-document.querySelectorAll('.tab').forEach(el=>{el.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));document.getElementById(el.dataset.tab).classList.add('active');window.scrollTo(0,0);if(el.dataset.tab==='admin')renderAdmin()}});
+document.querySelectorAll('.tab').forEach(el=>{el.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));document.getElementById(el.dataset.tab).classList.add('active');window.scrollTo(0,0);if(el.dataset.tab==='admin')renderAdmin();if(el.dataset.tab==='activity')renderActivity()}});
 function renderOverview(){
   const live=state.stores.filter(s=>s.status==='Live');
   let crit=0,low=0,ok=0,hi=0,totalRep=0,docSum=0,docCount=0;
@@ -1578,7 +1664,187 @@ async function saveUpo(){
 }
 
 function exportAll(){const wsName=activeWorkspace?.name||'workspace';const dump={workspace:activeWorkspace,...state};const b=new Blob([JSON.stringify(dump,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`anow_${wsName}_${new Date().toISOString().slice(0,10)}.json`;a.click()}
+// ACTIVITY LOG RENDERING
+// ============================================
 
+let cachedLogs=[];
+
+async function renderActivity(){
+  if(!activeWorkspace)return;
+  
+  document.getElementById('logWsName').innerHTML=`${activeWorkspace.flag||'🌍'} <b>${activeWorkspace.name}</b>`;
+  
+  // Show loading
+  document.getElementById('logList').innerHTML='<div class="empty"><div class="ic">⏳</div><p>Loading activity...</p></div>';
+  
+  // Get filters
+  const action=document.getElementById('logActionFilter')?.value||'';
+  const entityType=document.getElementById('logTypeFilter')?.value||'';
+  const daysBack=document.getElementById('logDaysFilter')?.value;
+  const searchTerm=(document.getElementById('logSearch')?.value||'').toLowerCase();
+  
+  const filters={};
+  if(action)filters.action=action;
+  if(entityType)filters.entityType=entityType;
+  if(daysBack)filters.daysBack=parseInt(daysBack);
+  
+  // Load logs
+  cachedLogs=await loadActivityLog(filters);
+  
+  // Apply search filter
+  let filtered=cachedLogs;
+  if(searchTerm){
+    filtered=cachedLogs.filter(log=>
+      (log.entity_id||'').toLowerCase().includes(searchTerm)||
+      (log.user_email||'').toLowerCase().includes(searchTerm)||
+      (log.field_name||'').toLowerCase().includes(searchTerm)
+    );
+  }
+  
+  // Render stats
+  renderLogStats(cachedLogs);
+  
+  // Update count
+  document.getElementById('logCount').textContent=`Showing ${filtered.length} entries`;
+  
+  // Render entries
+  if(filtered.length===0){
+    document.getElementById('logList').innerHTML='<div class="empty"><div class="ic">📭</div><p>No activity matches your filters</p></div>';
+    return;
+  }
+  
+  let html='';
+  filtered.forEach(log=>{
+    html+=renderLogEntry(log);
+  });
+  document.getElementById('logList').innerHTML=html;
+}
+
+function renderLogStats(logs){
+  const stats={create:0,update:0,delete:0,import:0,total:logs.length};
+  const userSet=new Set();
+  logs.forEach(l=>{
+    userSet.add(l.user_email);
+    if(l.action==='create')stats.create++;
+    else if(l.action==='update')stats.update++;
+    else if(l.action==='delete')stats.delete++;
+    else if(l.action==='bulk_import')stats.import++;
+  });
+  
+  document.getElementById('logStats').innerHTML=`
+    <div class="kpi navy"><div class="kpi-head"><div class="kpi-icon">📊</div></div><div class="kpi-label">Total Events</div><div class="kpi-value">${stats.total}</div></div>
+    <div class="kpi green"><div class="kpi-head"><div class="kpi-icon">🟢</div></div><div class="kpi-label">Created</div><div class="kpi-value">${stats.create}</div></div>
+    <div class="kpi yellow"><div class="kpi-head"><div class="kpi-icon">🟡</div></div><div class="kpi-label">Updated</div><div class="kpi-value">${stats.update}</div></div>
+    <div class="kpi red"><div class="kpi-head"><div class="kpi-icon">🔴</div></div><div class="kpi-label">Deleted</div><div class="kpi-value">${stats.delete}</div></div>
+    <div class="kpi blue"><div class="kpi-head"><div class="kpi-icon">📥</div></div><div class="kpi-label">Imports</div><div class="kpi-value">${stats.import}</div></div>
+    <div class="kpi orange"><div class="kpi-head"><div class="kpi-icon">👥</div></div><div class="kpi-label">Active Users</div><div class="kpi-value">${userSet.size}</div></div>`;
+}
+
+function renderLogEntry(log){
+  const icon=getActionIcon(log.action);
+  const actionLabel=getActionLabel(log.action);
+  const entityIcon=getEntityIcon(log.entity_type);
+  const time=formatLogTime(log.created_at);
+  const fullTime=new Date(log.created_at).toLocaleString();
+  
+  const iconClass={
+    'create':'create','update':'update','delete':'delete',
+    'bulk_import':'import','config_change':'config','workspace_reset':'reset'
+  }[log.action]||'';
+  
+  const actionClass={
+    'create':'create','update':'update','delete':'delete',
+    'bulk_import':'import','config_change':'config','workspace_reset':'reset'
+  }[log.action]||'';
+  
+  const userInitials=(log.user_email||'??').slice(0,2).toUpperCase();
+  
+  // Build detail based on action
+  let detail='';
+  
+  if(log.action==='create'&&log.entity_type==='store'&&log.new_value){
+    const v=parseJsonSafe(log.new_value);
+    detail=`<div class="log-detail">📍 ${v.area||'—'} • Status: <b>${v.status||'—'}</b> • Capacity: <b>${v.cap||0}</b></div>`;
+  }
+  else if(log.action==='update'&&log.field_name){
+    const oldV=parseJsonSafe(log.old_value);
+    const newV=parseJsonSafe(log.new_value);
+    if(log.entity_type==='stock'){
+      const consName=log.metadata?.consumable||log.field_name;
+      detail=`<div class="log-change"><span class="old">${formatVal(oldV)}</span><span class="arrow">→</span><span class="new">${formatVal(newV)}</span> <span style="color:var(--text-mut);margin-left:6px">cartons of <b>${consName}</b></span></div>`;
+    } else {
+      detail=`<div class="log-change">Field: <b>${log.field_name}</b> <span class="old">${formatVal(oldV)}</span><span class="arrow">→</span><span class="new">${formatVal(newV)}</span></div>`;
+    }
+  }
+  else if(log.action==='update'&&!log.field_name&&log.metadata?.changedFields){
+    detail=`<div class="log-detail">Changed: ${log.metadata.changedFields.map(f=>`<span class="pill pill-low">${f}</span>`).join(' ')}</div>`;
+  }
+  else if(log.action==='delete'){
+    detail=`<div class="log-detail">Removed from network</div>`;
+  }
+  else if(log.action==='bulk_import'&&log.metadata){
+    detail=`<div class="log-detail">📊 ${log.metadata.stores||0} stores • ${log.metadata.forecasts||0} forecasts • ${log.metadata.stock||0} stock entries</div>`;
+  }
+  else if(log.action==='config_change'){
+    detail=`<div class="log-detail">⚙️ Configuration updated: <b>${log.field_name||'multiple fields'}</b></div>`;
+  }
+  else if(log.action==='workspace_reset'){
+    const v=parseJsonSafe(log.old_value);
+    detail=`<div class="log-detail">⚠️ Wiped ${v?.stores||0} stores, ${v?.forecasts||0} forecasts, ${v?.stock||0} stock entries</div>`;
+  }
+  
+  return `<div class="log-entry">
+    <div class="log-icon ${iconClass}">${icon}</div>
+    <div class="log-body">
+      <div class="log-header">
+        <span class="log-user">${log.user_email||'Unknown'}</span>
+        <span class="log-action ${actionClass}">${actionLabel}</span>
+        ${log.entity_type?`<span style="color:var(--text-mut);font-size:12px">${entityIcon} ${log.entity_type}</span>`:''}
+        ${log.entity_id?`<span class="log-entity">${log.entity_id}</span>`:''}
+        <span class="log-time" title="${fullTime}">${time}</span>
+      </div>
+      ${detail}
+    </div>
+  </div>`;
+}
+
+function parseJsonSafe(val){
+  if(val==null)return null;
+  if(typeof val==='object')return val;
+  try{return JSON.parse(val)}catch(e){return val}
+}
+
+function formatVal(v){
+  if(v==null||v==='')return '—';
+  if(typeof v==='number')return v.toLocaleString();
+  if(typeof v==='object')return JSON.stringify(v).slice(0,30);
+  return String(v);
+}
+
+function exportActivityCSV(){
+  if(!cachedLogs.length){toast('No data to export','error');return}
+  const wsName=activeWorkspace?.name||'workspace';
+  let csv='Timestamp,User,Action,Entity Type,Entity ID,Field,Old Value,New Value\n';
+  cachedLogs.forEach(log=>{
+    const row=[
+      new Date(log.created_at).toLocaleString(),
+      log.user_email||'',
+      log.action||'',
+      log.entity_type||'',
+      log.entity_id||'',
+      log.field_name||'',
+      JSON.stringify(parseJsonSafe(log.old_value)||'').replace(/"/g,'""'),
+      JSON.stringify(parseJsonSafe(log.new_value)||'').replace(/"/g,'""')
+    ];
+    csv+=row.map(v=>`"${v}"`).join(',')+'\n';
+  });
+  const b=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(b);
+  a.download=`activity_${wsName}_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  toast('✓ Exported');
+}
 // ============================================
 // ADMIN PANEL
 // ============================================
@@ -2069,7 +2335,7 @@ async function importForecastExcel(e){
   e.target.value='';
 }
 
-function render(){renderOverview();renderStores();renderStock();renderForecast();renderDOC();renderReplen();renderCfg()}
+function render(){renderOverview();renderStores();renderStock();renderForecast();renderDOC();renderReplen();renderCfg();/* activity log loaded on demand */}
 
 // ============================================
 // AUTO-START
