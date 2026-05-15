@@ -237,6 +237,10 @@ tr:last-child td{border-bottom:none}
 .login-btn:disabled{opacity:.6;cursor:not-allowed}
 .login-toggle{text-align:center;margin-top:16px;font-size:13px;color:var(--text-mut)}
 .login-toggle a{color:var(--link);cursor:pointer;font-weight:600}
+.login-link{display:block;text-align:center;margin-top:8px;font-size:12px;color:var(--link);cursor:pointer;font-weight:500}
+.login-link:hover{color:var(--link-hover);text-decoration:underline}
+.login-success{background:var(--success-bg);color:var(--success);padding:10px;border-radius:6px;font-size:12px;margin-bottom:14px;display:none}
+.login-success.show{display:block}  
 .login-error{background:var(--danger-bg);color:var(--danger);padding:10px;border-radius:6px;font-size:12px;margin-bottom:14px;display:none}
 .login-error.show{display:block}
 .sync-indicator{position:fixed;bottom:20px;right:20px;background:#fff;border:1px solid var(--border);border-radius:20px;padding:8px 14px;font-size:12px;box-shadow:var(--shadow);display:none;align-items:center;gap:8px;z-index:500}
@@ -275,8 +279,9 @@ tr:last-child td{border-bottom:none}
 <body>
 
 <!-- LOGIN SCREEN -->
+<!-- LOGIN SCREEN -->
 <div class="login-overlay" id="loginScreen">
-  <div class="login-box">
+  <div class="login-box" id="loginBox">
     <div class="login-logo">
       <div class="l1">Anow<span>.</span></div>
       <div class="l2">OPERATIONS</div>
@@ -284,19 +289,39 @@ tr:last-child td{border-bottom:none}
     <h2 class="login-title" id="loginTitle">Sign In</h2>
     <p class="login-sub" id="loginSub">Welcome back to Consumables Operations</p>
     <div class="login-error" id="loginError"></div>
-    <div class="login-field">
+    <div class="login-success" id="loginSuccess"></div>
+    
+    <!-- Email/Password Fields (visible in Sign In, Sign Up, Forgot) -->
+    <div class="login-field" id="emailField">
       <label>Email</label>
       <input type="email" id="loginEmail" placeholder="you@company.com">
     </div>
-    <div class="login-field">
+    
+    <!-- Password Field (hidden in Forgot mode) -->
+    <div class="login-field" id="passField">
       <label>Password</label>
       <input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')handleAuth()">
     </div>
-    <button class="login-btn" id="loginBtn" onclick="handleAuth()">Sign In</button>
-    <div class="login-toggle">
-      <span id="toggleText">Don't have an account?</span>
-      <a id="toggleLink" onclick="toggleAuthMode()">Sign Up</a>
+    
+    <!-- New Password Field (only in Reset mode) -->
+    <div class="login-field" id="newPassField" style="display:none">
+      <label>New Password</label>
+      <input type="password" id="newPass" placeholder="At least 6 characters" onkeydown="if(event.key==='Enter')handleAuth()">
     </div>
+    
+    <button class="login-btn" id="loginBtn" onclick="handleAuth()">Sign In</button>
+    
+    <!-- Forgot Password Link (only in Sign In mode) -->
+    <a class="login-link" id="forgotLink" onclick="setAuthMode('forgot')">Forgot password?</a>
+    
+    <!-- Toggle Sign In / Sign Up (hidden in forgot mode) -->
+    <div class="login-toggle" id="toggleSection">
+      <span id="toggleText">Don't have an account?</span>
+      <a id="toggleLink" onclick="setAuthMode(authMode==='signin'?'signup':'signin')">Sign Up</a>
+    </div>
+    
+    <!-- Back to Sign In Link (only in forgot/reset mode) -->
+    <a class="login-link" id="backToLogin" style="display:none" onclick="setAuthMode('signin')">← Back to Sign In</a>
   </div>
 </div>
 
@@ -636,7 +661,8 @@ let currentUser = null;
 let currentProfile = null;     // user_profiles row
 let myWorkspaces = [];         // workspaces user has access to
 let activeWorkspace = null;    // currently selected workspace
-let isSignUpMode = false;
+let authMode = 'signin'; // 'signin' | 'signup' | 'forgot' | 'reset'
+let isSignUpMode = false; // backward compatibility
 let saveTimers = {};
 let allUsers = [];             // for admin panel
 let allWorkspaces = [];        // for admin panel
@@ -659,35 +685,160 @@ function getMyRole(wsId){
 // ============================================
 // AUTHENTICATION
 // ============================================
-function toggleAuthMode(){
-  isSignUpMode=!isSignUpMode;
-  document.getElementById('loginTitle').textContent=isSignUpMode?'Create Account':'Sign In';
-  document.getElementById('loginSub').textContent=isSignUpMode?'Join your team operations':'Welcome back to Consumables Operations';
-  document.getElementById('loginBtn').textContent=isSignUpMode?'Create Account':'Sign In';
-  document.getElementById('toggleText').textContent=isSignUpMode?'Already have an account?':"Don't have an account?";
-  document.getElementById('toggleLink').textContent=isSignUpMode?'Sign In':'Sign Up';
-  document.getElementById('loginError').classList.remove('show');
+
+function setAuthMode(mode){
+  authMode=mode;
+  isSignUpMode=(mode==='signup');
+  
+  const titleEl=document.getElementById('loginTitle');
+  const subEl=document.getElementById('loginSub');
+  const btnEl=document.getElementById('loginBtn');
+  const toggleSection=document.getElementById('toggleSection');
+  const forgotLink=document.getElementById('forgotLink');
+  const backToLogin=document.getElementById('backToLogin');
+  const passField=document.getElementById('passField');
+  const newPassField=document.getElementById('newPassField');
+  const emailField=document.getElementById('emailField');
+  const errEl=document.getElementById('loginError');
+  const successEl=document.getElementById('loginSuccess');
+  
+  errEl.classList.remove('show');
+  successEl.classList.remove('show');
+  
+  // Reset visibility
+  toggleSection.style.display='block';
+  forgotLink.style.display='block';
+  backToLogin.style.display='none';
+  passField.style.display='block';
+  newPassField.style.display='none';
+  emailField.style.display='block';
+  
+  if(mode==='signin'){
+    titleEl.textContent='Sign In';
+    subEl.textContent='Welcome back to Consumables Operations';
+    btnEl.textContent='Sign In';
+    document.getElementById('toggleText').textContent="Don't have an account?";
+    document.getElementById('toggleLink').textContent='Sign Up';
+  }
+  else if(mode==='signup'){
+    titleEl.textContent='Create Account';
+    subEl.textContent='Join your team operations';
+    btnEl.textContent='Create Account';
+    forgotLink.style.display='none';
+    document.getElementById('toggleText').textContent='Already have an account?';
+    document.getElementById('toggleLink').textContent='Sign In';
+  }
+  else if(mode==='forgot'){
+    titleEl.textContent='Forgot Password?';
+    subEl.textContent='Enter your email to receive a reset link';
+    btnEl.textContent='Send Reset Link';
+    toggleSection.style.display='none';
+    forgotLink.style.display='none';
+    backToLogin.style.display='block';
+    passField.style.display='none';
+  }
+  else if(mode==='reset'){
+    titleEl.textContent='Set New Password';
+    subEl.textContent='Enter your new password';
+    btnEl.textContent='Update Password';
+    toggleSection.style.display='none';
+    forgotLink.style.display='none';
+    emailField.style.display='none';
+    passField.style.display='none';
+    newPassField.style.display='block';
+  }
 }
 
+// Backward compatibility
+function toggleAuthMode(){
+  setAuthMode(authMode==='signin'?'signup':'signin');
+}
+
+
 async function handleAuth(){
+  const errEl=document.getElementById('loginError');
+  const successEl=document.getElementById('loginSuccess');
+  const btn=document.getElementById('loginBtn');
+  
+  errEl.classList.remove('show');
+  successEl.classList.remove('show');
+  
+  // ============================================
+  // FORGOT PASSWORD MODE
+  // ============================================
+  if(authMode==='forgot'){
+    const email=document.getElementById('loginEmail').value.trim();
+    if(!email){errEl.textContent='Please enter your email';errEl.classList.add('show');return}
+    
+    btn.disabled=true;btn.textContent='Sending...';
+    try{
+      const redirectUrl=window.location.origin+window.location.pathname;
+      const {error}=await supabaseClient.auth.resetPasswordForEmail(email,{
+        redirectTo:redirectUrl
+      });
+      if(error)throw error;
+      
+      successEl.innerHTML='✓ Reset link sent! Check your email inbox.<br><small>The link expires in 1 hour.</small>';
+      successEl.classList.add('show');
+      btn.disabled=false;btn.textContent='Send Reset Link';
+    }catch(err){
+      errEl.textContent=err.message||'Failed to send reset email';
+      errEl.classList.add('show');
+      btn.disabled=false;btn.textContent='Send Reset Link';
+    }
+    return;
+  }
+  
+  // ============================================
+  // RESET PASSWORD MODE
+  // ============================================
+  if(authMode==='reset'){
+    const newPass=document.getElementById('newPass').value;
+    if(!newPass||newPass.length<6){errEl.textContent='Password must be at least 6 characters';errEl.classList.add('show');return}
+    
+    btn.disabled=true;btn.textContent='Updating...';
+    try{
+      const {error}=await supabaseClient.auth.updateUser({password:newPass});
+      if(error)throw error;
+      
+      successEl.innerHTML='✓ Password updated! Signing you in...';
+      successEl.classList.add('show');
+      
+      setTimeout(async()=>{
+        const {data}=await supabaseClient.auth.getSession();
+        if(data.session){
+          currentUser=data.session.user;
+          await onLoginSuccess();
+        }
+      },1500);
+    }catch(err){
+      errEl.textContent=err.message||'Failed to update password';
+      errEl.classList.add('show');
+      btn.disabled=false;btn.textContent='Update Password';
+    }
+    return;
+  }
+  
+  // ============================================
+  // SIGN IN / SIGN UP MODE
+  // ============================================
   const email=document.getElementById('loginEmail').value.trim();
   const pass=document.getElementById('loginPass').value;
-  const errEl=document.getElementById('loginError');
-  const btn=document.getElementById('loginBtn');
+  
   if(!email||!pass){errEl.textContent='Please fill all fields';errEl.classList.add('show');return}
   if(pass.length<6){errEl.textContent='Password must be at least 6 characters';errEl.classList.add('show');return}
+  
   btn.disabled=true;btn.textContent='Please wait...';
   try{
     let result;
-    if(isSignUpMode){
+    if(authMode==='signup'){
       result=await supabaseClient.auth.signUp({email,password:pass});
       if(result.error)throw result.error;
       if(result.data.user&&!result.data.session){
-        errEl.textContent='✓ Account created! Check your email to confirm, then sign in.';
-        errEl.style.background='var(--success-bg)';errEl.style.color='var(--success)';
-        errEl.classList.add('show');
-        toggleAuthMode();
-        btn.disabled=false;btn.textContent='Sign In';
+        successEl.innerHTML='✓ Account created! Check your email to confirm, then sign in.';
+        successEl.classList.add('show');
+        setAuthMode('signin');
+        btn.disabled=false;
         return;
       }
     } else {
@@ -700,7 +851,8 @@ async function handleAuth(){
     errEl.style.background='var(--danger-bg)';errEl.style.color='var(--danger)';
     errEl.textContent=err.message||'Authentication failed';
     errEl.classList.add('show');
-    btn.disabled=false;btn.textContent=isSignUpMode?'Create Account':'Sign In';
+    btn.disabled=false;
+    btn.textContent=authMode==='signup'?'Create Account':'Sign In';
   }
 }
 
@@ -854,6 +1006,33 @@ async function logout(){
 }
 
 async function checkSession(){
+  // Check for password recovery URL
+  const hashParams=new URLSearchParams(window.location.hash.substring(1));
+  const accessToken=hashParams.get('access_token');
+  const type=hashParams.get('type');
+  
+  if(type==='recovery'&&accessToken){
+    // User clicked "Reset Password" link in email
+    // Set the session and show reset password screen
+    const refreshToken=hashParams.get('refresh_token');
+    await supabaseClient.auth.setSession({access_token:accessToken,refresh_token:refreshToken});
+    
+    // Clear URL hash
+    window.history.replaceState({},document.title,window.location.pathname);
+    
+    // Show reset mode
+    setAuthMode('reset');
+    return;
+  }
+  
+  // Listen for auth state changes (handles password recovery)
+  supabaseClient.auth.onAuthStateChange((event,session)=>{
+    if(event==='PASSWORD_RECOVERY'){
+      setAuthMode('reset');
+    }
+  });
+  
+  // Normal session check
   const {data}=await supabaseClient.auth.getSession();
   if(data.session){
     currentUser=data.session.user;
