@@ -1,5 +1,4 @@
-
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -48,12 +47,36 @@ a:hover{color:var(--link-hover);text-decoration:underline}
 .user-info{line-height:1.2}
 .user-info .greet{font-size:11px;color:#ccc}
 .user-info .name{font-size:13px;font-weight:700}
+
+/* Workspace Switcher */
+.ws-switcher{position:relative;display:inline-block}
+.ws-current{display:flex;align-items:center;gap:8px;padding:8px 14px;background:rgba(255,153,0,.15);border:1px solid var(--amz-orange);border-radius:6px;color:#fff;cursor:pointer;font-size:13px;font-weight:600}
+.ws-current:hover{background:rgba(255,153,0,.25)}
+.ws-current .ws-flag{font-size:18px}
+.ws-current .ws-arrow{font-size:10px;opacity:.7}
+.ws-menu{position:absolute;top:calc(100% + 8px);left:0;background:#fff;border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow-lg);min-width:240px;z-index:1000;display:none;overflow:hidden}
+.ws-menu.show{display:block}
+.ws-menu-header{padding:10px 14px;background:var(--surface-alt);border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--text-mut);text-transform:uppercase;letter-spacing:.5px}
+.ws-item{display:flex;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;color:var(--text);font-size:13px;border-bottom:1px solid var(--border-light)}
+.ws-item:last-child{border-bottom:none}
+.ws-item:hover{background:var(--surface-hover)}
+.ws-item.active{background:#FFF4E0;color:var(--amz-orange-dark);font-weight:700}
+.ws-item .ws-flag{font-size:18px}
+.ws-item .ws-info{flex:1}
+.ws-item .ws-name{font-weight:600}
+.ws-item .ws-role{font-size:10px;color:var(--text-mut);text-transform:uppercase}
+.ws-item .ws-check{color:var(--success);font-weight:700}
+.ws-divider{height:1px;background:var(--border);margin:4px 0}
+.ws-action{display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;color:var(--link);font-size:13px;font-weight:600}
+.ws-action:hover{background:var(--surface-hover)}
+
 .subnav{background:var(--amz-navy-2);border-top:1px solid rgba(255,255,255,.08)}
 .subnav-inner{display:flex;padding:0 24px;max-width:1600px;margin:0 auto;overflow-x:auto}
 .tab{padding:12px 20px;background:transparent;color:#fff;border:none;cursor:pointer;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:8px;border-bottom:3px solid transparent;white-space:nowrap;font-family:inherit}
 .tab:hover{background:rgba(255,255,255,.06)}
 .tab.active{border-bottom-color:var(--amz-orange);font-weight:700;background:rgba(255,153,0,.08)}
 .tab .badge{background:var(--danger);color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700}
+.tab.admin-only{background:rgba(255,153,0,.1);border-left:1px solid rgba(255,255,255,.1)}
 .page{max-width:1600px;margin:0 auto;padding:20px 24px}
 .breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:12px;color:var(--text-mut)}
 .breadcrumb a{color:var(--link);font-weight:500}
@@ -124,7 +147,8 @@ tr:last-child td{border-bottom:none}
 .pill-low{background:var(--warn-bg);color:var(--warn);border-color:#F5D99C}
 .pill-ok{background:var(--success-bg);color:var(--success);border-color:#A9D5BE}
 .pill-hi{background:var(--info-bg);color:var(--info);border-color:#AED6F1}
-.pill-dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+.pill-admin{background:#FFF4E0;color:var(--amz-orange-dark);border-color:#FFD89C}
+.pill-owner{background:#FCE4E4;color:var(--danger);border-color:#F5B7B1}
 .grid-2{display:grid;grid-template-columns:1.3fr 1fr;gap:16px}
 @media(max-width:1100px){.grid-2{grid-template-columns:1fr}}
 .heatmap{width:100%;border-collapse:separate;border-spacing:2px;padding:16px}
@@ -220,6 +244,31 @@ tr:last-child td{border-bottom:none}
 .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--success);animation:pulse 1.5s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
+/* Workspace Selector Screen */
+.ws-select-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#131A22 0%,#232F3E 100%);display:none;align-items:center;justify-content:center;z-index:9998;padding:20px}
+.ws-select-overlay.show{display:flex}
+.ws-select-box{background:#fff;border-radius:12px;padding:40px;max-width:560px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.ws-select-title{font-size:24px;font-weight:700;text-align:center;margin-bottom:8px}
+.ws-select-sub{text-align:center;color:var(--text-mut);font-size:14px;margin-bottom:28px}
+.ws-cards{display:grid;gap:12px}
+.ws-card{display:flex;align-items:center;gap:14px;padding:16px 20px;border:2px solid var(--border);border-radius:10px;cursor:pointer;transition:all .15s}
+.ws-card:hover{border-color:var(--amz-orange);background:#FFF8EC;transform:translateY(-1px);box-shadow:var(--shadow-sm)}
+.ws-card .ws-card-flag{font-size:32px}
+.ws-card .ws-card-info{flex:1}
+.ws-card .ws-card-name{font-size:16px;font-weight:700}
+.ws-card .ws-card-meta{font-size:12px;color:var(--text-mut);margin-top:2px}
+.ws-card .ws-card-arrow{color:var(--text-dim);font-size:18px}
+.ws-empty-state{text-align:center;padding:30px 20px;color:var(--text-mut)}
+.ws-empty-state .ic{font-size:48px;margin-bottom:12px;opacity:.4}
+
+/* Manage Workspaces Page */
+.member-row{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--border-light)}
+.member-row:last-child{border-bottom:none}
+.member-avatar{width:36px;height:36px;border-radius:50%;background:var(--amz-orange);color:var(--amz-navy);display:grid;place-items:center;font-weight:700;font-size:13px}
+.member-info{flex:1;min-width:0}
+.member-email{font-weight:600;font-size:13px}
+.member-meta{font-size:11px;color:var(--text-mut)}
+
 @media(max-width:768px){.topnav-inner{padding:0 12px}.page{padding:14px}.brand-sub{display:none}.nav-divider{display:none}.user-info{display:none}.page-head h1{font-size:20px}}
 </style>
 </head>
@@ -251,6 +300,22 @@ tr:last-child td{border-bottom:none}
   </div>
 </div>
 
+<!-- WORKSPACE SELECTOR SCREEN -->
+<div class="ws-select-overlay" id="wsSelectScreen">
+  <div class="ws-select-box">
+    <div class="login-logo">
+      <div class="l1">Anow<span>.</span></div>
+      <div class="l2">OPERATIONS</div>
+    </div>
+    <h2 class="ws-select-title">Choose Workspace</h2>
+    <p class="ws-select-sub">Select the workspace you want to access</p>
+    <div class="ws-cards" id="wsCards"></div>
+    <div style="text-align:center;margin-top:20px">
+      <a onclick="logout()" style="color:var(--link);cursor:pointer;font-size:12px">← Sign out</a>
+    </div>
+  </div>
+</div>
+
 <nav class="topnav" style="display:none" id="mainNav">
   <div class="topnav-inner">
     <div class="brand">
@@ -260,7 +325,14 @@ tr:last-child td{border-bottom:none}
       </div>
     </div>
     <div class="nav-divider"></div>
-    <div class="nav-section-title">Consumables <span>Intelligence</span></div>
+    <div class="ws-switcher">
+      <div class="ws-current" onclick="toggleWsMenu()">
+        <span class="ws-flag" id="curWsFlag">🌍</span>
+        <span id="curWsName">Loading...</span>
+        <span class="ws-arrow">▼</span>
+      </div>
+      <div class="ws-menu" id="wsMenu"></div>
+    </div>
     <div class="nav-actions">
       <button class="nav-btn primary" onclick="document.getElementById('xlsFile').click()">📊 Upload Excel</button>
       <input type="file" id="xlsFile" accept=".xlsx,.xls" style="display:none" onchange="importExcel(event)">
@@ -284,6 +356,7 @@ tr:last-child td{border-bottom:none}
       <button class="tab" data-tab="stock">📦 Stock Count</button>
       <button class="tab" data-tab="forecast">📈 Forecast</button>
       <button class="tab" data-tab="config">⚙️ Configuration</button>
+      <button class="tab admin-only" data-tab="admin" id="adminTab" style="display:none">👑 Admin</button>
     </div>
   </div>
 </nav>
@@ -294,7 +367,7 @@ tr:last-child td{border-bottom:none}
   <div class="breadcrumb"><a>Operations</a><span class="sep">›</span><a>Consumables</a><span class="sep">›</span><span>Dashboard</span></div>
   <div class="banner">
     <div class="banner-text">
-      <h3>Consumables Operations Center</h3>
+      <h3 id="bannerTitle">Consumables Operations Center</h3>
       <p>Real-time inventory intelligence • Last refresh: <span id="lastUpd" class="mono">—</span></p>
     </div>
     <div class="banner-stat">
@@ -408,7 +481,7 @@ tr:last-child td{border-bottom:none}
 
 <section class="pane" id="config">
   <div class="breadcrumb"><a>Operations</a><span class="sep">›</span><span>Configuration</span></div>
-  <div class="page-head"><div><h1>System Configuration</h1><p>Tuning parameters</p></div></div>
+  <div class="page-head"><div><h1>System Configuration</h1><p>Tuning parameters for current workspace</p></div></div>
   <div class="card">
     <div class="card-head"><div class="card-title"><span class="icon">⚙</span>Global Parameters</div></div>
     <div class="card-body">
@@ -430,11 +503,30 @@ tr:last-child td{border-bottom:none}
       <div class="card-title" style="color:var(--danger)"><span class="icon" style="background:var(--danger);color:#fff">!</span>Danger Zone</div>
     </div>
     <div class="card-body">
-      <p style="color:var(--text-mut);font-size:12px;margin-bottom:10px">⚠️ Reset will delete all data permanently from cloud.</p>
+      <p style="color:var(--text-mut);font-size:12px;margin-bottom:10px">⚠️ Reset will delete all data in <b id="dzWsName">this workspace</b>.</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-danger" onclick="resetAll()">🗑️ Reset All Data</button>
+        <button class="btn btn-danger" onclick="resetWorkspaceData()">🗑️ Reset Workspace Data</button>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- ADMIN PANEL -->
+<section class="pane" id="admin">
+  <div class="breadcrumb"><a>Operations</a><span class="sep">›</span><span>Admin Panel</span></div>
+  <div class="page-head">
+    <div><h1>👑 Admin Panel</h1><p>Manage workspaces, members, and system settings</p></div>
+    <div class="page-actions">
+      <button class="btn btn-action" onclick="openWsModal()">+ New Workspace</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title"><span class="icon">🌍</span>All Workspaces</div></div>
+    <div id="wsList"></div>
+  </div>
+  <div class="card">
+    <div class="card-head"><div class="card-title"><span class="icon">👥</span>All Users</div></div>
+    <div id="usersList"></div>
   </div>
 </section>
 
@@ -469,16 +561,52 @@ tr:last-child td{border-bottom:none}
   </div>
 </div>
 
+<div class="modal" id="mdWs">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="mdWsTitle">New Workspace</h3><button class="modal-close" onclick="document.getElementById('mdWs').classList.remove('show')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field"><label>Workspace Code <span class="req">*</span></label><input id="mWsCode" placeholder="e.g., KW" maxlength="5"></div>
+        <div class="field"><label>Workspace Name <span class="req">*</span></label><input id="mWsName" placeholder="e.g., Kuwait"></div>
+        <div class="field-row">
+          <div class="field"><label>Flag Emoji</label><input id="mWsFlag" placeholder="🇰🇼"></div>
+          <div class="field"><label>Country</label><input id="mWsCountry" placeholder="Kuwait"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="document.getElementById('mdWs').classList.remove('show')">Cancel</button>
+      <button class="btn btn-cta" onclick="saveWorkspace()">Create</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="mdMember">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="mdMemberTitle">Add Member to Workspace</h3><button class="modal-close" onclick="document.getElementById('mdMember').classList.remove('show')">✕</button></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="field"><label>User Email <span class="req">*</span></label><input id="mMemberEmail" placeholder="user@company.com"></div>
+        <div class="field"><label>Role</label><select id="mMemberRole"><option value="member">Member</option><option value="admin">Admin</option><option value="viewer">Viewer</option></select></div>
+        <p style="font-size:11px;color:var(--text-mut)">⚠️ User must have signed up first before being added.</p>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="document.getElementById('mdMember').classList.remove('show')">Cancel</button>
+      <button class="btn btn-cta" onclick="addMember()">Add</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"><span class="toast-ic">✓</span><div class="toast-body">Saved</div></div>
 
 <div class="sync-indicator" id="syncIndicator">
   <span class="sync-dot"></span>
   <span id="syncText">Syncing...</span>
 </div>
-
 <script>
 // ============================================
-// SUPABASE CONFIGURATION - عدّل القيمتين دول
+// SUPABASE CONFIGURATION
 // ============================================
 const SUPABASE_URL = 'https://borpelpxgrbpwhwtunns.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvcnBlbHB4Z3JicHdod3R1bm5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3ODk3MDIsImV4cCI6MjA5NDM2NTcwMn0.2eTRhtIih6QxuDQrUqA_PymewB85bmHJSWHZXpCVZOQ';
@@ -499,22 +627,38 @@ const DEFAULT_CONS = {
 };
 const CONS_KEYS = ['PaperBag-L','PaperBag-M','SealTape','SPOOLabel','BubbleWrap-L','BubbleWrap-M','BubbleWrap-S','IceCreamBags','GelPads'];
 
+// ============================================
+// GLOBAL STATE
+// ============================================
 let state = {cons:JSON.parse(JSON.stringify(DEFAULT_CONS)),stores:[],stock:{},fc:{},fcUnits:{},buffer:1.30,upo:8.58,stkDate:new Date().toISOString().slice(0,10)};
 let docSelected = null;
 let currentUser = null;
+let currentProfile = null;     // user_profiles row
+let myWorkspaces = [];         // workspaces user has access to
+let activeWorkspace = null;    // currently selected workspace
 let isSignUpMode = false;
 let saveTimers = {};
+let allUsers = [];             // for admin panel
+let allWorkspaces = [];        // for admin panel
 
 function stockKey(c){return String(c).replace(/[-\s_]/g,'')}
 function readStock(s,c){const r=state.stock[s];if(!r)return 0;return +r[stockKey(c)]||0}
 function writeStock(s,c,v){if(!state.stock[s])state.stock[s]={};state.stock[s][stockKey(c)]=+v||0}
 
+function showSync(text='Syncing...'){const el=document.getElementById('syncIndicator');document.getElementById('syncText').textContent=text;el.classList.add('show')}
+function hideSync(){document.getElementById('syncIndicator').classList.remove('show')}
+function toast(msg,type='success'){const t=document.getElementById('toast');t.className='toast show '+(type==='error'?'error':'');t.querySelector('.toast-ic').textContent=type==='success'?'✓':'✕';t.querySelector('.toast-body').textContent=msg;setTimeout(()=>t.className='toast',2500)}
+
+function isSuperAdmin(){return currentProfile?.is_super_admin===true}
+function getMyRole(wsId){
+  if(isSuperAdmin())return 'owner';
+  const w=myWorkspaces.find(x=>x.id===wsId);
+  return w?.role||'viewer';
+}
+
 // ============================================
 // AUTHENTICATION
 // ============================================
-function showSync(text='Syncing...'){const el=document.getElementById('syncIndicator');document.getElementById('syncText').textContent=text;el.classList.add('show')}
-function hideSync(){document.getElementById('syncIndicator').classList.remove('show')}
-
 function toggleAuthMode(){
   isSignUpMode=!isSignUpMode;
   document.getElementById('loginTitle').textContent=isSignUpMode?'Create Account':'Sign In';
@@ -560,23 +704,151 @@ async function handleAuth(){
   }
 }
 
+async function loadUserProfile(){
+  const {data,error}=await supabaseClient.from('user_profiles').select('*').eq('id',currentUser.id).maybeSingle();
+  if(error){console.error(error);return null}
+  if(!data){
+    // Profile doesn't exist - create it
+    const {data:newP}=await supabaseClient.from('user_profiles').insert({id:currentUser.id,email:currentUser.email}).select().single();
+    return newP;
+  }
+  return data;
+}
+
+async function loadMyWorkspaces(){
+  if(isSuperAdmin()){
+    // Super admin sees ALL workspaces
+    const {data}=await supabaseClient.from('workspaces').select('*').eq('is_active',true).order('name');
+    myWorkspaces=(data||[]).map(w=>({...w,role:'owner'}));
+  } else {
+    // Regular user: get workspaces they're members of
+    const {data}=await supabaseClient.from('workspace_members').select('role,workspace:workspaces(*)').eq('user_id',currentUser.id);
+    myWorkspaces=(data||[]).filter(r=>r.workspace&&r.workspace.is_active).map(r=>({...r.workspace,role:r.role}));
+  }
+  return myWorkspaces;
+}
+
 async function onLoginSuccess(){
   document.getElementById('loginScreen').style.display='none';
+  showSync('Loading profile...');
+  
+  currentProfile=await loadUserProfile();
+  await loadMyWorkspaces();
+  
+  hideSync();
+  
+  if(myWorkspaces.length===0){
+    // User has no workspaces
+    document.getElementById('wsSelectScreen').classList.add('show');
+    document.getElementById('wsCards').innerHTML=`
+      <div class="ws-empty-state">
+        <div class="ic">🚫</div>
+        <h3 style="color:var(--danger);margin-bottom:8px">No Workspace Access</h3>
+        <p style="margin-bottom:14px">You haven't been added to any workspace yet.</p>
+        <p style="font-size:12px">Please contact your administrator to grant you access.</p>
+      </div>`;
+    return;
+  }
+  
+  if(myWorkspaces.length===1){
+    // Only one workspace - auto-select
+    await selectWorkspace(myWorkspaces[0].id);
+  } else {
+    // Multiple workspaces - show selector
+    showWorkspaceSelector();
+  }
+}
+
+function showWorkspaceSelector(){
+  document.getElementById('wsSelectScreen').classList.add('show');
+  let html='';
+  myWorkspaces.forEach(ws=>{
+    const roleLabel=ws.role==='owner'?'👑 Owner':ws.role==='admin'?'⚡ Admin':ws.role==='viewer'?'👀 Viewer':'📝 Member';
+    html+=`<div class="ws-card" onclick="selectWorkspace('${ws.id}')">
+      <div class="ws-card-flag">${ws.flag||'🌍'}</div>
+      <div class="ws-card-info">
+        <div class="ws-card-name">${ws.name}</div>
+        <div class="ws-card-meta">${roleLabel} • ${ws.country||''}</div>
+      </div>
+      <div class="ws-card-arrow">→</div>
+    </div>`;
+  });
+  document.getElementById('wsCards').innerHTML=html;
+}
+
+async function selectWorkspace(wsId){
+  activeWorkspace=myWorkspaces.find(w=>w.id===wsId);
+  if(!activeWorkspace){toast('Workspace not found','error');return}
+  
+  // Save to localStorage for next session
+  localStorage.setItem('lastWorkspaceId',wsId);
+  
+  document.getElementById('wsSelectScreen').classList.remove('show');
   document.getElementById('mainNav').style.display='block';
   document.getElementById('mainPage').style.display='block';
+  
   const email=currentUser.email;
   const name=email.split('@')[0];
   const initials=name.slice(0,2).toUpperCase();
   document.getElementById('userName').textContent=name;
   document.getElementById('userAvatar').textContent=initials;
-  showSync('Loading data...');
+  
+  // Update workspace switcher
+  document.getElementById('curWsFlag').textContent=activeWorkspace.flag||'🌍';
+  document.getElementById('curWsName').textContent=activeWorkspace.name;
+  document.getElementById('bannerTitle').textContent=`${activeWorkspace.flag||'🌍'} ${activeWorkspace.name} • Operations Center`;
+  document.getElementById('dzWsName').textContent=activeWorkspace.name;
+  
+  // Show admin tab if super admin
+  document.getElementById('adminTab').style.display=isSuperAdmin()?'inline-flex':'none';
+  
+  // Load workspace data
+  showSync('Loading workspace data...');
   await loadFromCloud();
   hideSync();
   render();
 }
 
+function toggleWsMenu(){
+  const menu=document.getElementById('wsMenu');
+  if(menu.classList.contains('show')){menu.classList.remove('show');return}
+  let html='<div class="ws-menu-header">Switch Workspace</div>';
+  myWorkspaces.forEach(ws=>{
+    const isActive=ws.id===activeWorkspace?.id;
+    const roleLabel=ws.role==='owner'?'Owner':ws.role==='admin'?'Admin':ws.role==='viewer'?'Viewer':'Member';
+    html+=`<div class="ws-item ${isActive?'active':''}" onclick="switchWorkspace('${ws.id}')">
+      <span class="ws-flag">${ws.flag||'🌍'}</span>
+      <div class="ws-info">
+        <div class="ws-name">${ws.name}</div>
+        <div class="ws-role">${roleLabel}</div>
+      </div>
+      ${isActive?'<span class="ws-check">✓</span>':''}
+    </div>`;
+  });
+  if(isSuperAdmin()){
+    html+=`<div class="ws-divider"></div>
+      <div class="ws-action" onclick="document.querySelector('[data-tab=admin]').click();toggleWsMenu()">
+        <span>👑</span><span>Manage Workspaces</span>
+      </div>`;
+  }
+  menu.innerHTML=html;
+  menu.classList.add('show');
+}
+
+document.addEventListener('click',e=>{
+  const sw=document.querySelector('.ws-switcher');
+  if(sw&&!sw.contains(e.target))document.getElementById('wsMenu')?.classList.remove('show');
+});
+
+async function switchWorkspace(wsId){
+  if(wsId===activeWorkspace?.id){toggleWsMenu();return}
+  toggleWsMenu();
+  await selectWorkspace(wsId);
+}
+
 async function logout(){
   if(!confirm('Sign out?'))return;
+  localStorage.removeItem('lastWorkspaceId');
   await supabaseClient.auth.signOut();
   location.reload();
 }
@@ -590,15 +862,17 @@ async function checkSession(){
 }
 
 // ============================================
-// CLOUD DATA OPERATIONS
+// CLOUD DATA OPERATIONS (Workspace-Scoped)
 // ============================================
 async function loadFromCloud(){
+  if(!activeWorkspace)return;
+  const wsId=activeWorkspace.id;
   try{
     const [stores,stock,forecasts,settings]=await Promise.all([
-      supabaseClient.from('stores').select('*'),
-      supabaseClient.from('stock').select('*'),
-      supabaseClient.from('forecasts').select('*'),
-      supabaseClient.from('settings').select('*')
+      supabaseClient.from('stores').select('*').eq('workspace_id',wsId),
+      supabaseClient.from('stock').select('*').eq('workspace_id',wsId),
+      supabaseClient.from('forecasts').select('*').eq('workspace_id',wsId),
+      supabaseClient.from('settings').select('*').eq('workspace_id',wsId)
     ]);
     if(stores.error)throw stores.error;
     state.stores=stores.data||[];
@@ -608,6 +882,9 @@ async function loadFromCloud(){
       if(r.orders!=null)state.fc[r.store_code]=+r.orders;
       if(r.units!=null)state.fcUnits[r.store_code]=+r.units;
     });
+    // Reset to defaults first
+    state.cons=JSON.parse(JSON.stringify(DEFAULT_CONS));
+    state.buffer=1.30;state.upo=8.58;state.stkDate=new Date().toISOString().slice(0,10);
     (settings.data||[]).forEach(s=>{
       if(s.key==='buffer')state.buffer=+s.value||1.3;
       else if(s.key==='upo')state.upo=+s.value||8.58;
@@ -622,35 +899,39 @@ async function loadFromCloud(){
 }
 
 async function saveStoreCloud(store){
+  if(!activeWorkspace)return;
   showSync();
   try{
-    const {error}=await supabaseClient.from('stores').upsert({code:store.code,area:store.area,status:store.status,launch:store.launch,cap:store.cap,updated_at:new Date().toISOString()});
+    const {error}=await supabaseClient.from('stores').upsert({workspace_id:activeWorkspace.id,code:store.code,area:store.area,status:store.status,launch:store.launch,cap:store.cap,updated_at:new Date().toISOString()});
     if(error)throw error;
   }catch(e){toast('Sync error: '+e.message,'error')}
   hideSync();
 }
 
 async function deleteStoreCloud(code){
+  if(!activeWorkspace)return;
   showSync();
   try{
-    await supabaseClient.from('stores').delete().eq('code',code);
+    await supabaseClient.from('stores').delete().eq('workspace_id',activeWorkspace.id).eq('code',code);
   }catch(e){toast('Delete failed','error')}
   hideSync();
 }
 
 async function saveStockCloud(code){
+  if(!activeWorkspace)return;
   showSync();
   try{
-    const {error}=await supabaseClient.from('stock').upsert({store_code:code,data:state.stock[code]||{},updated_at:new Date().toISOString()});
+    const {error}=await supabaseClient.from('stock').upsert({workspace_id:activeWorkspace.id,store_code:code,data:state.stock[code]||{},updated_at:new Date().toISOString()});
     if(error)throw error;
   }catch(e){toast('Stock sync error','error')}
   hideSync();
 }
 
 async function saveForecastCloud(code){
+  if(!activeWorkspace)return;
   showSync();
   try{
-    const payload={store_code:code,orders:state.fc[code]||0,units:state.fcUnits[code]||null,updated_at:new Date().toISOString()};
+    const payload={workspace_id:activeWorkspace.id,store_code:code,orders:state.fc[code]||0,units:state.fcUnits[code]||null,updated_at:new Date().toISOString()};
     const {error}=await supabaseClient.from('forecasts').upsert(payload);
     if(error)throw error;
   }catch(e){toast('Forecast sync error','error')}
@@ -658,9 +939,10 @@ async function saveForecastCloud(code){
 }
 
 async function saveSettingCloud(key,value){
+  if(!activeWorkspace)return;
   showSync();
   try{
-    await supabaseClient.from('settings').upsert({key,value,updated_at:new Date().toISOString()});
+    await supabaseClient.from('settings').upsert({workspace_id:activeWorkspace.id,key,value,updated_at:new Date().toISOString()});
   }catch(e){toast('Settings sync error','error')}
   hideSync();
 }
@@ -671,50 +953,50 @@ function debouncedSave(key,fn,delay=500){
 }
 
 async function bulkSyncAll(){
-  showSync('Syncing all data...');
+  if(!activeWorkspace)return;
+  const wsId=activeWorkspace.id;
+  showSync('Syncing to cloud...');
   try{
     if(state.stores.length){
-      await supabaseClient.from('stores').upsert(state.stores.map(s=>({code:s.code,area:s.area,status:s.status,launch:s.launch,cap:s.cap,updated_at:new Date().toISOString()})));
+      await supabaseClient.from('stores').upsert(state.stores.map(s=>({workspace_id:wsId,code:s.code,area:s.area,status:s.status,launch:s.launch,cap:s.cap,updated_at:new Date().toISOString()})));
     }
-    const stockRows=Object.entries(state.stock).map(([code,data])=>({store_code:code,data,updated_at:new Date().toISOString()}));
+    const stockRows=Object.entries(state.stock).map(([code,data])=>({workspace_id:wsId,store_code:code,data,updated_at:new Date().toISOString()}));
     if(stockRows.length)await supabaseClient.from('stock').upsert(stockRows);
     const fcCodes=new Set([...Object.keys(state.fc),...Object.keys(state.fcUnits)]);
-    const fcRows=[...fcCodes].map(code=>({store_code:code,orders:state.fc[code]||0,units:state.fcUnits[code]||null,updated_at:new Date().toISOString()}));
+    const fcRows=[...fcCodes].map(code=>({workspace_id:wsId,store_code:code,orders:state.fc[code]||0,units:state.fcUnits[code]||null,updated_at:new Date().toISOString()}));
     if(fcRows.length)await supabaseClient.from('forecasts').upsert(fcRows);
     await supabaseClient.from('settings').upsert([
-      {key:'buffer',value:state.buffer,updated_at:new Date().toISOString()},
-      {key:'upo',value:state.upo,updated_at:new Date().toISOString()},
-      {key:'stkDate',value:state.stkDate,updated_at:new Date().toISOString()},
-      {key:'cons',value:state.cons,updated_at:new Date().toISOString()}
+      {workspace_id:wsId,key:'buffer',value:state.buffer,updated_at:new Date().toISOString()},
+      {workspace_id:wsId,key:'upo',value:state.upo,updated_at:new Date().toISOString()},
+      {workspace_id:wsId,key:'stkDate',value:state.stkDate,updated_at:new Date().toISOString()},
+      {workspace_id:wsId,key:'cons',value:state.cons,updated_at:new Date().toISOString()}
     ]);
-    toast('✓ All data synced to cloud');
+    toast('✓ Synced to cloud');
   }catch(e){
     console.error(e);
-    toast('Bulk sync failed: '+e.message,'error');
+    toast('Sync failed: '+e.message,'error');
   }
   hideSync();
 }
 
-async function resetAll(){
-  if(!confirm('⚠️ DELETE ALL data from cloud? This cannot be undone!'))return;
+async function resetWorkspaceData(){
+  if(!activeWorkspace)return;
+  if(!confirm(`⚠️ DELETE ALL data in workspace "${activeWorkspace.name}"?\n\nThis cannot be undone!`))return;
   if(!confirm('Are you ABSOLUTELY sure?'))return;
   showSync('Deleting...');
   try{
-    await supabaseClient.from('stores').delete().neq('code','___never___');
-    await supabaseClient.from('forecasts').delete().neq('store_code','___never___');
-    await supabaseClient.from('stock').delete().neq('store_code','___never___');
+    const wsId=activeWorkspace.id;
+    await supabaseClient.from('stores').delete().eq('workspace_id',wsId);
     state={cons:JSON.parse(JSON.stringify(DEFAULT_CONS)),stores:[],stock:{},fc:{},fcUnits:{},buffer:1.30,upo:8.58,stkDate:new Date().toISOString().slice(0,10)};
     docSelected=null;
     render();
-    toast('✓ All data wiped');
+    toast('✓ Workspace data wiped');
   }catch(e){toast('Reset failed','error')}
   hideSync();
 }
 
-function toast(msg,type='success'){const t=document.getElementById('toast');t.className='toast show '+(type==='error'?'error':'');t.querySelector('.toast-ic').textContent=type==='success'?'✓':'✕';t.querySelector('.toast-body').textContent=msg;setTimeout(()=>t.className='toast',2500)}
-
 // ============================================
-// CALCULATIONS (نفس الأصل)
+// CALCULATIONS
 // ============================================
 function calcNeeded(sc,ck){
   const orders=(state.fc[sc]||0)*state.buffer;
@@ -734,11 +1016,7 @@ function n(x,d=0){return x==null||isNaN(x)?'—':Number(x).toLocaleString(undefi
 function docColor(d){if(!d||d<1)return{bg:'#FCE4E4',fg:'#B12704',br:'#F5B7B1'};if(d<3)return{bg:'#FFF3CD',fg:'#B66A00',br:'#F5D99C'};if(d<7)return{bg:'#D5F5E3',fg:'#067D62',br:'#A9D5BE'};return{bg:'#D9EDF7',fg:'#146EB4',br:'#AED6F1'}}
 function docPill(d){if(!d||isNaN(d)||d===0)return'<span class="pill pill-nl">NO DATA</span>';if(d<1)return`<span class="pill pill-crit">${d.toFixed(1)}d</span>`;if(d<3)return`<span class="pill pill-low">${d.toFixed(1)}d</span>`;if(d<7)return`<span class="pill pill-ok">${d.toFixed(1)}d</span>`;return`<span class="pill pill-hi">${d.toFixed(1)}d</span>`}
 
-document.querySelectorAll('.tab').forEach(el=>{el.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));document.getElementById(el.dataset.tab).classList.add('active');window.scrollTo(0,0)}});
-
-// ============================================
-// RENDER FUNCTIONS (نفس الأصل تقريباً)
-// ============================================
+document.querySelectorAll('.tab').forEach(el=>{el.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));document.getElementById(el.dataset.tab).classList.add('active');window.scrollTo(0,0);if(el.dataset.tab==='admin')renderAdmin()}});
 function renderOverview(){
   const live=state.stores.filter(s=>s.status==='Live');
   let crit=0,low=0,ok=0,hi=0,totalRep=0,docSum=0,docCount=0;
@@ -880,7 +1158,7 @@ function renderReplen(){
   else{list.forEach(s=>{let t=0;h+=`<tr><td><b>${s.code}</b><div class="cell-sub">${s.area||''}</div></td>`;CONS_KEYS.forEach(c=>{const r=calcReplen(s.code,c).ct;t+=r;const bg=r>0?`background:rgba(255,153,0,${Math.min(r/20,1)*0.18})`:'';h+=`<td class="nums" style="${bg};text-align:center">${r||'—'}</td>`});gt+=t;h+=`<td class="nums" style="font-weight:700;color:var(--amz-orange-dark);background:#FFF4E0">${t}</td></tr>`});h+=`<tr style="background:var(--amz-navy);color:#fff;font-weight:700"><td style="color:#fff">TOTAL</td>`;CONS_KEYS.forEach(c=>{const sm=list.reduce((a,s)=>a+calcReplen(s.code,c).ct,0);h+=`<td class="nums" style="text-align:center;color:#fff">${sm}</td>`});h+=`<td class="nums" style="color:var(--amz-orange);font-size:15px">${gt}</td></tr>`}
   document.getElementById('tblRep').innerHTML=h;
 }
-function expReplenCSV(){let csv='Store,Location,'+CONS_KEYS.map(c=>c+' (ct)').join(',')+',Total\n';state.stores.filter(s=>s.status==='Live'&&state.fc[s.code]).forEach(s=>{const row=[s.code,`"${s.area||''}"`];let t=0;CONS_KEYS.forEach(c=>{const r=calcReplen(s.code,c).ct;row.push(r);t+=r});row.push(t);csv+=row.join(',')+'\n'});const b=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`replen_${new Date().toISOString().slice(0,10)}.csv`;a.click()}
+function expReplenCSV(){const wsName=activeWorkspace?.name||'workspace';let csv='Store,Location,'+CONS_KEYS.map(c=>c+' (ct)').join(',')+',Total\n';state.stores.filter(s=>s.status==='Live'&&state.fc[s.code]).forEach(s=>{const row=[s.code,`"${s.area||''}"`];let t=0;CONS_KEYS.forEach(c=>{const r=calcReplen(s.code,c).ct;row.push(r);t+=r});row.push(t);csv+=row.join(',')+'\n'});const b=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`replen_${wsName}_${new Date().toISOString().slice(0,10)}.csv`;a.click()}
 
 function renderCfg(){let h='';Object.keys(state.cons).forEach(k=>{const c=state.cons[k];h+=`<div class="cfg-card"><h4><span>${c.icon} ${k}</span><span class="type-tag">${c.type}</span></h4><div class="cfg-field"><label>Trend</label><input type="number" step="0.0001" id="tr_${k}" value="${c.trend}"></div><div class="cfg-field"><label>Units/Box</label><input type="number" id="un_${k}" value="${c.units}"></div><div class="cfg-field"><label>Boxes/Pallet</label><input type="number" id="bx_${k}" value="${c.box}"></div></div>`});document.getElementById('cfgBox').innerHTML=h;document.getElementById('bufMul').value=state.buffer;document.getElementById('upo').value=state.upo}
 async function saveCfg(){
@@ -891,10 +1169,192 @@ async function saveCfg(){
 function saveBuf(){state.buffer=+document.getElementById('bufMul').value||1.3;saveSettingCloud('buffer',state.buffer);render()}
 function saveUpo(){state.upo=+document.getElementById('upo').value||8.58;saveSettingCloud('upo',state.upo);render()}
 
-function exportAll(){const b=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`anow_${new Date().toISOString().slice(0,10)}.json`;a.click()}
+function exportAll(){const wsName=activeWorkspace?.name||'workspace';const dump={workspace:activeWorkspace,...state};const b=new Blob([JSON.stringify(dump,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`anow_${wsName}_${new Date().toISOString().slice(0,10)}.json`;a.click()}
 
 // ============================================
-// EXCEL PARSER (نفس الأصل)
+// ADMIN PANEL
+// ============================================
+async function renderAdmin(){
+  if(!isSuperAdmin()){document.getElementById('admin').innerHTML='<div class="empty"><div class="ic">🔒</div><p>Access denied</p></div>';return}
+  
+  const [wsRes,profileRes,memberRes]=await Promise.all([
+    supabaseClient.from('workspaces').select('*').order('name'),
+    supabaseClient.from('user_profiles').select('*').order('email'),
+    supabaseClient.from('workspace_members').select('*')
+  ]);
+  
+  allWorkspaces=wsRes.data||[];
+  allUsers=profileRes.data||[];
+  const allMembers=memberRes.data||[];
+  
+  // Render workspaces list
+  let wsHtml='';
+  if(!allWorkspaces.length){
+    wsHtml='<div class="empty"><div class="ic">🌍</div><p>No workspaces yet</p></div>';
+  } else {
+    allWorkspaces.forEach(ws=>{
+      const members=allMembers.filter(m=>m.workspace_id===ws.id);
+      wsHtml+=`<div style="border-bottom:1px solid var(--border-light);padding:14px 20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:24px">${ws.flag||'🌍'}</span>
+            <div>
+              <div style="font-weight:700;font-size:14px">${ws.name}</div>
+              <div style="font-size:11px;color:var(--text-mut)">${ws.code} • ${ws.country||''} • ${members.length} members</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-sm" onclick="openMemberModal('${ws.id}')">+ Add Member</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteWorkspace('${ws.id}','${ws.name}')">Delete</button>
+          </div>
+        </div>
+        <div style="margin-top:6px">
+          ${members.length?members.map(m=>{
+            const u=allUsers.find(x=>x.id===m.user_id);
+            const email=u?.email||'(unknown)';
+            const initials=email.slice(0,2).toUpperCase();
+            const roleLabel=m.role==='owner'?'<span class="pill pill-owner">Owner</span>':m.role==='admin'?'<span class="pill pill-admin">Admin</span>':m.role==='viewer'?'<span class="pill pill-nl">Viewer</span>':'<span class="pill pill-ok">Member</span>';
+            return `<div class="member-row">
+              <div class="member-avatar">${initials}</div>
+              <div class="member-info">
+                <div class="member-email">${email}</div>
+                <div class="member-meta">Joined ${new Date(m.joined_at).toLocaleDateString()}</div>
+              </div>
+              ${roleLabel}
+              <button class="btn btn-sm btn-danger" onclick="removeMember(${m.id},'${email}')">Remove</button>
+            </div>`;
+          }).join(''):'<div style="padding:14px 8px;color:var(--text-mut);font-size:12px;font-style:italic">No members yet</div>'}
+        </div>
+      </div>`;
+    });
+  }
+  document.getElementById('wsList').innerHTML=wsHtml;
+  
+  // Render users list
+  let usersHtml='';
+  if(!allUsers.length){
+    usersHtml='<div class="empty"><div class="ic">👥</div><p>No users yet</p></div>';
+  } else {
+    allUsers.forEach(u=>{
+      const userMembers=allMembers.filter(m=>m.user_id===u.id);
+      const wsBadges=userMembers.map(m=>{
+        const ws=allWorkspaces.find(w=>w.id===m.workspace_id);
+        return ws?`<span class="pill pill-ok" style="margin-right:4px">${ws.flag||'🌍'} ${ws.name}</span>`:'';
+      }).join('');
+      const initials=u.email.slice(0,2).toUpperCase();
+      usersHtml+=`<div class="member-row">
+        <div class="member-avatar">${initials}</div>
+        <div class="member-info">
+          <div class="member-email">${u.email} ${u.is_super_admin?'<span class="pill pill-owner">👑 Super Admin</span>':''}</div>
+          <div class="member-meta" style="margin-top:4px">${wsBadges||'<span style="color:var(--text-dim);font-style:italic">Not in any workspace</span>'}</div>
+        </div>
+        ${!u.is_super_admin?`<button class="btn btn-sm" onclick="makeSuperAdmin('${u.id}','${u.email}')">Make Super Admin</button>`:''}
+      </div>`;
+    });
+  }
+  document.getElementById('usersList').innerHTML=usersHtml;
+}
+
+function openWsModal(){
+  document.getElementById('mWsCode').value='';
+  document.getElementById('mWsName').value='';
+  document.getElementById('mWsFlag').value='';
+  document.getElementById('mWsCountry').value='';
+  document.getElementById('mdWs').classList.add('show');
+}
+
+async function saveWorkspace(){
+  const code=document.getElementById('mWsCode').value.trim().toUpperCase();
+  const name=document.getElementById('mWsName').value.trim();
+  const flag=document.getElementById('mWsFlag').value.trim();
+  const country=document.getElementById('mWsCountry').value.trim();
+  if(!code||!name){toast('Code and name required','error');return}
+  showSync('Creating workspace...');
+  try{
+    const {data,error}=await supabaseClient.from('workspaces').insert({code,name,flag,country,created_by:currentUser.id}).select().single();
+    if(error)throw error;
+    // Initialize default settings via RPC
+    await supabaseClient.rpc('init_workspace_settings',{ws_id:data.id});
+    toast('Workspace created');
+    document.getElementById('mdWs').classList.remove('show');
+    await loadMyWorkspaces();
+    renderAdmin();
+  }catch(e){toast('Failed: '+e.message,'error')}
+  hideSync();
+}
+
+async function deleteWorkspace(wsId,name){
+  if(!confirm(`⚠️ DELETE workspace "${name}" and ALL its data?\n\nThis cannot be undone!`))return;
+  if(!confirm('Are you ABSOLUTELY sure?'))return;
+  showSync('Deleting...');
+  try{
+    await supabaseClient.from('workspaces').delete().eq('id',wsId);
+    toast('Workspace deleted');
+    if(activeWorkspace?.id===wsId){
+      // If we were viewing this workspace, reload
+      location.reload();
+      return;
+    }
+    await loadMyWorkspaces();
+    renderAdmin();
+  }catch(e){toast('Failed: '+e.message,'error')}
+  hideSync();
+}
+
+let memberWsId=null;
+function openMemberModal(wsId){
+  memberWsId=wsId;
+  document.getElementById('mMemberEmail').value='';
+  document.getElementById('mMemberRole').value='member';
+  document.getElementById('mdMember').classList.add('show');
+}
+
+async function addMember(){
+  const email=document.getElementById('mMemberEmail').value.trim().toLowerCase();
+  const role=document.getElementById('mMemberRole').value;
+  if(!email){toast('Email required','error');return}
+  showSync('Adding member...');
+  try{
+    // Find user by email
+    const {data:user}=await supabaseClient.from('user_profiles').select('id').eq('email',email).maybeSingle();
+    if(!user){toast(`User "${email}" not found. They must sign up first.`,'error');hideSync();return}
+    const {error}=await supabaseClient.from('workspace_members').insert({workspace_id:memberWsId,user_id:user.id,role,invited_by:currentUser.id});
+    if(error){
+      if(error.code==='23505')toast('User already in workspace','error');
+      else throw error;
+      hideSync();return;
+    }
+    toast('Member added');
+    document.getElementById('mdMember').classList.remove('show');
+    renderAdmin();
+  }catch(e){toast('Failed: '+e.message,'error')}
+  hideSync();
+}
+
+async function removeMember(memberId,email){
+  if(!confirm(`Remove ${email} from this workspace?`))return;
+  showSync();
+  try{
+    await supabaseClient.from('workspace_members').delete().eq('id',memberId);
+    toast('Member removed');
+    renderAdmin();
+  }catch(e){toast('Failed','error')}
+  hideSync();
+}
+
+async function makeSuperAdmin(userId,email){
+  if(!confirm(`Make ${email} a Super Admin?\n\nThey will have FULL access to ALL workspaces.`))return;
+  showSync();
+  try{
+    await supabaseClient.from('user_profiles').update({is_super_admin:true}).eq('id',userId);
+    toast('Super Admin granted');
+    renderAdmin();
+  }catch(e){toast('Failed','error')}
+  hideSync();
+}
+
+// ============================================
+// EXCEL PARSER (Workspace-aware)
 // ============================================
 function normStr(s){return String(s==null?'':s).trim()}
 function normKey(s){return normStr(s).toLowerCase().replace(/[^a-z0-9]/g,'')}
@@ -1077,8 +1537,10 @@ function parseTrends(rows,name,log){
 
 async function importExcel(e){
   const f=e.target.files[0];if(!f)return;
+  if(!activeWorkspace){toast('No active workspace','error');return}
   const report=[];
   const log=(t,m)=>report.push(`<div class="${t}">${t==='ok'?'✓':t==='warn'?'⚠':t==='info'?'ℹ':'✗'} ${m}</div>`);
+  log('info',`<b>📍 Target Workspace:</b> ${activeWorkspace.flag||''} ${activeWorkspace.name}`);
   const r=new FileReader();
   r.onload=async ev=>{
     try{
@@ -1122,7 +1584,7 @@ async function importExcel(e){
       
       state.stkDate=new Date().toISOString().slice(0,10);
       
-      log('info',`<b>☁️ Syncing to cloud...</b>`);
+      log('info',`<b>☁️ Syncing to ${activeWorkspace.name}...</b>`);
       await bulkSyncAll();
       
       log('ok',`<b>✅ Final state</b>:`);
@@ -1134,7 +1596,7 @@ async function importExcel(e){
       docSelected=null;
       render();
       
-      toast(`✅ ${state.stores.length} stores synced to cloud`);
+      toast(`✅ Imported into ${activeWorkspace.name}`);
       document.getElementById('mdImportTitle').textContent='📊 Import Report';
       document.getElementById('importReport').innerHTML=report.join('');
       document.getElementById('mdImport').classList.add('show');
@@ -1153,8 +1615,10 @@ async function importExcel(e){
 
 async function importForecastExcel(e){
   const f=e.target.files[0];if(!f)return;
+  if(!activeWorkspace){toast('No active workspace','error');return}
   const report=[];
   const log=(t,m)=>report.push(`<div class="${t}">${t==='ok'?'✓':t==='warn'?'⚠':t==='info'?'ℹ':'✗'} ${m}</div>`);
+  log('info',`<b>📍 Target Workspace:</b> ${activeWorkspace.flag||''} ${activeWorkspace.name}`);
   const r=new FileReader();
   r.onload=async ev=>{
     try{
@@ -1174,10 +1638,10 @@ async function importForecastExcel(e){
         log('err','<b>No forecast data found</b>');
         toast('No forecast data','error');
       } else {
-        log('info',`<b>☁️ Syncing to cloud...</b>`);
+        log('info',`<b>☁️ Syncing...</b>`);
         await bulkSyncAll();
         log('ok',`<b>✅ Done</b>: ${Object.keys(state.fc).length} stores synced`);
-        toast(`✅ Synced to cloud`);
+        toast(`✅ Synced to ${activeWorkspace.name}`);
       }
       
       render();
