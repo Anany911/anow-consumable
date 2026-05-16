@@ -492,7 +492,10 @@ tr:last-child td{border-bottom:none}
   <div class="page-head">
     <div><h1>Stock Count Entry</h1><p>Cartons on hand per store</p></div>
     <div class="page-actions">
-      <label style="font-size:12px;color:var(--text-mut);font-weight:500;align-self:center">Date:</label>
+      <button class="btn" onclick="downloadStockTemplate()" title="Download Excel template for bulk upload">📥 Template</button>
+      <button class="btn btn-action" onclick="document.getElementById('stockBulkFile').click()" title="Upload Excel file with stock data">📊 Bulk Upload</button>
+      <input type="file" id="stockBulkFile" accept=".xlsx,.xls" style="display:none" onchange="importStockBulk(event)">
+      <label style="font-size:12px;color:var(--text-mut);font-weight:500;align-self:center;margin-left:10px">Date:</label>
       <input class="input" type="date" id="stkDate" style="min-width:160px" onchange="saveStkDate()">
     </div>
   </div>
