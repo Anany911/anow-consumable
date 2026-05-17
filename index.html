@@ -273,7 +273,45 @@
   .member-info{flex:1;min-width:0}
   .member-email{font-weight:600;font-size:13px}
   .member-meta{font-size:11px;color:var(--text-mut)}
+
   
+/* Alert System UI */
+.alert-toggle{display:flex;align-items:center;gap:14px}
+.alert-switch{position:relative;display:inline-block;width:48px;height:26px;cursor:pointer;flex-shrink:0}
+.alert-switch input{opacity:0;width:0;height:0}
+.alert-slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:26px;transition:.3s}
+.alert-slider:before{position:absolute;content:"";height:20px;width:20px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.3s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.alert-switch input:checked + .alert-slider{background:var(--success)}
+.alert-switch input:checked + .alert-slider:before{transform:translateX(22px)}
+.alert-switch input:disabled + .alert-slider{opacity:.5;cursor:not-allowed}
+
+.email-tag{display:inline-flex;align-items:center;gap:6px;background:var(--info-bg);color:var(--info);padding:5px 10px;border-radius:14px;font-size:12px;margin:3px;border:1px solid #AED6F1}
+.email-tag .remove{cursor:pointer;font-weight:700;width:16px;height:16px;border-radius:50%;background:rgba(0,0,0,.08);display:grid;place-items:center;font-size:10px}
+.email-tag .remove:hover{background:var(--danger);color:#fff}
+
+.alert-status{padding:14px 18px;border-radius:8px;display:flex;align-items:center;gap:12px;font-size:13px;font-weight:500}
+.alert-status.enabled{background:var(--success-bg);color:var(--success);border:1px solid #A9D5BE}
+.alert-status.disabled{background:var(--warn-bg);color:var(--warn);border:1px solid #F5D99C}
+.alert-status .ic{font-size:24px}
+.alert-status b{font-weight:700}
+
+.history-row{padding:12px 16px;border-bottom:1px solid var(--border-light);font-size:12px}
+.history-row:last-child{border-bottom:none}
+.history-row:hover{background:var(--surface-hover)}
+.history-time{color:var(--text-mut);font-size:11px}
+.history-meta{display:flex;gap:12px;margin-top:4px;flex-wrap:wrap}
+.history-meta span{font-size:11px}
+.history-success{color:var(--success)}
+.history-error{color:var(--danger)}
+
+.crit-preview-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border-light)}
+.crit-preview-row:last-child{border-bottom:none}
+.crit-preview-icon{font-size:20px;flex-shrink:0}
+.crit-preview-info{flex:1;min-width:0}
+.crit-preview-store{font-weight:700;font-size:13px}
+.crit-preview-detail{font-size:11px;color:var(--text-mut);margin-top:2px}
+.crit-preview-doc{flex-shrink:0;text-align:right}
+
   /* Stock Bulk Upload Preview */
   .stock-preview-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px}
   .stock-stat{padding:12px;border-radius:8px;text-align:center}
@@ -443,6 +481,7 @@
         <button class="tab" data-tab="stock">📦 Stock Count</button>
         <button class="tab" data-tab="forecast">📈 Forecast</button>
         <button class="tab" data-tab="config">⚙️ Configuration</button>
+        <button class="tab" data-tab="alerts">🔔 Alerts</button>
         <button class="tab" data-tab="activity">📜 Activity Log</button>
         <button class="tab admin-only" data-tab="admin" id="adminTab" style="display:none">👑 Admin</button>
       </div>
@@ -649,8 +688,160 @@
       </div>
       <div id="logList"></div>
     </div>
-  </section>  
+  </section>
+
+
+<!-- ALERTS PAGE -->
+<section class="pane" id="alerts">
+  <div class="breadcrumb"><a>Operations</a><span class="sep">›</span><span>Alerts</span></div>
+  <div class="page-head">
+    <div>
+      <h1>🔔 Stock Alerts</h1>
+      <p>Configure automated notifications for <span id="alertsWsName">this workspace</span></p>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-action" onclick="testAlertNow()">🧪 Send Test Alert</button>
+      <button class="btn btn-cta" onclick="saveAlertConfig()">💾 Save Settings</button>
+    </div>
+  </div>
+  
+  <!-- Status Banner -->
+  <div id="alertStatusBanner" style="margin-bottom:16px"></div>
+  
+  <div class="grid-2">
+    <!-- LEFT: Configuration -->
+    <div>
+      <!-- Main Toggle -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title"><span class="icon">⚙️</span>Alert Configuration</div>
+        </div>
+        <div class="card-body">
+          <div class="alert-toggle">
+            <label class="alert-switch">
+              <input type="checkbox" id="alertEnabled">
+              <span class="alert-slider"></span>
+            </label>
+            <div>
+              <div style="font-weight:700;font-size:14px">Enable Alerts</div>
+              <div style="font-size:12px;color:var(--text-mut)">Master switch for all alert notifications</div>
+            </div>
+          </div>
+          
+          <div style="margin-top:16px">
+            <label style="display:block;font-size:12px;font-weight:700;margin-bottom:6px">DOC Threshold (days)</label>
+            <input type="number" id="alertThreshold" step="0.1" min="0.1" max="30" class="input" style="width:120px">
+            <p style="font-size:11px;color:var(--text-mut);margin-top:4px">
+              Trigger alert when any store's DOC drops below this value
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Email Settings -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title"><span class="icon">📧</span>Email Notifications</div>
+          <label class="alert-switch">
+            <input type="checkbox" id="emailEnabled">
+            <span class="alert-slider"></span>
+          </label>
+        </div>
+        <div class="card-body">
+          <label style="display:block;font-size:12px;font-weight:700;margin-bottom:6px">Recipients</label>
+          <div id="emailRecipients" style="margin-bottom:8px"></div>
+          <div style="display:flex;gap:8px">
+            <input type="email" id="newEmailInput" class="input" placeholder="add@email.com" style="flex:1" onkeydown="if(event.key==='Enter')addEmailRecipient()">
+            <button class="btn btn-sm" onclick="addEmailRecipient()">+ Add</button>
+          </div>
+          <p style="font-size:11px;color:var(--text-mut);margin-top:8px">
+            ⚠️ Note: Supabase Free Tier sends max 3 emails/hour. For more, consider Custom SMTP.
+          </p>
+        </div>
+      </div>
+      
+      <!-- Slack Settings -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title"><span class="icon">💬</span>Slack Notifications</div>
+          <label class="alert-switch">
+            <input type="checkbox" id="slackEnabled">
+            <span class="alert-slider"></span>
+          </label>
+        </div>
+        <div class="card-body">
+          <label style="display:block;font-size:12px;font-weight:700;margin-bottom:6px">Webhook URL</label>
+          <input type="url" id="slackWebhook" class="input" style="width:100%" placeholder="https://hooks.slack.com/services/...">
+          
+          <label style="display:block;font-size:12px;font-weight:700;margin-bottom:6px;margin-top:12px">Channel Name (display only)</label>
+          <input type="text" id="slackChannel" class="input" style="width:100%" placeholder="#stock-alerts">
+          
+          <div style="margin-top:12px;padding:12px;background:var(--surface-alt);border-radius:6px;font-size:11px;color:var(--text-mut)">
+            <b style="color:var(--text)">📚 How to get Webhook URL:</b><br>
+            1. Go to api.slack.com/apps → Create New App<br>
+            2. Activate "Incoming Webhooks"<br>
+            3. Add new webhook to your workspace<br>
+            4. Choose channel and copy the URL
+          </div>
+          
+          <button class="btn btn-sm" onclick="testSlackWebhook()" style="margin-top:10px">🧪 Test Slack Connection</button>
+        </div>
+      </div>
+      
+      <!-- Schedule -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title"><span class="icon">⏰</span>Schedule</div>
+        </div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>
+              <label style="display:block;font-size:12px;font-weight:700;margin-bottom:6px">Daily Run Time (UTC)</label>
+              <input type="time" id="scheduleTime" class="input" style="width:100%">
+              <p style="font-size:11px;color:var(--text-mut);margin-top:4px" id="localTimeHint">
+                Local: <span id="localTimeDisplay">—</span>
+              </p>
+            </div>
+            <div>
+              <label class="alert-toggle" style="margin-top:24px">
+                <label class="alert-switch">
+                  <input type="checkbox" id="realtimeEnabled">
+                  <span class="alert-slider"></span>
+                </label>
+                <div>
+                  <div style="font-weight:700;font-size:13px">Real-time Alerts</div>
+                  <div style="font-size:11px;color:var(--text-mut)">Notify on critical changes</div>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     
+    <!-- RIGHT: Preview & History -->
+    <div>
+      <!-- Live Preview -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title"><span class="icon">👁</span>Current Critical Stores</div>
+        </div>
+        <div class="card-body" id="criticalPreview"></div>
+      </div>
+      
+      <!-- Alert History -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title"><span class="icon">📜</span>Recent Alerts</div>
+          <button class="btn btn-link btn-sm" onclick="loadAlertHistory()">🔄 Refresh</button>
+        </div>
+        <div id="alertHistory"></div>
+      </div>
+    </div>
+  </div>
+</section>      
+
+      
   <!-- ADMIN PANEL -->
   <section class="pane" id="admin">
     <div class="breadcrumb"><a>Operations</a><span class="sep">›</span><span>Admin Panel</span></div>
@@ -1203,6 +1394,7 @@
     // Load workspace data
     showSync('Loading workspace data...');
     await loadFromCloud();
+    await loadAlertConfig(); // Load alert settings too
     hideSync();
     render();
   }
@@ -1671,7 +1863,7 @@
   function docColor(d){if(!d||d<1)return{bg:'#FCE4E4',fg:'#B12704',br:'#F5B7B1'};if(d<3)return{bg:'#FFF3CD',fg:'#B66A00',br:'#F5D99C'};if(d<7)return{bg:'#D5F5E3',fg:'#067D62',br:'#A9D5BE'};return{bg:'#D9EDF7',fg:'#146EB4',br:'#AED6F1'}}
   function docPill(d){if(!d||isNaN(d)||d===0)return'<span class="pill pill-nl">NO DATA</span>';if(d<1)return`<span class="pill pill-crit">${d.toFixed(1)}d</span>`;if(d<3)return`<span class="pill pill-low">${d.toFixed(1)}d</span>`;if(d<7)return`<span class="pill pill-ok">${d.toFixed(1)}d</span>`;return`<span class="pill pill-hi">${d.toFixed(1)}d</span>`}
   
-  document.querySelectorAll('.tab').forEach(el=>{el.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));document.getElementById(el.dataset.tab).classList.add('active');window.scrollTo(0,0);if(el.dataset.tab==='admin')renderAdmin();if(el.dataset.tab==='activity')renderActivity()}});
+document.querySelectorAll('.tab').forEach(el=>{el.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));document.getElementById(el.dataset.tab).classList.add('active');window.scrollTo(0,0);if(el.dataset.tab==='admin')renderAdmin();if(el.dataset.tab==='alerts'){loadAlertConfig().then(()=>renderAlerts())}}});
   function renderOverview(){
     const live=state.stores.filter(s=>s.status==='Live');
     let crit=0,low=0,ok=0,hi=0,totalRep=0,docSum=0,docCount=0;
@@ -3096,7 +3288,286 @@ function downloadStockTemplate(){
   }
   
   function render(){renderOverview();renderStores();renderStock();renderForecast();renderDOC();renderReplen();renderCfg();/* activity log loaded on demand */}
+
+
+// ============================================
+// ALERTS SYSTEM - State
+// ============================================
+let currentAlertConfig = null;
+let alertEmailList = [];
+
+// Load alert config when workspace selected
+async function loadAlertConfig(){
+  if(!activeWorkspace)return;
   
+  try{
+    const {data,error}=await supabaseClient
+      .from('alert_configs')
+      .select('*')
+      .eq('workspace_id',activeWorkspace.id)
+      .maybeSingle();
+    
+    if(error&&error.code!=='PGRST116')throw error;
+    
+    if(data){
+      currentAlertConfig=data;
+      alertEmailList=data.email_recipients||[];
+    } else {
+      // Create default config
+      currentAlertConfig={
+        workspace_id:activeWorkspace.id,
+        is_enabled:true,
+        doc_threshold:1.0,
+        email_enabled:true,
+        email_recipients:[],
+        slack_enabled:false,
+        slack_webhook_url:'',
+        slack_channel_name:'',
+        schedule_time:'08:00:00',
+        realtime_enabled:true
+      };
+      alertEmailList=[];
+    }
+  }catch(e){
+    console.error('Failed to load alert config:',e);
+    toast('Failed to load alerts settings','error');
+  }
+}
+
+// Render the Alerts page
+function renderAlerts(){
+  if(!activeWorkspace)return;
+  
+  document.getElementById('alertsWsName').innerHTML=`${activeWorkspace.flag||'🌍'} <b>${activeWorkspace.name}</b>`;
+  
+  // Render status banner
+  renderAlertStatus();
+  
+  // Fill form
+  if(currentAlertConfig){
+    document.getElementById('alertEnabled').checked=currentAlertConfig.is_enabled;
+    document.getElementById('alertThreshold').value=currentAlertConfig.doc_threshold;
+    document.getElementById('emailEnabled').checked=currentAlertConfig.email_enabled;
+    document.getElementById('slackEnabled').checked=currentAlertConfig.slack_enabled;
+    document.getElementById('slackWebhook').value=currentAlertConfig.slack_webhook_url||'';
+    document.getElementById('slackChannel').value=currentAlertConfig.slack_channel_name||'';
+    document.getElementById('scheduleTime').value=(currentAlertConfig.schedule_time||'08:00:00').slice(0,5);
+    document.getElementById('realtimeEnabled').checked=currentAlertConfig.realtime_enabled;
+  }
+  
+  // Update local time hint
+  updateLocalTimeHint();
+  
+  // Render email recipients
+  renderEmailList();
+  
+  // Render critical preview
+  renderCriticalPreview();
+  
+  // Load alert history
+  loadAlertHistory();
+}
+
+function renderAlertStatus(){
+  const banner=document.getElementById('alertStatusBanner');
+  if(!currentAlertConfig||!currentAlertConfig.is_enabled){
+    banner.innerHTML=`<div class="alert-status disabled">
+      <span class="ic">⏸️</span>
+      <div>
+        <b>Alerts are disabled</b>
+        <div style="font-size:11px;font-weight:500;margin-top:2px">Enable the master switch below to start receiving notifications</div>
+      </div>
+    </div>`;
+    return;
+  }
+  
+  const channels=[];
+  if(currentAlertConfig.email_enabled&&alertEmailList.length>0)channels.push(`📧 Email (${alertEmailList.length})`);
+  if(currentAlertConfig.slack_enabled&&currentAlertConfig.slack_webhook_url)channels.push('💬 Slack');
+  
+  if(channels.length===0){
+    banner.innerHTML=`<div class="alert-status disabled">
+      <span class="ic">⚠️</span>
+      <div>
+        <b>Alerts enabled but no delivery channels configured</b>
+        <div style="font-size:11px;font-weight:500;margin-top:2px">Add email recipients or configure Slack to start receiving alerts</div>
+      </div>
+    </div>`;
+  } else {
+    banner.innerHTML=`<div class="alert-status enabled">
+      <span class="ic">✅</span>
+      <div>
+        <b>Alerts active</b> via ${channels.join(' + ')}
+        <div style="font-size:11px;font-weight:500;margin-top:2px">Threshold: DOC < ${currentAlertConfig.doc_threshold} day(s) • Daily run: ${(currentAlertConfig.schedule_time||'08:00:00').slice(0,5)} UTC</div>
+      </div>
+    </div>`;
+  }
+}
+
+function updateLocalTimeHint(){
+  const utcTime=document.getElementById('scheduleTime').value;
+  if(!utcTime)return;
+  const [h,m]=utcTime.split(':');
+  const utcDate=new Date();
+  utcDate.setUTCHours(+h,+m,0,0);
+  const localTime=utcDate.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',hour12:true});
+  document.getElementById('localTimeDisplay').textContent=localTime;
+}
+
+function renderEmailList(){
+  const container=document.getElementById('emailRecipients');
+  if(alertEmailList.length===0){
+    container.innerHTML='<span style="color:var(--text-dim);font-size:12px;font-style:italic">No recipients added yet</span>';
+    return;
+  }
+  container.innerHTML=alertEmailList.map((email,i)=>`
+    <span class="email-tag">
+      ${email}
+      <span class="remove" onclick="removeEmailRecipient(${i})">✕</span>
+    </span>
+  `).join('');
+}
+
+function addEmailRecipient(){
+  const input=document.getElementById('newEmailInput');
+  const email=input.value.trim().toLowerCase();
+  
+  if(!email){toast('Enter an email','error');return}
+  
+  // Basic email validation
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    toast('Invalid email format','error');
+    return;
+  }
+  
+  if(alertEmailList.includes(email)){
+    toast('Email already added','error');
+    return;
+  }
+  
+  alertEmailList.push(email);
+  input.value='';
+  renderEmailList();
+  toast('Email added (remember to save)');
+}
+
+function removeEmailRecipient(index){
+  alertEmailList.splice(index,1);
+  renderEmailList();
+}
+
+function renderCriticalPreview(){
+  const container=document.getElementById('criticalPreview');
+  const threshold=currentAlertConfig?.doc_threshold||1.0;
+  
+  // Find critical stores using current data
+  const critical=[];
+  state.stores.filter(s=>s.status==='Live').forEach(s=>{
+    if(!state.fc[s.code])return;
+    CONS_KEYS.forEach(c=>{
+      const d=calcDOC(s.code,c);
+      if(d>0&&d<threshold){
+        critical.push({
+          store:s.code,
+          area:s.area,
+          consumable:c,
+          doc:d,
+          replen:calcReplen(s.code,c)
+        });
+      }
+    });
+  });
+  
+  critical.sort((a,b)=>a.doc-b.doc);
+  
+  if(critical.length===0){
+    container.innerHTML='<div class="empty"><div class="ic">✅</div><p>No critical stores</p><p style="font-size:11px">All stores have DOC ≥ '+threshold+' day(s)</p></div>';
+    return;
+  }
+  
+  container.innerHTML=critical.slice(0,10).map(c=>`
+    <div class="crit-preview-row">
+      <div class="crit-preview-icon">${state.cons[c.consumable]?.icon||'📦'}</div>
+      <div class="crit-preview-info">
+        <div class="crit-preview-store">${c.store} — ${c.consumable}</div>
+        <div class="crit-preview-detail">${c.area||''}</div>
+      </div>
+      <div class="crit-preview-doc">
+        <span class="pill pill-crit">${c.doc.toFixed(1)}d</span>
+        <div class="cell-sub mono">Need: <b>${c.replen.ct} ct</b></div>
+      </div>
+    </div>
+  `).join('')+(critical.length>10?`<div style="text-align:center;padding:8px;font-size:11px;color:var(--text-mut)">... and ${critical.length-10} more</div>`:'');
+}
+
+async function loadAlertHistory(){
+  if(!activeWorkspace)return;
+  
+  try{
+    const {data,error}=await supabaseClient
+      .from('alert_history')
+      .select('*')
+      .eq('workspace_id',activeWorkspace.id)
+      .order('created_at',{ascending:false})
+      .limit(20);
+    
+    if(error)throw error;
+    
+    const container=document.getElementById('alertHistory');
+    if(!data||data.length===0){
+      container.innerHTML='<div class="empty" style="padding:30px"><div class="ic">📭</div><p>No alerts sent yet</p></div>';
+      return;
+    }
+    
+    container.innerHTML=data.map(a=>{
+      const time=new Date(a.created_at).toLocaleString();
+      const typeIcon={'daily_scheduled':'⏰','realtime':'⚡','manual_test':'🧪'}[a.alert_type]||'📬';
+      const typeLabel={'daily_scheduled':'Scheduled','realtime':'Real-time','manual_test':'Test'}[a.alert_type]||a.alert_type;
+      
+      return `<div class="history-row">
+        <div style="font-weight:700">${typeIcon} ${typeLabel}: ${a.critical_count} critical store(s)</div>
+        <div class="history-meta">
+          <span class="history-time">${time}</span>
+          ${a.email_sent?'<span class="history-success">📧 Email sent</span>':a.email_error?'<span class="history-error">📧 Email failed</span>':''}
+          ${a.slack_sent?'<span class="history-success">💬 Slack sent</span>':a.slack_error?'<span class="history-error">💬 Slack failed</span>':''}
+          ${a.triggered_by_email?'<span style="color:var(--text-mut)">by '+a.triggered_by_email+'</span>':''}
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    console.error('Failed to load alert history:',e);
+  }
+}
+
+// Live time update
+setInterval(()=>{
+  if(document.getElementById('alerts')?.classList.contains('active')){
+    updateLocalTimeHint();
+  }
+},60000);
+
+// Schedule time change handler
+document.addEventListener('DOMContentLoaded',()=>{
+  const scheduleInput=document.getElementById('scheduleTime');
+  if(scheduleInput){
+    scheduleInput.addEventListener('change',updateLocalTimeHint);
+  }
+});
+
+// Placeholder functions (will be implemented in step 4)
+async function saveAlertConfig(){
+  toast('⏳ Coming in step 4...','error');
+}
+
+async function testAlertNow(){
+  toast('⏳ Coming in step 4...','error');
+}
+
+async function testSlackWebhook(){
+  toast('⏳ Coming in step 4...','error');
+}
+      
+      
   // ============================================
   // AUTO-START
   // ============================================
