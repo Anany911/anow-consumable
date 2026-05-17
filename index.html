@@ -1001,16 +1001,7 @@
   function showSync(text='Syncing...'){const el=document.getElementById('syncIndicator');document.getElementById('syncText').textContent=text;el.classList.add('show')}
   function hideSync(){document.getElementById('syncIndicator').classList.remove('show')}
   
-function toast(msg,type='success'){
-  const t=document.getElementById('toast');
-  if(!t){console.log('Toast:',msg);return}
-  t.className='toast show '+(type==='error'?'error':'');
-  const ic=t.querySelector('.toast-ic');
-  const body=t.querySelector('.toast-body');
-  if(ic)ic.textContent=type==='success'?'✓':'✕';
-  if(body)body.textContent=msg;
-  setTimeout(()=>t.className='toast',2500);
-}
+function toast(msg,type='success'){const t=document.getElementById('toast');t.className='toast show '+(type==='error'?'error':'');t.querySelector('.toast-ic').textContent=type==='success'?'✓':'✕';t.querySelector('.toast-body').textContent=msg;setTimeout(()=>t.className='toast',2500)}
   
   // ============================================
   // PERMISSION SYSTEM
