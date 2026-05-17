@@ -755,11 +755,8 @@
     </div>
   </div>
   
-  <div class="toast" id="toast">
-    </div>
-  </div>
-  
-  <div class="toast" id="toast"><span class="toast-ic">✓</span><div class="toast-body">Saved</div></div>
+<div class="toast" id="toast"><span class="toast-ic">✓</span><div class="toast-body">Saved</div></div>
+
   
   <div class="sync-indicator" id="syncIndicator">
     <span class="sync-dot"></span>
@@ -2416,9 +2413,9 @@ function downloadStockTemplate(){
 }
 
   function exportAll(){const wsName=activeWorkspace?.name||'workspace';const dump={workspace:activeWorkspace,...state};const b=new Blob([JSON.stringify(dump,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`anow_${wsName}_${new Date().toISOString().slice(0,10)}.json`;a.click()}
-  // ACTIVITY LOG RENDERING
-  // ============================================
-  
+// ACTIVITY LOG RENDERING
+// ============================================
+
   let cachedLogs=[];
   
   async function renderActivity(){
