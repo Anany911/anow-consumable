@@ -1388,15 +1388,16 @@
     await loadPermissions();
     console.log('🔐 Permissions loaded:',currentPermissions);
     
-    // Update UI based on permissions
-    applyPermissionsToUI();
-    
-    // Load workspace data
-    showSync('Loading workspace data...');
-    await loadFromCloud();
-    await loadAlertConfig(); // Load alert settings too
-    hideSync();
-    render();
+  // Apply permissions to UI
+  applyPermissionsToUI();
+  
+      // Load workspace data
+      showSync('Loading workspace data...');
+      await loadFromCloud();
+      await loadAlertConfig(); // Load alert settings too
+      hideSync();
+      render();
+    }
   }
   
   
