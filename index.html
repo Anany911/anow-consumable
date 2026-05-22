@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -75,7 +74,7 @@ a:hover{color:var(--link-hover);text-decoration:underline}
 .tab.admin-only{background:rgba(255,153,0,.1);border-left:1px solid rgba(255,255,255,.1)}
 .page{max-width:1600px;margin:0 auto;padding:20px 24px}
 .breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:16px;font-size:12px;color:var(--text-mut)}
-.breadcrumb a{color:var(--link);font-weight:500}
+.breadcrumb a{color:var(--link);font-weight:500;cursor:pointer}
 .breadcrumb .sep{color:var(--text-dim)}
 .page-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:16px}
 .page-head h1{font-size:24px;font-weight:700;letter-spacing:-.3px}
@@ -314,10 +313,6 @@ tr:last-child td{border-bottom:none}
 .log-change .new{color:var(--success);font-weight:600}
 .role-test-banner{position:fixed;top:0;left:0;right:0;background:#FF9900;color:#131A22;padding:8px 16px;text-align:center;font-weight:700;font-size:13px;z-index:9999;box-shadow:0 2px 5px rgba(0,0,0,.2);display:none}
 .role-test-banner.show{display:block}
-
-/* ============================================
-   OPERATIONS HUB (Cards Grid)
-   ============================================ */
 .hub-container{max-width:1200px;margin:40px auto;padding:0 24px}
 .hub-header{text-align:center;margin-bottom:40px}
 .hub-header h1{font-size:32px;font-weight:700;color:var(--text);margin-bottom:8px;letter-spacing:-.5px}
@@ -337,51 +332,32 @@ tr:last-child td{border-bottom:none}
 .hub-card-features li::before{content:'>';color:var(--amz-orange);font-weight:700}
 .hub-card-cta{display:inline-flex;align-items:center;gap:6px;color:var(--amz-orange-dark);font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.5px}
 .hub-card:hover .hub-card-cta{color:var(--link-hover)}
-
-/* Sub-tabs (inside Historical Data) */
 .subtabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px;overflow-x:auto}
 .subtab{padding:12px 20px;background:transparent;border:none;cursor:pointer;font-size:13px;font-weight:600;color:var(--text-mut);border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;font-family:inherit;transition:all .15s}
 .subtab:hover{color:var(--text);background:var(--surface-hover)}
 .subtab.active{color:var(--amz-orange-dark);border-bottom-color:var(--amz-orange);background:var(--surface)}
 .subpane{display:none}
 .subpane.active{display:block;animation:fadeIn .2s}
-
-/* Historical Data Filters */
 .hist-filters{background:var(--surface-alt);padding:16px 20px;border-radius:8px;margin-bottom:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;border:1px solid var(--border)}
 .hist-filter-group{display:flex;flex-direction:column;gap:4px}
 .hist-filter-group label{font-size:11px;font-weight:700;color:var(--text-mut);text-transform:uppercase;letter-spacing:.5px}
 .hist-filter-group select,.hist-filter-group input{padding:7px 12px;background:#fff;border:1px solid #888C8C;border-radius:3px;font-size:13px;font-family:inherit;width:100%;box-shadow:inset 0 1px 2px rgba(0,0,0,.05)}
 .hist-filter-group select:focus,.hist-filter-group input:focus{outline:none;border-color:var(--amz-orange);box-shadow:0 0 3px 2px rgba(255,153,0,.5)}
-
-/* Chart Container */
 .chart-container{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:16px;position:relative}
 .chart-canvas-wrapper{position:relative;height:400px;margin-top:16px}
 .chart-empty{text-align:center;padding:60px 20px;color:var(--text-mut)}
 .chart-empty .ic{font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;color:var(--amz-orange)}
-
-/* Comparison View */
-.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
-@media(max-width:900px){.compare-grid{grid-template-columns:1fr}}
-.compare-side{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px}
-.compare-side h4{font-size:14px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
-.compare-side h4 .date-pill{font-size:11px;font-weight:700;padding:3px 8px;border-radius:3px;background:var(--info-bg);color:var(--info)}
-.compare-side.left h4 .date-pill{background:var(--info-bg);color:var(--info)}
-.compare-side.right h4 .date-pill{background:#FFF4E0;color:var(--amz-orange-dark)}
 .diff-positive{color:var(--success);font-weight:700}
 .diff-negative{color:var(--danger);font-weight:700}
 .diff-neutral{color:var(--text-mut)}
 .diff-arrow{display:inline-block;margin:0 4px;font-weight:700}
 .diff-arrow.up{color:var(--success)}
 .diff-arrow.down{color:var(--danger)}
-
-/* Snapshot Status Banner */
 .snapshot-banner{background:linear-gradient(135deg,#E3F2FD,#D9EDF7);border:1px solid #AED6F1;border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
 .snapshot-banner.warning{background:linear-gradient(135deg,#FFF8EC,#FFF4E0);border-color:#FFD89C}
 .snapshot-banner-text{font-size:13px;color:var(--text)}
 .snapshot-banner-text b{color:var(--info)}
 .snapshot-banner.warning .snapshot-banner-text b{color:var(--amz-orange-dark)}
-
-/* Stats Summary */
 .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px}
 .summary-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center}
 .summary-card-label{font-size:11px;color:var(--text-mut);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
@@ -390,8 +366,6 @@ tr:last-child td{border-bottom:none}
 .summary-card.up .summary-card-value{color:var(--success)}
 .summary-card.down .summary-card-value{color:var(--danger)}
 .summary-card.neutral .summary-card-value{color:var(--info)}
-
-/* Heatmap Calendar (for monthly view) */
 .calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:14px}
 .calendar-day-header{font-size:10px;font-weight:700;text-align:center;color:var(--text-mut);text-transform:uppercase;padding:6px 0}
 .calendar-day{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:6px;background:var(--surface-alt);font-size:11px;cursor:pointer;border:1px solid var(--border-light);position:relative}
@@ -461,15 +435,8 @@ tr:last-child td{border-bottom:none}
 </div>
 
 <nav class="topnav" style="display:none" id="mainNav">
-  
-<div class="brand" onclick="goToHub()" style="cursor:pointer">
-  <div>
-    <div class="brand-logo">Anow<span class="smile">.</span></div>
-    <div class="brand-sub">OPERATIONS</div>
-  </div>
-</div>
   <div class="topnav-inner">
-    <div class="brand">
+    <div class="brand" onclick="goToHub()">
       <div>
         <div class="brand-logo">Anow<span class="smile">.</span></div>
         <div class="brand-sub">OPERATIONS</div>
@@ -498,37 +465,25 @@ tr:last-child td{border-bottom:none}
       </div>
     </div>
   </div>
-
-<div class="subnav">
-  <div class="subnav-inner" id="subnavInner">
-    <!-- Hub View (default) -->
-    <button class="tab active" data-tab="hub" data-view="hub">Operations</button>
-    
-    <!-- Dashboard Tabs (hidden by default) -->
-    <button class="tab" data-tab="overview" data-view="dashboard" style="display:none">Overview</button>
-    <button class="tab" data-tab="doc" data-view="dashboard" style="display:none">DOC Analysis</button>
-    <button class="tab" data-tab="replen" data-view="dashboard" style="display:none">Replenishment <span class="badge" id="repBadge">0</span></button>
-    <button class="tab" data-tab="stores" data-view="dashboard" style="display:none">Stores</button>
-    <button class="tab" data-tab="stock" data-view="dashboard" style="display:none">Stock Count</button>
-    <button class="tab" data-tab="forecast" data-view="dashboard" style="display:none">Forecast</button>
-    <button class="tab" data-tab="config" data-view="dashboard" style="display:none">Configuration</button>
-    <button class="tab" data-tab="activity" data-view="dashboard" style="display:none">Activity Log</button>
-    
-    <!-- Historical Tab (hidden by default) -->
-    <button class="tab" data-tab="historical" data-view="history" style="display:none">Historical Data</button>
-    
-    <!-- Admin Tab (super admin only) -->
-    <button class="tab admin-only" data-tab="admin" id="adminTab" style="display:none">Admin</button>
+  <div class="subnav">
+    <div class="subnav-inner" id="subnavInner">
+      <button class="tab active" data-tab="hub" data-view="hub">Operations</button>
+      <button class="tab" data-tab="overview" data-view="dashboard" style="display:none">Overview</button>
+      <button class="tab" data-tab="doc" data-view="dashboard" style="display:none">DOC Analysis</button>
+      <button class="tab" data-tab="replen" data-view="dashboard" style="display:none">Replenishment <span class="badge" id="repBadge">0</span></button>
+      <button class="tab" data-tab="stores" data-view="dashboard" style="display:none">Stores</button>
+      <button class="tab" data-tab="stock" data-view="dashboard" style="display:none">Stock Count</button>
+      <button class="tab" data-tab="forecast" data-view="dashboard" style="display:none">Forecast</button>
+      <button class="tab" data-tab="config" data-view="dashboard" style="display:none">Configuration</button>
+      <button class="tab" data-tab="activity" data-view="dashboard" style="display:none">Activity Log</button>
+      <button class="tab" data-tab="historical" data-view="history" style="display:none">Historical Data</button>
+      <button class="tab admin-only" data-tab="admin" id="adminTab" style="display:none">Admin</button>
+    </div>
   </div>
-</div>
 </nav>
 
 <div class="page" id="mainPage" style="display:none">
 
-
-<!-- ============================================
-     OPERATIONS HUB (Main Landing Page)
-     ============================================ -->
 <section class="pane active" id="hub">
   <div class="hub-container">
     <div class="hub-header">
@@ -541,9 +496,9 @@ tr:last-child td{border-bottom:none}
         <div class="hub-card-title">Dashboard</div>
         <div class="hub-card-desc">Real-time inventory operations and live data management for your store network.</div>
         <ul class="hub-card-features">
-          <li>Overview & DOC Analysis</li>
-          <li>Stores & Stock Count</li>
-          <li>Forecast & Replenishment</li>
+          <li>Overview &amp; DOC Analysis</li>
+          <li>Stores &amp; Stock Count</li>
+          <li>Forecast &amp; Replenishment</li>
           <li>Configuration</li>
         </ul>
         <div class="hub-card-cta">Open Dashboard &gt;</div>
@@ -562,10 +517,10 @@ tr:last-child td{border-bottom:none}
       </div>
     </div>
   </div>
-</section>  
+</section>
 
-<section class="pane active" id="overview">
-  <div class="breadcrumb"><a>Operations</a><span class="sep">/</span><a>Consumables</a><span class="sep">/</span><span>Dashboard</span></div>
+<section class="pane" id="overview">
+  <div class="breadcrumb"><a onclick="goToHub()">Operations</a><span class="sep">/</span><a onclick="enterView('dashboard')">Dashboard</a><span class="sep">/</span><span>Overview</span></div>
   <div class="banner">
     <div class="banner-text">
       <h3 id="bannerTitle">Consumables Operations Center</h3>
@@ -607,7 +562,7 @@ tr:last-child td{border-bottom:none}
 </section>
 
 <section class="pane" id="stores">
-  <div class="breadcrumb"><a>Operations</a><span class="sep">/</span><span>Stores</span></div>
+  <div class="breadcrumb"><a onclick="goToHub()">Operations</a><span class="sep">/</span><a onclick="enterView('dashboard')">Dashboard</a><span class="sep">/</span><span>Stores</span></div>
   <div class="page-head">
     <div><h1>Store Network Management</h1><p>Manage locations, capacities, and launch status</p></div>
     <div class="page-actions"><button class="btn btn-action" onclick="openStore()">+ Add New Store</button></div>
@@ -625,7 +580,7 @@ tr:last-child td{border-bottom:none}
 </section>
 
 <section class="pane" id="stock">
-  <div class="breadcrumb"><a>Operations</a><span class="sep">/</span><span>Stock Count</span></div>
+  <div class="breadcrumb"><a onclick="goToHub()">Operations</a><span class="sep">/</span><a onclick="enterView('dashboard')">Dashboard</a><span class="sep">/</span><span>Stock Count</span></div>
   <div class="page-head">
     <div><h1>Stock Count Entry</h1><p>Cartons on hand per store</p></div>
     <div class="page-actions">
@@ -651,7 +606,7 @@ tr:last-child td{border-bottom:none}
 </section>
 
 <section class="pane" id="forecast">
-  <div class="breadcrumb"><a>Operations</a><span class="sep">/</span><span>Forecast</span></div>
+  <div class="breadcrumb"><a onclick="goToHub()">Operations</a><span class="sep">/</span><a onclick="enterView('dashboard')">Dashboard</a><span class="sep">/</span><span>Forecast</span></div>
   <div class="page-head">
     <div><h1>Demand Forecast</h1><p>Monthly orders and units projections</p></div>
     <div class="page-actions">
@@ -670,7 +625,7 @@ tr:last-child td{border-bottom:none}
 </section>
 
 <section class="pane" id="doc">
-  <div class="breadcrumb"><a>Operations</a><span class="sep">/</span><span>DOC Analysis</span></div>
+  <div class="breadcrumb"><a onclick="goToHub()">Operations</a><span class="sep">/</span><a onclick="enterView('dashboard')">Dashboard</a><span class="sep">/</span><span>DOC Analysis</span></div>
   <div class="page-head"><div><h1>Days of Cover Analysis</h1><p>Per-SKU breakdown</p></div></div>
   <div class="card">
     <div class="filters">
@@ -683,7 +638,7 @@ tr:last-child td{border-bottom:none}
 </section>
 
 <section class="pane" id="replen">
-  <div class="breadcrumb"><a>Operations</a><span class="sep">/</span><span>Replenishment</span></div>
+  <div class="breadcrumb"><a onclick="goToHub()">Operations</a><span class="sep">/</span><a onclick="enterView('dashboard')">Dashboard</a><span class="sep">/</span><span>Replenishment</span></div>
   <div class="page-head">
     <div><h1>Weekly Replenishment Plan</h1><p>Cartons required for coming week</p></div>
     <div class="page-actions"><button class="btn btn-cta" onclick="expReplenCSV()">Export CSV</button></div>
@@ -692,7 +647,7 @@ tr:last-child td{border-bottom:none}
 </section>
 
 <section class="pane" id="config">
-  <div class="breadcrumb"><a>Operations</a><span class="sep">/</span><span>Configuration</span></div>
+  <div class="breadcrumb"><a onclick="goToHub()">Operations</a><span class="sep">/</span><a onclick="enterView('dashboard')">Dashboard</a><span class="sep">/</span><span>Configuration</span></div>
   <div class="page-head"><div><h1>System Configuration</h1><p>Tuning parameters for current workspace</p></div></div>
   <div class="card">
     <div class="card-head"><div class="card-title"><span class="icon">G</span>Global Parameters</div></div>
@@ -724,7 +679,7 @@ tr:last-child td{border-bottom:none}
 </section>
 
 <section class="pane" id="activity">
-  <div class="breadcrumb"><a>Operations</a><span class="sep">/</span><span>Activity Log</span></div>
+  <div class="breadcrumb"><a onclick="goToHub()">Operations</a><span class="sep">/</span><a onclick="enterView('dashboard')">Dashboard</a><span class="sep">/</span><span>Activity Log</span></div>
   <div class="page-head">
     <div><h1>Activity Log</h1><p>All changes in <span id="logWsName">this workspace</span></p></div>
     <div class="page-actions">
@@ -768,7 +723,7 @@ tr:last-child td{border-bottom:none}
 </section>
 
 <section class="pane" id="admin">
-  <div class="breadcrumb"><a>Operations</a><span class="sep">/</span><span>Admin Panel</span></div>
+  <div class="breadcrumb"><a onclick="goToHub()">Operations</a><span class="sep">/</span><span>Admin Panel</span></div>
   <div class="page-head">
     <div><h1>Admin Panel</h1><p>Manage workspaces, members, and system settings</p></div>
     <div class="page-actions">
@@ -791,16 +746,12 @@ tr:last-child td{border-bottom:none}
   </div>
 </section>
 
-<!-- ============================================
-     HISTORICAL DATA PAGE
-     ============================================ -->
 <section class="pane" id="historical">
   <div class="breadcrumb">
     <a onclick="goToHub()">Operations</a>
     <span class="sep">/</span>
     <span>Historical Data</span>
   </div>
-  
   <div class="page-head">
     <div>
       <h1>Historical Data &amp; Reports</h1>
@@ -811,11 +762,7 @@ tr:last-child td{border-bottom:none}
       <button class="btn btn-cta" onclick="manualSnapshot()">Save Snapshot Now</button>
     </div>
   </div>
-  
-  <!-- Snapshot Status Banner -->
   <div id="snapshotStatusBanner"></div>
-  
-  <!-- Sub-tabs -->
   <div class="subtabs">
     <button class="subtab active" data-subtab="trend">Stock Trend</button>
     <button class="subtab" data-subtab="comparison">Comparison</button>
@@ -823,14 +770,11 @@ tr:last-child td{border-bottom:none}
     <button class="subtab" data-subtab="consumption">Consumption Report</button>
   </div>
   
-  <!-- ===== TREND SUB-PANE ===== -->
   <div class="subpane active" id="subpane-trend">
     <div class="hist-filters">
       <div class="hist-filter-group">
         <label>Store</label>
-        <select id="trendStore" onchange="renderTrendChart()">
-          <option value="">All Stores</option>
-        </select>
+        <select id="trendStore" onchange="renderTrendChart()"><option value="">All Stores</option></select>
       </div>
       <div class="hist-filter-group">
         <label>Item</label>
@@ -852,9 +796,7 @@ tr:last-child td{border-bottom:none}
         </select>
       </div>
     </div>
-    
     <div class="summary-grid" id="trendSummary"></div>
-    
     <div class="chart-container">
       <h3 style="font-size:15px;font-weight:700;margin-bottom:4px">Stock Level Over Time</h3>
       <p style="font-size:12px;color:var(--text-mut);margin-bottom:8px" id="trendSubtitle">Select filters to view chart</p>
@@ -868,7 +810,6 @@ tr:last-child td{border-bottom:none}
     </div>
   </div>
   
-  <!-- ===== COMPARISON SUB-PANE ===== -->
   <div class="subpane" id="subpane-comparison">
     <div class="hist-filters">
       <div class="hist-filter-group">
@@ -881,9 +822,7 @@ tr:last-child td{border-bottom:none}
       </div>
       <div class="hist-filter-group">
         <label>Filter Store</label>
-        <select id="cmpStore" onchange="renderComparison()">
-          <option value="">All Stores</option>
-        </select>
+        <select id="cmpStore" onchange="renderComparison()"><option value="">All Stores</option></select>
       </div>
       <div class="hist-filter-group">
         <label>Sort By</label>
@@ -895,23 +834,16 @@ tr:last-child td{border-bottom:none}
         </select>
       </div>
     </div>
-    
     <div class="summary-grid" id="cmpSummary"></div>
-    
     <div class="card">
       <div class="card-head">
         <div class="card-title"><span class="icon">CMP</span>Stock Comparison</div>
         <button class="btn btn-sm" onclick="exportComparisonCSV()">Export CSV</button>
       </div>
-      <div class="tbl-wrap">
-        <div class="tbl-scroll">
-          <table id="tblComparison"></table>
-        </div>
-      </div>
+      <div class="tbl-wrap"><div class="tbl-scroll"><table id="tblComparison"></table></div></div>
     </div>
   </div>
   
-  <!-- ===== MONTHLY SUMMARY SUB-PANE ===== -->
   <div class="subpane" id="subpane-monthly">
     <div class="hist-filters">
       <div class="hist-filter-group">
@@ -920,35 +852,25 @@ tr:last-child td{border-bottom:none}
       </div>
       <div class="hist-filter-group">
         <label>Filter Store</label>
-        <select id="monthStore" onchange="renderMonthlySummary()">
-          <option value="">All Stores</option>
-        </select>
+        <select id="monthStore" onchange="renderMonthlySummary()"><option value="">All Stores</option></select>
       </div>
     </div>
-    
     <div class="summary-grid" id="monthSummary"></div>
-    
     <div class="card">
       <div class="card-head">
         <div class="card-title"><span class="icon">CAL</span>Daily Snapshot Calendar</div>
       </div>
       <div id="snapshotCalendar"></div>
     </div>
-    
     <div class="card">
       <div class="card-head">
         <div class="card-title"><span class="icon">AVG</span>Monthly Average per Store</div>
         <button class="btn btn-sm" onclick="exportMonthlyCSV()">Export CSV</button>
       </div>
-      <div class="tbl-wrap">
-        <div class="tbl-scroll">
-          <table id="tblMonthly"></table>
-        </div>
-      </div>
+      <div class="tbl-wrap"><div class="tbl-scroll"><table id="tblMonthly"></table></div></div>
     </div>
   </div>
   
-  <!-- ===== CONSUMPTION REPORT SUB-PANE ===== -->
   <div class="subpane" id="subpane-consumption">
     <div class="hist-filters">
       <div class="hist-filter-group">
@@ -962,15 +884,11 @@ tr:last-child td{border-bottom:none}
       </div>
       <div class="hist-filter-group">
         <label>Filter Store</label>
-        <select id="conStore" onchange="renderConsumption()">
-          <option value="">All Stores</option>
-        </select>
+        <select id="conStore" onchange="renderConsumption()"><option value="">All Stores</option></select>
       </div>
       <div class="hist-filter-group">
         <label>Filter Item</label>
-        <select id="conItem" onchange="renderConsumption()">
-          <option value="">All Items</option>
-        </select>
+        <select id="conItem" onchange="renderConsumption()"><option value="">All Items</option></select>
       </div>
       <div class="hist-filter-group">
         <label>Group By</label>
@@ -981,9 +899,7 @@ tr:last-child td{border-bottom:none}
         </select>
       </div>
     </div>
-    
     <div class="summary-grid" id="conSummary"></div>
-    
     <div class="chart-container">
       <h3 style="font-size:15px;font-weight:700;margin-bottom:4px">Consumption Chart</h3>
       <p style="font-size:12px;color:var(--text-mut);margin-bottom:8px">Total cartons consumed in the selected period</p>
@@ -991,21 +907,16 @@ tr:last-child td{border-bottom:none}
         <canvas id="consumptionChart"></canvas>
       </div>
     </div>
-    
     <div class="card">
       <div class="card-head">
         <div class="card-title"><span class="icon">CON</span>Consumption Details</div>
         <button class="btn btn-sm" onclick="exportConsumptionCSV()">Export CSV</button>
       </div>
-      <div class="tbl-wrap">
-        <div class="tbl-scroll">
-          <table id="tblConsumption"></table>
-        </div>
-      </div>
+      <div class="tbl-wrap"><div class="tbl-scroll"><table id="tblConsumption"></table></div></div>
     </div>
   </div>
 </section>
-  
+
 </div>
 
 <div class="modal" id="mdStore">
@@ -1061,7 +972,7 @@ tr:last-child td{border-bottom:none}
       <div class="form-grid">
         <div class="field"><label>User Email <span class="req">*</span></label><input id="mMemberEmail" placeholder="user@company.com"></div>
         <div class="field"><label>Role</label><select id="mMemberRole"><option value="member">Member</option><option value="admin">Admin</option><option value="viewer">Viewer</option></select></div>
-        <p style="font-size:11px;color:var(--text-mut)">Note: User must have signed up and confirmed their email first before being added. They will receive a notification email.</p>
+        <p style="font-size:11px;color:var(--text-mut)">Note: User must have signed up and confirmed their email first before being added.</p>
       </div>
     </div>
     <div class="modal-actions">
@@ -1094,7 +1005,7 @@ tr:last-child td{border-bottom:none}
       <button class="modal-close" onclick="document.getElementById('mdStockUpdate').classList.remove('show')">X</button>
     </div>
     <div class="modal-body">
-      <p style="font-size:13px;color:var(--text-mut);margin-bottom:14px">This will record that you have manually updated the stock counts. Add an optional note for context.</p>
+      <p style="font-size:13px;color:var(--text-mut);margin-bottom:14px">This will record that you have manually updated the stock counts and create a snapshot. Add an optional note for context.</p>
       <div class="form-grid">
         <div class="field">
           <label>Notes (Optional)</label>
@@ -1139,7 +1050,12 @@ tr:last-child td{border-bottom:none}
   <span id="syncText">Syncing...</span>
 </div>
 
+
 <script>
+// ============================================
+// CONFIGURATION & CONSTANTS
+// ============================================
+
 const SUPABASE_URL = 'https://borpelpxgrbpwhwtunns.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvcnBlbHB4Z3JicHdod3R1bm5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3ODk3MDIsImV4cCI6MjA5NDM2NTcwMn0.2eTRhtIih6QxuDQrUqA_PymewB85bmHJSWHZXpCVZOQ';
 
@@ -1158,6 +1074,10 @@ const DEFAULT_CONS = {
 };
 const CONS_KEYS = ['PaperBag-L','PaperBag-M','SealTape','SPOOLabel','BubbleWrap-L','BubbleWrap-M','BubbleWrap-S','IceCreamBags','GelPads'];
 
+// ============================================
+// GLOBAL STATE
+// ============================================
+
 let state = {cons:JSON.parse(JSON.stringify(DEFAULT_CONS)),stores:[],stock:{},fc:{},fcUnits:{},buffer:1.30,upo:8.58,stkDate:new Date().toISOString().slice(0,10)};
 let docSelected = null;
 let currentUser = null;
@@ -1171,6 +1091,23 @@ let allUsers = [];
 let allWorkspaces = [];
 let lastStockUpdate = null;
 let pendingSuperAdminAction = null;
+let currentView = 'hub';
+let stockHistoryCache = [];
+let trendChartInstance = null;
+let consumptionChartInstance = null;
+let cachedLogs = [];
+let comparisonRows = [];
+let monthlyRows = [];
+let consumptionRows = [];
+let pendingStockImport = null;
+let editStore = null;
+let memberWsId = null;
+let _originalPermissions = null;
+let currentPermissions = {role:'none',canView:false,canEdit:false,canManageSettings:false,canManageMembers:false,canDeleteWorkspace:false};
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
 
 function stockKey(c){return String(c).replace(/[-\s_]/g,'')}
 function readStock(s,c){const r=state.stock[s];if(!r)return 0;return +r[stockKey(c)]||0}
@@ -1190,7 +1127,65 @@ function toast(msg,type){
   setTimeout(()=>t.className='toast',2500);
 }
 
-let currentPermissions = {role:'none',canView:false,canEdit:false,canManageSettings:false,canManageMembers:false,canDeleteWorkspace:false};
+function n(x,d){d=d||0;return x==null||isNaN(x)?'-':Number(x).toLocaleString(undefined,{maximumFractionDigits:d,minimumFractionDigits:d})}
+function debouncedSave(key,fn,delay){delay=delay||500;if(saveTimers[key])clearTimeout(saveTimers[key]);saveTimers[key]=setTimeout(fn,delay)}
+
+function normStr(s){return String(s==null?'':s).trim()}
+function normKey(s){return normStr(s).toLowerCase().replace(/[^a-z0-9]/g,'')}
+function toNum(v){
+  if(v==null||v==='')return null;
+  if(typeof v==='number')return isNaN(v)?null:v;
+  const s=String(v).trim();
+  if(!s)return null;
+  if(/^(error|#n\/?a|na|#ref|#div|#value|#name|#null)/i.test(s))return null;
+  if(s==='-'||s==='- 0')return null;
+  if(s.endsWith('%')){const p=parseFloat(s.replace(/[%,\s]/g,''));return isNaN(p)?null:p/100}
+  const cleaned=s.replace(/,/g,'').replace(/\s/g,'').replace(/[()]/g,'');
+  const num=parseFloat(cleaned);
+  return isNaN(num)?null:num;
+}
+function isStoreCode(s){return /^Q[A-Z]{1,3}\d+[A-Z]?$/i.test(normStr(s).trim())}
+function normalizeStatus(raw){const s=normKey(raw);if(!s)return'Live';if(['live','launched','active','open','running'].includes(s))return'Live';return'Not Live'}
+
+function resolveConsKey(header){
+  if(!header)return null;
+  const k=normKey(header);
+  if(!k)return null;
+  if(/sp[o0][o0]/.test(k))return'SPOOLabel';
+  if(k==='label'||k==='labels')return'SPOOLabel';
+  if(k.includes('sealtape')||(k.includes('seal')&&k.includes('tape')))return'SealTape';
+  if(k.includes('bubble')){
+    if(k.endsWith('l')||k.includes('large'))return'BubbleWrap-L';
+    if(k.endsWith('m')||k.includes('medium'))return'BubbleWrap-M';
+    if(k.endsWith('s')||k.includes('small'))return'BubbleWrap-S';
+  }
+  if(k.includes('paperbag')||k.includes('brownbag')){
+    if(k.endsWith('l')||k.includes('large'))return'PaperBag-L';
+    if(k.endsWith('m')||k.includes('medium'))return'PaperBag-M';
+  }
+  if(k.includes('icecream'))return'IceCreamBags';
+  if(k.includes('gelpad')||k.includes('gelpack'))return'GelPads';
+  return null;
+}
+
+function sheetToRows(wb,name){if(!name||!wb.Sheets[name])return[];return XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:null,raw:true})}
+
+function formatLogTime(dateStr){
+  const d=new Date(dateStr);
+  const now=new Date();
+  const diff=Math.floor((now-d)/1000);
+  if(diff<60)return 'just now';
+  if(diff<3600)return Math.floor(diff/60)+'m ago';
+  if(diff<86400)return Math.floor(diff/3600)+'h ago';
+  if(diff<604800)return Math.floor(diff/86400)+'d ago';
+  return d.toLocaleDateString();
+}
+
+function destroyChart(instance){if(instance){try{instance.destroy()}catch(e){}}return null}
+
+// ============================================
+// PERMISSIONS SYSTEM
+// ============================================
 
 function isSuperAdmin(){return currentProfile?.is_super_admin===true}
 
@@ -1241,42 +1236,37 @@ function applyPermissionsToUI(){
   if(roleBadge){
     roleBadge.innerHTML='<span class="pill '+getRoleClass(currentPermissions.role)+'">'+getRoleLabel(currentPermissions.role)+'</span>';
   }
-  document.querySelectorAll('[data-tab]').forEach(tab=>{
-    const tabId=tab.dataset.tab;
-    if(tabId==='config'){tab.style.display=canManageSettings()?'inline-flex':'none';}
-  });
   applyButtonPermissions();
 }
 
 function applyButtonPermissions(){
   document.querySelectorAll('[onclick*="openStore()"]').forEach(btn=>{
-    if(!canEdit()){btn.disabled=true;btn.title='You need Member role or higher to add stores';btn.style.opacity='0.5';btn.style.cursor='not-allowed'}
+    if(!canEdit()){btn.disabled=true;btn.title='Need Member role+';btn.style.opacity='0.5';btn.style.cursor='not-allowed'}
     else{btn.disabled=false;btn.title='';btn.style.opacity='1';btn.style.cursor='pointer'}
   });
   document.querySelectorAll('[onclick*="xlsFile"], [onclick*="fcXlsFile"], [onclick*="stockBulkFile"]').forEach(btn=>{
-    if(!canEdit()){btn.disabled=true;btn.title='You need Member role or higher to import data';btn.style.opacity='0.5';btn.style.cursor='not-allowed'}
+    if(!canEdit()){btn.disabled=true;btn.title='Need Member role+';btn.style.opacity='0.5';btn.style.cursor='not-allowed'}
     else{btn.disabled=false;btn.title='';btn.style.opacity='1';btn.style.cursor='pointer'}
   });
   document.querySelectorAll('[onclick*="resetWorkspaceData"]').forEach(btn=>{
-    if(!canDeleteWorkspace()){btn.disabled=true;btn.title='Only the Workspace Owner can reset data';btn.style.opacity='0.5';btn.style.cursor='not-allowed'}
+    if(!canDeleteWorkspace()){btn.disabled=true;btn.title='Owner only';btn.style.opacity='0.5';btn.style.cursor='not-allowed'}
     else{btn.disabled=false;btn.title='';btn.style.opacity='1';btn.style.cursor='pointer'}
   });
-  document.querySelectorAll('[onclick*="bulkFc"], [onclick*="markStockUpdated"]').forEach(btn=>{
-    if(!canEdit()){btn.disabled=true;btn.title='You need Member role or higher';btn.style.opacity='0.5';btn.style.cursor='not-allowed'}
+  document.querySelectorAll('[onclick*="bulkFc"], [onclick*="markStockUpdated"], [onclick*="manualSnapshot"]').forEach(btn=>{
+    if(!canEdit()){btn.disabled=true;btn.title='Need Member role+';btn.style.opacity='0.5';btn.style.cursor='not-allowed'}
     else{btn.disabled=false;btn.title='';btn.style.opacity='1';btn.style.cursor='pointer'}
   });
 }
 
-let _originalPermissions=null;
 function testAsRole(role){
-  if(!isSuperAdmin()){toast('Only Super Admins can test as different roles','error');return}
+  if(!isSuperAdmin()){toast('Super Admin only','error');return}
   _originalPermissions={...currentPermissions};
   if(role==='viewer')currentPermissions={role:'viewer',canView:true,canEdit:false,canManageSettings:false,canManageMembers:false,canDeleteWorkspace:false};
   else if(role==='member')currentPermissions={role:'member',canView:true,canEdit:true,canManageSettings:false,canManageMembers:false,canDeleteWorkspace:false};
   else if(role==='admin')currentPermissions={role:'admin',canView:true,canEdit:true,canManageSettings:true,canManageMembers:true,canDeleteWorkspace:false};
   applyPermissionsToUI();
   showRoleTestBanner(role);
-  toast('Now testing as '+getRoleLabel(role));
+  toast('Testing as '+getRoleLabel(role));
 }
 
 function exitTestMode(){
@@ -1285,7 +1275,7 @@ function exitTestMode(){
     _originalPermissions=null;
     applyPermissionsToUI();
     hideRoleTestBanner();
-    toast('Restored to your original role');
+    toast('Restored to your role');
   }
 }
 
@@ -1304,6 +1294,87 @@ function hideRoleTestBanner(){
   document.querySelector('.topnav').style.marginTop='0';
 }
 
+// ============================================
+// VIEW NAVIGATION (Hub / Dashboard / History)
+// ============================================
+
+function goToHub(){
+  currentView='hub';
+  document.querySelectorAll('.tab').forEach(t=>{
+    const view=t.dataset.view;
+    if(view==='hub'){
+      t.style.display='inline-flex';
+      t.classList.add('active');
+    } else if(view==='dashboard'||view==='history'){
+      t.style.display='none';
+      t.classList.remove('active');
+    }
+  });
+  if(isSuperAdmin()){
+    const adminTab=document.getElementById('adminTab');
+    if(adminTab){adminTab.style.display='inline-flex';adminTab.classList.remove('active')}
+  }
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  const hub=document.getElementById('hub');
+  if(hub)hub.classList.add('active');
+  window.scrollTo(0,0);
+  if(activeWorkspace){
+    document.getElementById('hubTitle').textContent=activeWorkspace.name+' - Operations Center';
+  }
+}
+
+function enterView(view){
+  currentView=view;
+  if(view==='dashboard'){
+    document.querySelectorAll('.tab').forEach(t=>{
+      const v=t.dataset.view;
+      if(v==='dashboard'){
+        t.style.display='inline-flex';
+        t.classList.remove('active');
+      } else if(v==='hub'||v==='history'){
+        t.style.display='none';
+      }
+    });
+    if(isSuperAdmin()){
+      const adminTab=document.getElementById('adminTab');
+      if(adminTab)adminTab.style.display='inline-flex';
+    }
+    if(!canManageSettings()){
+      const cfgTab=document.querySelector('[data-tab="config"]');
+      if(cfgTab)cfgTab.style.display='none';
+    }
+    const overviewTab=document.querySelector('[data-tab="overview"]');
+    if(overviewTab){
+      overviewTab.classList.add('active');
+      document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+      document.getElementById('overview').classList.add('active');
+    }
+  } else if(view==='history'){
+    document.querySelectorAll('.tab').forEach(t=>{
+      const v=t.dataset.view;
+      if(v==='history'){
+        t.style.display='inline-flex';
+        t.classList.add('active');
+      } else if(v==='hub'||v==='dashboard'){
+        t.style.display='none';
+        t.classList.remove('active');
+      }
+    });
+    if(isSuperAdmin()){
+      const adminTab=document.getElementById('adminTab');
+      if(adminTab)adminTab.style.display='inline-flex';
+    }
+    document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+    document.getElementById('historical').classList.add('active');
+    initHistoricalView();
+  }
+  window.scrollTo(0,0);
+}
+
+// ============================================
+// AUTH SYSTEM
+// ============================================
+
 function setAuthMode(mode){
   authMode=mode;
   isSignUpMode=(mode==='signup');
@@ -1321,7 +1392,6 @@ function setAuthMode(mode){
   
   if(errEl)errEl.classList.remove('show');
   if(successEl)successEl.classList.remove('show');
-  
   if(toggleSection)toggleSection.style.display='block';
   if(forgotLink)forgotLink.style.display='block';
   if(backToLogin)backToLogin.style.display='none';
@@ -1370,97 +1440,67 @@ async function handleAuth(){
   const errEl=document.getElementById('loginError');
   const successEl=document.getElementById('loginSuccess');
   const btn=document.getElementById('loginBtn');
-  
   errEl.classList.remove('show');
   successEl.classList.remove('show');
   
   if(authMode==='forgot'){
     const email=document.getElementById('loginEmail').value.trim();
-    if(!email){errEl.textContent='Please enter your email';errEl.classList.add('show');return}
+    if(!email){errEl.textContent='Enter your email';errEl.classList.add('show');return}
     btn.disabled=true;btn.textContent='Sending...';
     try{
       const redirectUrl=window.location.origin+window.location.pathname;
       const {error}=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo:redirectUrl});
       if(error)throw error;
-      successEl.innerHTML='Reset link sent! Check your email inbox.<br><small>The link expires in 1 hour.</small>';
+      successEl.innerHTML='Reset link sent! Check your inbox.';
       successEl.classList.add('show');
-      btn.disabled=false;btn.textContent='Send Reset Link';
-    }catch(err){
-      errEl.textContent=err.message||'Failed to send reset email';
-      errEl.classList.add('show');
-      btn.disabled=false;btn.textContent='Send Reset Link';
-    }
+    }catch(err){errEl.textContent=err.message;errEl.classList.add('show')}
+    btn.disabled=false;btn.textContent='Send Reset Link';
     return;
   }
   
   if(authMode==='reset'){
     const newPass=document.getElementById('newPass').value;
-    if(!newPass||newPass.length<6){errEl.textContent='Password must be at least 6 characters';errEl.classList.add('show');return}
-    const {data:sessionData}=await supabaseClient.auth.getSession();
-    if(!sessionData.session){
-      errEl.textContent='Reset session expired. Please request a new reset link.';
-      errEl.classList.add('show');
-      setTimeout(()=>setAuthMode('forgot'),2000);
-      return;
-    }
+    if(!newPass||newPass.length<6){errEl.textContent='Password min 6 chars';errEl.classList.add('show');return}
     btn.disabled=true;btn.textContent='Updating...';
     try{
       const {error}=await supabaseClient.auth.updateUser({password:newPass});
       if(error)throw error;
-      successEl.innerHTML='Password updated successfully! Redirecting...';
+      successEl.innerHTML='Password updated! Redirecting...';
       successEl.classList.add('show');
-      errEl.classList.remove('show');
       setTimeout(async()=>{
         const {data}=await supabaseClient.auth.getSession();
-        if(data.session){
-          currentUser=data.session.user;
-          await onLoginSuccess();
-        } else {
-          setAuthMode('signin');
-          successEl.innerHTML='Password updated! Please sign in with your new password.';
-          successEl.classList.add('show');
-        }
+        if(data.session){currentUser=data.session.user;await onLoginSuccess()}
+        else{setAuthMode('signin')}
       },1500);
-    }catch(err){
-      errEl.textContent=err.message||'Failed to update password';
-      errEl.classList.add('show');
-      btn.disabled=false;btn.textContent='Update Password';
-    }
+    }catch(err){errEl.textContent=err.message;errEl.classList.add('show');btn.disabled=false;btn.textContent='Update Password'}
     return;
   }
   
   const email=document.getElementById('loginEmail').value.trim();
   const pass=document.getElementById('loginPass').value;
-  if(!email||!pass){errEl.textContent='Please fill all fields';errEl.classList.add('show');return}
-  if(pass.length<6){errEl.textContent='Password must be at least 6 characters';errEl.classList.add('show');return}
+  if(!email||!pass){errEl.textContent='Fill all fields';errEl.classList.add('show');return}
+  if(pass.length<6){errEl.textContent='Password min 6 chars';errEl.classList.add('show');return}
   
   btn.disabled=true;btn.textContent='Please wait...';
   try{
     let result;
     if(authMode==='signup'){
       const redirectUrl=window.location.origin+window.location.pathname;
-      result=await supabaseClient.auth.signUp({
-        email,
-        password:pass,
-        options:{emailRedirectTo:redirectUrl}
-      });
+      result=await supabaseClient.auth.signUp({email,password:pass,options:{emailRedirectTo:redirectUrl}});
       if(result.error)throw result.error;
       if(result.data.user&&!result.data.session){
-        successEl.innerHTML='Account created! Please check your email and click the confirmation link before signing in.';
+        successEl.innerHTML='Account created! Check your email to confirm.';
         successEl.classList.add('show');
         setTimeout(()=>setAuthMode('signin'),3000);
-        btn.disabled=false;
-        btn.textContent='Create Account';
+        btn.disabled=false;btn.textContent='Create Account';
         return;
       }
     } else {
       result=await supabaseClient.auth.signInWithPassword({email,password:pass});
       if(result.error){
-        if(result.error.message.includes('confirm')||result.error.message.includes('Email not confirmed')){
-          errEl.innerHTML='Please confirm your email first. Check your inbox for the confirmation link.';
-          errEl.classList.add('show');
-          btn.disabled=false;
-          btn.textContent='Sign In';
+        if(result.error.message.includes('confirm')){
+          errEl.innerHTML='Please confirm your email first.';
+          errEl.classList.add('show');btn.disabled=false;btn.textContent='Sign In';
           return;
         }
         throw result.error;
@@ -1469,8 +1509,6 @@ async function handleAuth(){
     currentUser=result.data.user;
     await onLoginSuccess();
   }catch(err){
-    errEl.style.background='var(--danger-bg)';
-    errEl.style.color='var(--danger)';
     errEl.textContent=err.message||'Authentication failed';
     errEl.classList.add('show');
     btn.disabled=false;
@@ -1508,10 +1546,9 @@ async function onLoginSuccess(){
   
   if(myWorkspaces.length===0){
     document.getElementById('wsSelectScreen').classList.add('show');
-    document.getElementById('wsCards').innerHTML='<div class="ws-empty-state"><div class="ic">No Workspace Access</div><p style="margin-bottom:14px">You haven\'t been added to any workspace yet.</p><p style="font-size:12px">Please contact your administrator to grant you access.</p></div>';
+    document.getElementById('wsCards').innerHTML='<div class="ws-empty-state"><div class="ic">No Workspace Access</div><p style="margin-bottom:14px">You haven\'t been added to any workspace yet.</p><p style="font-size:12px">Please contact your administrator.</p></div>';
     return;
   }
-  
   if(myWorkspaces.length===1){
     await selectWorkspace(myWorkspaces[0].id);
   } else {
@@ -1536,27 +1573,7 @@ async function selectWorkspace(wsId){
   document.getElementById('wsSelectScreen').classList.remove('show');
   document.getElementById('mainNav').style.display='block';
   document.getElementById('mainPage').style.display='block';
-  const email=currentUser.email;
-  const name=email.split('@')[0];
-  const initials=name.slice(0,2).toUpperCase();
-  document.getElementById('userName').textContent=name;
-  document.getElementById('userAvatar').textContent=initials;
-  document.getElementById('curWsName').textContent=activeWorkspace.name;
-  document.getElementById('bannerTitle').textContent=activeWorkspace.name+' - Operations Center';
-  document.getElementById('dzWsName').textContent=activeWorkspace.name;
-  document.getElementById('adminTab').style.display=isSuperAdmin()?'inline-flex':'none';
   
-  await loadPermissions();
-  applyPermissionsToUI();
-  
-
-async function selectWorkspace(wsId){
-  activeWorkspace=myWorkspaces.find(w=>w.id===wsId);
-  if(!activeWorkspace){toast('Workspace not found','error');return}
-  localStorage.setItem('lastWorkspaceId',wsId);
-  document.getElementById('wsSelectScreen').classList.remove('show');
-  document.getElementById('mainNav').style.display='block';
-  document.getElementById('mainPage').style.display='block';
   const email=currentUser.email;
   const name=email.split('@')[0];
   const initials=name.slice(0,2).toUpperCase();
@@ -1576,10 +1593,8 @@ async function selectWorkspace(wsId){
   hideSync();
   render();
   
-  // 🆕 NEW: Reset to hub view + auto-snapshot check
   goToHub();
   setTimeout(()=>checkAndCreateAutoSnapshot(),1500);
-}
 }
 
 function toggleWsMenu(){
@@ -1598,14 +1613,6 @@ function toggleWsMenu(){
   menu.classList.add('show');
 }
 
-document.addEventListener('click',e=>{
-  const sw=document.querySelector('.ws-switcher');
-  if(sw&&!sw.contains(e.target)){
-    const m=document.getElementById('wsMenu');
-    if(m)m.classList.remove('show');
-  }
-});
-
 async function switchWorkspace(wsId){
   if(wsId===activeWorkspace?.id){toggleWsMenu();return}
   toggleWsMenu();
@@ -1619,641 +1626,6 @@ async function logout(){
   location.reload();
 }
 
-
-// ============================================
-// CHART INSTANCES
-// ============================================
-
-let trendChartInstance = null;
-let consumptionChartInstance = null;
-
-function destroyChart(instance){
-  if(instance){
-    try{instance.destroy()}catch(e){}
-  }
-  return null;
-}
-
-// ============================================
-// 1. STOCK TREND CHART
-// ============================================
-
-function renderTrendChart(){
-  const storeFilter=document.getElementById('trendStore')?.value||'';
-  const item=document.getElementById('trendItem')?.value||CONS_KEYS[0];
-  const fromDate=document.getElementById('trendFrom')?.value;
-  const toDate=document.getElementById('trendTo')?.value;
-  const viewType=document.getElementById('trendView')?.value||'cartons';
-  const asUnits=viewType==='units';
-  
-  const subtitleEl=document.getElementById('trendSubtitle');
-  const emptyEl=document.getElementById('trendEmpty');
-  const canvasEl=document.getElementById('trendChart');
-  const summaryEl=document.getElementById('trendSummary');
-  
-  if(!fromDate||!toDate){
-    if(subtitleEl)subtitleEl.textContent='Select a date range to view trend';
-    if(emptyEl)emptyEl.style.display='block';
-    if(canvasEl)canvasEl.style.display='none';
-    if(summaryEl)summaryEl.innerHTML='';
-    return;
-  }
-  
-  const snapshots=getSnapshotsByDateRange(fromDate,toDate,storeFilter);
-  
-  if(snapshots.length===0){
-    if(subtitleEl)subtitleEl.textContent='No data for selected period';
-    if(emptyEl)emptyEl.style.display='block';
-    if(canvasEl)canvasEl.style.display='none';
-    if(summaryEl)summaryEl.innerHTML='<div class="summary-card neutral"><div class="summary-card-label">No Data</div><div class="summary-card-value">-</div><div class="summary-card-sub">No snapshots in range</div></div>';
-    return;
-  }
-  
-  if(emptyEl)emptyEl.style.display='none';
-  if(canvasEl)canvasEl.style.display='block';
-  
-  const series=aggregateByDate(snapshots,item,asUnits);
-  
-  if(series.length===0){
-    if(subtitleEl)subtitleEl.textContent='No data for '+item;
-    if(emptyEl)emptyEl.style.display='block';
-    if(canvasEl)canvasEl.style.display='none';
-    return;
-  }
-  
-  const values=series.map(s=>s.val);
-  const maxVal=Math.max(...values);
-  const minVal=Math.min(...values);
-  const avgVal=values.reduce((a,b)=>a+b,0)/values.length;
-  const lastVal=values[values.length-1];
-  const firstVal=values[0];
-  const changeAbs=lastVal-firstVal;
-  const changePct=firstVal>0?((changeAbs/firstVal)*100):0;
-  const unit=asUnits?'EA':'CT';
-  
-  if(summaryEl){
-    summaryEl.innerHTML=
-      '<div class="summary-card neutral"><div class="summary-card-label">Average</div><div class="summary-card-value">'+n(avgVal,0)+'</div><div class="summary-card-sub">'+unit+' across period</div></div>'+
-      '<div class="summary-card up"><div class="summary-card-label">Maximum</div><div class="summary-card-value">'+n(maxVal,0)+'</div><div class="summary-card-sub">Peak '+unit+'</div></div>'+
-      '<div class="summary-card down"><div class="summary-card-label">Minimum</div><div class="summary-card-value">'+n(minVal,0)+'</div><div class="summary-card-sub">Lowest '+unit+'</div></div>'+
-      '<div class="summary-card '+(changeAbs>0?'up':changeAbs<0?'down':'neutral')+'"><div class="summary-card-label">Change</div><div class="summary-card-value">'+(changeAbs>0?'+':'')+n(changeAbs,0)+'</div><div class="summary-card-sub">'+(changePct>0?'+':'')+changePct.toFixed(1)+'% vs start</div></div>'+
-      '<div class="summary-card neutral"><div class="summary-card-label">Data Points</div><div class="summary-card-value">'+series.length+'</div><div class="summary-card-sub">snapshots</div></div>';
-  }
-  
-  if(subtitleEl){
-    const storeLabel=storeFilter||'All stores';
-    subtitleEl.textContent=item+' - '+storeLabel+' - '+series.length+' snapshots from '+fromDate+' to '+toDate;
-  }
-  
-  trendChartInstance=destroyChart(trendChartInstance);
-  
-  const ctx=canvasEl.getContext('2d');
-  trendChartInstance=new Chart(ctx,{
-    type:'line',
-    data:{
-      labels:series.map(s=>s.date),
-      datasets:[{
-        label:item+' ('+unit+')',
-        data:series.map(s=>s.val),
-        borderColor:'#FF9900',
-        backgroundColor:'rgba(255,153,0,0.1)',
-        borderWidth:2,
-        tension:0.3,
-        fill:true,
-        pointRadius:4,
-        pointHoverRadius:6,
-        pointBackgroundColor:'#FF9900',
-        pointBorderColor:'#fff',
-        pointBorderWidth:2
-      }]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      interaction:{intersect:false,mode:'index'},
-      plugins:{
-        legend:{display:true,position:'top',labels:{font:{size:12,weight:'600'}}},
-        tooltip:{
-          backgroundColor:'#131A22',
-          titleColor:'#FF9900',
-          titleFont:{weight:'700'},
-          bodyColor:'#fff',
-          padding:10,
-          cornerRadius:6,
-          callbacks:{
-            label:function(ctx){return item+': '+n(ctx.parsed.y,0)+' '+unit}
-          }
-        }
-      },
-      scales:{
-        x:{grid:{display:false},ticks:{font:{size:11}}},
-        y:{
-          beginAtZero:true,
-          grid:{color:'rgba(0,0,0,0.05)'},
-          ticks:{font:{size:11},callback:function(v){return n(v,0)}}
-        }
-      }
-    }
-  });
-}
-
-// ============================================
-// 2. COMPARISON VIEW
-// ============================================
-
-let comparisonRows = [];
-
-function renderComparison(){
-  const date1=document.getElementById('cmpDate1')?.value;
-  const date2=document.getElementById('cmpDate2')?.value;
-  const storeFilter=document.getElementById('cmpStore')?.value||'';
-  const sortBy=document.getElementById('cmpSort')?.value||'diff_desc';
-  
-  const summaryEl=document.getElementById('cmpSummary');
-  const tblEl=document.getElementById('tblComparison');
-  
-  if(!date1||!date2){
-    if(summaryEl)summaryEl.innerHTML='<div class="summary-card neutral"><div class="summary-card-label">Select Dates</div><div class="summary-card-value">-</div><div class="summary-card-sub">Choose two snapshot dates</div></div>';
-    if(tblEl)tblEl.innerHTML='<tr><td style="padding:30px;text-align:center;color:var(--text-mut)">Select two dates to compare</td></tr>';
-    return;
-  }
-  
-  if(date1===date2){
-    if(summaryEl)summaryEl.innerHTML='<div class="summary-card neutral"><div class="summary-card-label">Same Date</div><div class="summary-card-value">-</div><div class="summary-card-sub">Pick different dates</div></div>';
-    if(tblEl)tblEl.innerHTML='<tr><td style="padding:30px;text-align:center;color:var(--text-mut)">Please select two different dates</td></tr>';
-    return;
-  }
-  
-  const snaps1=getSnapshotsForDate(date1,storeFilter);
-  const snaps2=getSnapshotsForDate(date2,storeFilter);
-  const map1={};
-  const map2={};
-  snaps1.forEach(s=>{map1[s.store_code]=s.data});
-  snaps2.forEach(s=>{map2[s.store_code]=s.data});
-  
-  const allStores=new Set([...Object.keys(map1),...Object.keys(map2)]);
-  
-  comparisonRows=[];
-  allStores.forEach(code=>{
-    CONS_KEYS.forEach(item=>{
-      const v1=getStockFromSnapshot(map1[code],item);
-      const v2=getStockFromSnapshot(map2[code],item);
-      if(v1===0&&v2===0)return;
-      const store=state.stores.find(s=>s.code===code);
-      comparisonRows.push({
-        store:code,
-        area:store?.area||'',
-        item,
-        v1,v2,
-        diff:v2-v1,
-        pct:v1>0?((v2-v1)/v1*100):(v2>0?100:0)
-      });
-    });
-  });
-  
-  comparisonRows.sort((a,b)=>{
-    if(sortBy==='diff_desc')return b.diff-a.diff;
-    if(sortBy==='diff_asc')return a.diff-b.diff;
-    if(sortBy==='store')return a.store.localeCompare(b.store)||a.item.localeCompare(b.item);
-    if(sortBy==='item')return a.item.localeCompare(b.item)||a.store.localeCompare(b.store);
-    return 0;
-  });
-  
-  let total1=0,total2=0,increases=0,decreases=0,unchanged=0;
-  comparisonRows.forEach(r=>{
-    total1+=r.v1;total2+=r.v2;
-    if(r.diff>0)increases++;
-    else if(r.diff<0)decreases++;
-    else unchanged++;
-  });
-  
-  if(summaryEl){
-    summaryEl.innerHTML=
-      '<div class="summary-card neutral"><div class="summary-card-label">'+date1+'</div><div class="summary-card-value">'+n(total1,0)+'</div><div class="summary-card-sub">Total cartons</div></div>'+
-      '<div class="summary-card neutral"><div class="summary-card-label">'+date2+'</div><div class="summary-card-value">'+n(total2,0)+'</div><div class="summary-card-sub">Total cartons</div></div>'+
-      '<div class="summary-card '+(total2>total1?'up':total2<total1?'down':'neutral')+'"><div class="summary-card-label">Net Change</div><div class="summary-card-value">'+(total2-total1>0?'+':'')+n(total2-total1,0)+'</div><div class="summary-card-sub">'+(total1>0?(((total2-total1)/total1)*100).toFixed(1)+'%':'-')+'</div></div>'+
-      '<div class="summary-card up"><div class="summary-card-label">Increased</div><div class="summary-card-value">'+increases+'</div><div class="summary-card-sub">SKU rows</div></div>'+
-      '<div class="summary-card down"><div class="summary-card-label">Decreased</div><div class="summary-card-value">'+decreases+'</div><div class="summary-card-sub">SKU rows</div></div>'+
-      '<div class="summary-card neutral"><div class="summary-card-label">Unchanged</div><div class="summary-card-value">'+unchanged+'</div><div class="summary-card-sub">SKU rows</div></div>';
-  }
-  
-  if(!tblEl)return;
-  
-  if(comparisonRows.length===0){
-    tblEl.innerHTML='<tr><td style="padding:30px;text-align:center;color:var(--text-mut)">No data for selected dates</td></tr>';
-    return;
-  }
-  
-  let h='<tr><th>Store</th><th>Item</th><th class="nums">'+date1+'</th><th class="nums">'+date2+'</th><th class="nums">Diff (CT)</th><th class="nums">Change %</th></tr>';
-  comparisonRows.forEach(r=>{
-    const diffClass=r.diff>0?'diff-positive':r.diff<0?'diff-negative':'diff-neutral';
-    const arrow=r.diff>0?'<span class="diff-arrow up">^</span>':r.diff<0?'<span class="diff-arrow down">v</span>':'';
-    h+='<tr>';
-    h+='<td><b>'+r.store+'</b><div class="cell-sub">'+r.area+'</div></td>';
-    h+='<td>'+r.item+'</td>';
-    h+='<td class="nums">'+n(r.v1)+'</td>';
-    h+='<td class="nums">'+n(r.v2)+'</td>';
-    h+='<td class="nums '+diffClass+'">'+arrow+(r.diff>0?'+':'')+n(r.diff)+'</td>';
-    h+='<td class="nums '+diffClass+'">'+(r.pct>0?'+':'')+r.pct.toFixed(1)+'%</td>';
-    h+='</tr>';
-  });
-  tblEl.innerHTML=h;
-}
-
-function exportComparisonCSV(){
-  if(!comparisonRows.length){toast('No data to export','error');return}
-  const date1=document.getElementById('cmpDate1')?.value||'date1';
-  const date2=document.getElementById('cmpDate2')?.value||'date2';
-  const wsName=activeWorkspace?.name||'workspace';
-  let csv='Store,Area,Item,'+date1+' (CT),'+date2+' (CT),Diff (CT),Change %\n';
-  comparisonRows.forEach(r=>{
-    csv+='"'+r.store+'","'+r.area+'","'+r.item+'",'+r.v1+','+r.v2+','+r.diff+','+r.pct.toFixed(2)+'\n';
-  });
-  const b=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(b);
-  a.download='comparison_'+wsName+'_'+date1+'_vs_'+date2+'.csv';
-  a.click();
-  toast('Exported');
-}
-
-// ============================================
-// 3. MONTHLY SUMMARY + CALENDAR
-// ============================================
-
-let monthlyRows = [];
-
-function renderMonthlySummary(){
-  const monthVal=document.getElementById('monthSelector')?.value;
-  const storeFilter=document.getElementById('monthStore')?.value||'';
-  
-  const summaryEl=document.getElementById('monthSummary');
-  const calEl=document.getElementById('snapshotCalendar');
-  const tblEl=document.getElementById('tblMonthly');
-  
-  if(!monthVal){
-    if(summaryEl)summaryEl.innerHTML='<div class="summary-card neutral"><div class="summary-card-label">No Month</div><div class="summary-card-value">-</div><div class="summary-card-sub">Select a month</div></div>';
-    if(calEl)calEl.innerHTML='<div class="empty"><div class="ic">No Month</div><p>Select a month to view calendar</p></div>';
-    if(tblEl)tblEl.innerHTML='<tr><td style="padding:30px;text-align:center;color:var(--text-mut)">Select a month</td></tr>';
-    return;
-  }
-  
-  const [yearStr,monthStr]=monthVal.split('-');
-  const year=parseInt(yearStr);
-  const month=parseInt(monthStr);
-  const monthStart=monthVal+'-01';
-  const lastDay=new Date(year,month,0).getDate();
-  const monthEnd=monthVal+'-'+String(lastDay).padStart(2,'0');
-  
-  const snaps=getSnapshotsByDateRange(monthStart,monthEnd,storeFilter);
-  const dates=[...new Set(snaps.map(s=>s.snapshot_date))].sort();
-  
-  let totalCartons=0;
-  const byStore={};
-  snaps.forEach(s=>{
-    let storeTotal=0;
-    CONS_KEYS.forEach(c=>{storeTotal+=getStockFromSnapshot(s.data,c)});
-    totalCartons+=storeTotal;
-    if(!byStore[s.store_code]){
-      const store=state.stores.find(x=>x.code===s.store_code);
-      byStore[s.store_code]={code:s.store_code,area:store?.area||'',totals:{},counts:{}};
-      CONS_KEYS.forEach(c=>{byStore[s.store_code].totals[c]=0;byStore[s.store_code].counts[c]=0});
-    }
-    CONS_KEYS.forEach(c=>{
-      const v=getStockFromSnapshot(s.data,c);
-      byStore[s.store_code].totals[c]+=v;
-      byStore[s.store_code].counts[c]++;
-    });
-  });
-  
-  const avgPerSnapshot=snaps.length>0?totalCartons/snaps.length:0;
-  const uniqueStores=Object.keys(byStore).length;
-  
-  if(summaryEl){
-    summaryEl.innerHTML=
-      '<div class="summary-card neutral"><div class="summary-card-label">Days with Data</div><div class="summary-card-value">'+dates.length+'</div><div class="summary-card-sub">of '+lastDay+' days in month</div></div>'+
-      '<div class="summary-card neutral"><div class="summary-card-label">Total Snapshots</div><div class="summary-card-value">'+snaps.length+'</div><div class="summary-card-sub">store-day records</div></div>'+
-      '<div class="summary-card up"><div class="summary-card-label">Stores Tracked</div><div class="summary-card-value">'+uniqueStores+'</div><div class="summary-card-sub">unique stores</div></div>'+
-      '<div class="summary-card neutral"><div class="summary-card-label">Avg per Snapshot</div><div class="summary-card-value">'+n(avgPerSnapshot,0)+'</div><div class="summary-card-sub">CT all items</div></div>'+
-      '<div class="summary-card up"><div class="summary-card-label">Coverage</div><div class="summary-card-value">'+(lastDay>0?Math.round(dates.length/lastDay*100):0)+'%</div><div class="summary-card-sub">days with data</div></div>';
-  }
-  
-  if(calEl){
-    const dateMap={};
-    snaps.forEach(s=>{
-      if(!dateMap[s.snapshot_date])dateMap[s.snapshot_date]=new Set();
-      dateMap[s.snapshot_date].add(s.store_code);
-    });
-    const firstDayOfMonth=new Date(year,month-1,1).getDay();
-    let calHtml='<div class="calendar-grid">';
-    ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>{
-      calHtml+='<div class="calendar-day-header">'+d+'</div>';
-    });
-    for(let i=0;i<firstDayOfMonth;i++){
-      calHtml+='<div class="calendar-day empty"></div>';
-    }
-    for(let d=1;d<=lastDay;d++){
-      const dateStr=monthVal+'-'+String(d).padStart(2,'0');
-      const stores=dateMap[dateStr];
-      if(stores&&stores.size>0){
-        calHtml+='<div class="calendar-day has-snapshot" title="'+dateStr+': '+stores.size+' stores" onclick="loadDateInTrend(\''+dateStr+'\')">';
-        calHtml+='<div class="day-num">'+d+'</div>';
-        calHtml+='<div class="day-stores">'+stores.size+' st</div>';
-        calHtml+='</div>';
-      } else {
-        calHtml+='<div class="calendar-day no-data" title="No data on '+dateStr+'"><div class="day-num">'+d+'</div></div>';
-      }
-    }
-    calHtml+='</div>';
-    calEl.innerHTML=calHtml;
-  }
-  
-  monthlyRows=Object.values(byStore).sort((a,b)=>a.code.localeCompare(b.code));
-  
-  if(!tblEl)return;
-  
-  if(monthlyRows.length===0){
-    tblEl.innerHTML='<tr><td style="padding:30px;text-align:center;color:var(--text-mut)">No data for this month</td></tr>';
-    return;
-  }
-  
-  let h='<tr><th>Store</th>'+CONS_KEYS.map(c=>'<th class="nums">'+c.replace('BubbleWrap','BW').replace('PaperBag','PB')+'</th>').join('')+'<th class="nums">Total Avg</th></tr>';
-  monthlyRows.forEach(r=>{
-    let rowTotal=0;
-    h+='<tr><td><b>'+r.code+'</b><div class="cell-sub">'+r.area+'</div></td>';
-    CONS_KEYS.forEach(c=>{
-      const avg=r.counts[c]>0?r.totals[c]/r.counts[c]:0;
-      rowTotal+=avg;
-      h+='<td class="nums">'+n(avg,0)+'</td>';
-    });
-    h+='<td class="nums" style="font-weight:700;color:var(--amz-orange-dark);background:#FFF4E0">'+n(rowTotal,0)+'</td>';
-    h+='</tr>';
-  });
-  tblEl.innerHTML=h;
-}
-
-function loadDateInTrend(date){
-  const trendFrom=document.getElementById('trendFrom');
-  const trendTo=document.getElementById('trendTo');
-  if(trendFrom)trendFrom.value=date;
-  if(trendTo)trendTo.value=date;
-  document.querySelector('.subtab[data-subtab="trend"]')?.click();
-}
-
-function exportMonthlyCSV(){
-  if(!monthlyRows.length){toast('No data to export','error');return}
-  const monthVal=document.getElementById('monthSelector')?.value||'month';
-  const wsName=activeWorkspace?.name||'workspace';
-  let csv='Store,Area,'+CONS_KEYS.join(',')+',Total\n';
-  monthlyRows.forEach(r=>{
-    let total=0;
-    const cells=CONS_KEYS.map(c=>{
-      const avg=r.counts[c]>0?r.totals[c]/r.counts[c]:0;
-      total+=avg;
-      return avg.toFixed(1);
-    });
-    csv+='"'+r.code+'","'+r.area+'",'+cells.join(',')+','+total.toFixed(1)+'\n';
-  });
-  const b=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(b);
-  a.download='monthly_'+wsName+'_'+monthVal+'.csv';
-  a.click();
-  toast('Exported');
-}
-
-// ============================================
-// 4. CONSUMPTION REPORT
-// ============================================
-
-let consumptionRows = [];
-
-function renderConsumption(){
-  const period=parseInt(document.getElementById('conPeriod')?.value||'30');
-  const storeFilter=document.getElementById('conStore')?.value||'';
-  const itemFilter=document.getElementById('conItem')?.value||'';
-  const groupBy=document.getElementById('conGroup')?.value||'store';
-  
-  const summaryEl=document.getElementById('conSummary');
-  const tblEl=document.getElementById('tblConsumption');
-  
-  const today=new Date();
-  const fromDate=new Date();
-  fromDate.setDate(today.getDate()-period);
-  const fromStr=fromDate.toISOString().slice(0,10);
-  const toStr=today.toISOString().slice(0,10);
-  
-  let snaps=getSnapshotsByDateRange(fromStr,toStr,storeFilter);
-  
-  if(snaps.length<2){
-    if(summaryEl)summaryEl.innerHTML='<div class="summary-card neutral"><div class="summary-card-label">Insufficient Data</div><div class="summary-card-value">-</div><div class="summary-card-sub">Need at least 2 snapshots</div></div>';
-    if(tblEl)tblEl.innerHTML='<tr><td style="padding:30px;text-align:center;color:var(--text-mut)">Need at least 2 snapshots in this period</td></tr>';
-    consumptionChartInstance=destroyChart(consumptionChartInstance);
-    return;
-  }
-  
-  const byStoreFirst={};
-  const byStoreLast={};
-  snaps.forEach(s=>{
-    if(!byStoreFirst[s.store_code]||s.snapshot_date<byStoreFirst[s.store_code].snapshot_date){
-      byStoreFirst[s.store_code]=s;
-    }
-    if(!byStoreLast[s.store_code]||s.snapshot_date>byStoreLast[s.store_code].snapshot_date){
-      byStoreLast[s.store_code]=s;
-    }
-  });
-  
-  const records=[];
-  Object.keys(byStoreFirst).forEach(code=>{
-    const first=byStoreFirst[code];
-    const last=byStoreLast[code];
-    if(first.snapshot_date===last.snapshot_date)return;
-    const store=state.stores.find(s=>s.code===code);
-    CONS_KEYS.forEach(item=>{
-      if(itemFilter&&item!==itemFilter)return;
-      const v1=getStockFromSnapshot(first.data,item);
-      const v2=getStockFromSnapshot(last.data,item);
-      const consumed=v1-v2;
-      records.push({
-        store:code,
-        area:store?.area||'',
-        item,
-        startStock:v1,
-        endStock:v2,
-        consumed:consumed,
-        firstDate:first.snapshot_date,
-        lastDate:last.snapshot_date
-      });
-    });
-  });
-  
-  consumptionRows=[];
-  if(groupBy==='store'){
-    const grp={};
-    records.forEach(r=>{
-      if(!grp[r.store])grp[r.store]={store:r.store,area:r.area,startStock:0,endStock:0,consumed:0,positiveCon:0};
-      grp[r.store].startStock+=r.startStock;
-      grp[r.store].endStock+=r.endStock;
-      grp[r.store].consumed+=r.consumed;
-      if(r.consumed>0)grp[r.store].positiveCon+=r.consumed;
-    });
-    consumptionRows=Object.values(grp).sort((a,b)=>b.consumed-a.consumed);
-  } else if(groupBy==='item'){
-    const grp={};
-    records.forEach(r=>{
-      if(!grp[r.item])grp[r.item]={item:r.item,startStock:0,endStock:0,consumed:0,positiveCon:0,storeCount:new Set()};
-      grp[r.item].startStock+=r.startStock;
-      grp[r.item].endStock+=r.endStock;
-      grp[r.item].consumed+=r.consumed;
-      if(r.consumed>0)grp[r.item].positiveCon+=r.consumed;
-      grp[r.item].storeCount.add(r.store);
-    });
-    consumptionRows=Object.values(grp).map(r=>({...r,storeCount:r.storeCount.size})).sort((a,b)=>b.consumed-a.consumed);
-  } else {
-    consumptionRows=records.sort((a,b)=>b.consumed-a.consumed);
-  }
-  
-  let totalConsumed=0,positiveConsumed=0,negativeChange=0;
-  records.forEach(r=>{
-    totalConsumed+=r.consumed;
-    if(r.consumed>0)positiveConsumed+=r.consumed;
-    else if(r.consumed<0)negativeChange+=Math.abs(r.consumed);
-  });
-  
-  const dailyAvg=positiveConsumed/period;
-  
-  if(summaryEl){
-    summaryEl.innerHTML=
-      '<div class="summary-card down"><div class="summary-card-label">Total Consumed</div><div class="summary-card-value">'+n(positiveConsumed,0)+'</div><div class="summary-card-sub">CT in '+period+' days</div></div>'+
-      '<div class="summary-card neutral"><div class="summary-card-label">Daily Average</div><div class="summary-card-value">'+n(dailyAvg,1)+'</div><div class="summary-card-sub">CT per day</div></div>'+
-      '<div class="summary-card up"><div class="summary-card-label">Restocked</div><div class="summary-card-value">'+n(negativeChange,0)+'</div><div class="summary-card-sub">CT added back</div></div>'+
-      '<div class="summary-card neutral"><div class="summary-card-label">Net Change</div><div class="summary-card-value">'+(totalConsumed>0?'-':'+')+n(Math.abs(totalConsumed),0)+'</div><div class="summary-card-sub">CT difference</div></div>'+
-      '<div class="summary-card neutral"><div class="summary-card-label">Stores Tracked</div><div class="summary-card-value">'+Object.keys(byStoreFirst).length+'</div><div class="summary-card-sub">with snapshots</div></div>';
-  }
-  
-  renderConsumptionChart(consumptionRows,groupBy);
-  
-  if(!tblEl)return;
-  
-  if(consumptionRows.length===0){
-    tblEl.innerHTML='<tr><td style="padding:30px;text-align:center;color:var(--text-mut)">No consumption data</td></tr>';
-    return;
-  }
-  
-  let h='';
-  if(groupBy==='store'){
-    h='<tr><th>Store</th><th class="nums">Start CT</th><th class="nums">End CT</th><th class="nums">Consumed</th><th class="nums">Daily Avg</th></tr>';
-    consumptionRows.forEach(r=>{
-      const dailyR=r.positiveCon/period;
-      h+='<tr><td><b>'+r.store+'</b><div class="cell-sub">'+r.area+'</div></td><td class="nums">'+n(r.startStock)+'</td><td class="nums">'+n(r.endStock)+'</td><td class="nums '+(r.consumed>0?'diff-negative':'diff-positive')+'">'+(r.consumed>0?'-':'+')+n(Math.abs(r.consumed))+'</td><td class="nums">'+n(dailyR,1)+'</td></tr>';
-    });
-  } else if(groupBy==='item'){
-    h='<tr><th>Item</th><th class="nums">Stores</th><th class="nums">Start CT</th><th class="nums">End CT</th><th class="nums">Consumed</th><th class="nums">Daily Avg</th></tr>';
-    consumptionRows.forEach(r=>{
-      const dailyR=r.positiveCon/period;
-      h+='<tr><td><b>'+r.item+'</b></td><td class="nums">'+r.storeCount+'</td><td class="nums">'+n(r.startStock)+'</td><td class="nums">'+n(r.endStock)+'</td><td class="nums '+(r.consumed>0?'diff-negative':'diff-positive')+'">'+(r.consumed>0?'-':'+')+n(Math.abs(r.consumed))+'</td><td class="nums">'+n(dailyR,1)+'</td></tr>';
-    });
-  } else {
-    h='<tr><th>Store</th><th>Item</th><th class="nums">Start CT</th><th class="nums">End CT</th><th class="nums">Consumed</th></tr>';
-    consumptionRows.forEach(r=>{
-      h+='<tr><td><b>'+r.store+'</b><div class="cell-sub">'+r.area+'</div></td><td>'+r.item+'</td><td class="nums">'+n(r.startStock)+'</td><td class="nums">'+n(r.endStock)+'</td><td class="nums '+(r.consumed>0?'diff-negative':'diff-positive')+'">'+(r.consumed>0?'-':'+')+n(Math.abs(r.consumed))+'</td></tr>';
-    });
-  }
-  tblEl.innerHTML=h;
-}
-
-function renderConsumptionChart(rows,groupBy){
-  const canvasEl=document.getElementById('consumptionChart');
-  if(!canvasEl)return;
-  
-  consumptionChartInstance=destroyChart(consumptionChartInstance);
-  
-  const top=rows.slice(0,15);
-  let labels=[],values=[];
-  
-  if(groupBy==='store'){
-    labels=top.map(r=>r.store);
-    values=top.map(r=>r.positiveCon);
-  } else if(groupBy==='item'){
-    labels=top.map(r=>r.item);
-    values=top.map(r=>r.positiveCon);
-  } else {
-    labels=top.map(r=>r.store+' / '+r.item);
-    values=top.map(r=>r.consumed>0?r.consumed:0);
-  }
-  
-  if(!labels.length)return;
-  
-  const ctx=canvasEl.getContext('2d');
-  consumptionChartInstance=new Chart(ctx,{
-    type:'bar',
-    data:{
-      labels,
-      datasets:[{
-        label:'Consumed (CT)',
-        data:values,
-        backgroundColor:'rgba(255,153,0,0.7)',
-        borderColor:'#E88B00',
-        borderWidth:1
-      }]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      indexAxis:'y',
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:'#131A22',
-          titleColor:'#FF9900',
-          bodyColor:'#fff',
-          padding:10,
-          cornerRadius:6,
-          callbacks:{
-            label:function(ctx){return n(ctx.parsed.x,0)+' CT consumed'}
-          }
-        }
-      },
-      scales:{
-        x:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:11},callback:function(v){return n(v,0)}}},
-        y:{grid:{display:false},ticks:{font:{size:11}}}
-      }
-    }
-  });
-}
-
-function exportConsumptionCSV(){
-  if(!consumptionRows.length){toast('No data to export','error');return}
-  const period=document.getElementById('conPeriod')?.value||'30';
-  const groupBy=document.getElementById('conGroup')?.value||'store';
-  const wsName=activeWorkspace?.name||'workspace';
-  let csv='';
-  if(groupBy==='store'){
-    csv='Store,Area,Start CT,End CT,Consumed CT,Daily Avg\n';
-    consumptionRows.forEach(r=>{
-      const dailyR=r.positiveCon/parseInt(period);
-      csv+='"'+r.store+'","'+r.area+'",'+r.startStock+','+r.endStock+','+r.consumed+','+dailyR.toFixed(2)+'\n';
-    });
-  } else if(groupBy==='item'){
-    csv='Item,Stores,Start CT,End CT,Consumed CT,Daily Avg\n';
-    consumptionRows.forEach(r=>{
-      const dailyR=r.positiveCon/parseInt(period);
-      csv+='"'+r.item+'",'+r.storeCount+','+r.startStock+','+r.endStock+','+r.consumed+','+dailyR.toFixed(2)+'\n';
-    });
-  } else {
-    csv='Store,Area,Item,Start CT,End CT,Consumed CT\n';
-    consumptionRows.forEach(r=>{
-      csv+='"'+r.store+'","'+r.area+'","'+r.item+'",'+r.startStock+','+r.endStock+','+r.consumed+'\n';
-    });
-  }
-  const b=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(b);
-  a.download='consumption_'+wsName+'_'+period+'days.csv';
-  a.click();
-  toast('Exported');
-}  
-  
 async function checkSession(){
   const hashStr=window.location.hash.substring(1);
   const queryStr=window.location.search.substring(1);
@@ -2275,24 +1647,20 @@ async function checkSession(){
   
   if(type==='recovery'&&accessToken){
     try{
-      const {data,error}=await supabaseClient.auth.setSession({access_token:accessToken,refresh_token:refreshToken||''});
+      const {error}=await supabaseClient.auth.setSession({access_token:accessToken,refresh_token:refreshToken||''});
       if(error){
         document.getElementById('loginScreen').style.display='flex';
         const errEl=document.getElementById('loginError');
-        errEl.textContent='Reset link expired or invalid. Please request a new one.';
-        errEl.classList.add('show');
+        errEl.textContent='Reset link expired';errEl.classList.add('show');
         return;
       }
       window.history.replaceState({},document.title,window.location.pathname);
       document.getElementById('loginScreen').style.display='flex';
       setAuthMode('reset');
       const successEl=document.getElementById('loginSuccess');
-      if(successEl){
-        successEl.innerHTML='Recovery link verified! Please set your new password below.';
-        successEl.classList.add('show');
-      }
+      if(successEl){successEl.innerHTML='Recovery verified! Set your new password.';successEl.classList.add('show')}
       return;
-    }catch(e){console.error('Recovery error:',e);toast('Failed to process reset link','error')}
+    }catch(e){console.error(e)}
   }
   
   if(type==='signup'&&accessToken){
@@ -2300,35 +1668,24 @@ async function checkSession(){
       await supabaseClient.auth.setSession({access_token:accessToken,refresh_token:refreshToken||''});
       window.history.replaceState({},document.title,window.location.pathname);
       const {data}=await supabaseClient.auth.getSession();
-      if(data.session){
-        currentUser=data.session.user;
-        toast('Email confirmed! Welcome aboard.');
-        await onLoginSuccess();
-        return;
-      }
-    }catch(e){console.error('Signup confirm error:',e)}
+      if(data.session){currentUser=data.session.user;toast('Email confirmed!');await onLoginSuccess();return}
+    }catch(e){console.error(e)}
   }
   
-  supabaseClient.auth.onAuthStateChange(async(event,session)=>{
+  supabaseClient.auth.onAuthStateChange(async(event)=>{
     if(event==='PASSWORD_RECOVERY'){
       document.getElementById('loginScreen').style.display='flex';
       setAuthMode('reset');
     }
-    if(event==='USER_UPDATED'&&authMode==='reset'){
-      const {data}=await supabaseClient.auth.getSession();
-      if(data.session){
-        currentUser=data.session.user;
-        await onLoginSuccess();
-      }
-    }
   });
   
   const {data}=await supabaseClient.auth.getSession();
-  if(data.session){
-    currentUser=data.session.user;
-    await onLoginSuccess();
-  }
+  if(data.session){currentUser=data.session.user;await onLoginSuccess()}
 }
+
+// ============================================
+// CLOUD DATA OPERATIONS
+// ============================================
 
 async function loadFromCloud(){
   if(!activeWorkspace)return;
@@ -2357,66 +1714,15 @@ async function loadFromCloud(){
       else if(s.key==='cons'&&s.value)state.cons=s.value;
     });
     document.getElementById('lastUpd').textContent=new Date().toLocaleString();
-  }catch(e){console.error('Load error',e);toast('Load failed: '+e.message,'error')}
+  }catch(e){console.error(e);toast('Load failed: '+e.message,'error')}
 }
 
 async function loadLastStockUpdate(){
   if(!activeWorkspace)return;
   try{
-    const {data,error}=await supabaseClient
-      .from('stock_update_log')
-      .select('*')
-      .eq('workspace_id',activeWorkspace.id)
-      .eq('update_type','manual')
-      .order('created_at',{ascending:false})
-      .limit(1)
-      .maybeSingle();
-    if(error)throw error;
+    const {data}=await supabaseClient.from('stock_update_log').select('*').eq('workspace_id',activeWorkspace.id).eq('update_type','manual').order('created_at',{ascending:false}).limit(1).maybeSingle();
     lastStockUpdate=data;
-  }catch(e){console.warn('Failed to load stock update:',e.message);lastStockUpdate=null}
-}
-
-function markStockUpdated(){
-  if(!canEdit()){denyAccess('mark stock updated');return}
-  document.getElementById('stockUpdateNotes').value='';
-  document.getElementById('mdStockUpdate').classList.add('show');
-}
-
-async function confirmStockUpdate(){
-  if(!canEdit()){denyAccess('mark stock updated');return}
-  const notes=document.getElementById('stockUpdateNotes').value.trim();
-  showSync('Recording update and creating snapshot...');
-  try{
-    const {data,error}=await supabaseClient.from('stock_update_log').insert({
-      workspace_id:activeWorkspace.id,
-      updated_by:currentUser.id,
-      updated_by_email:currentUser.email,
-      update_type:'manual',
-      notes:notes||null
-    }).select().single();
-    if(error)throw error;
-    lastStockUpdate=data;
-    
-    // 🆕 Auto-create snapshot when user marks stock as updated
-    await createSnapshot('manual',notes||'Manual stock update via Stock Count page');
-    
-    document.getElementById('mdStockUpdate').classList.remove('show');
-    toast('Stock updated and snapshot saved');
-    renderStockUpdateInfo();
-    await logActivity('update','stock','manual_update',null,null,null,{notes,timestamp:data.created_at});
-  }catch(e){toast('Failed: '+e.message,'error')}
-  hideSync();
-}
-
-function renderStockUpdateInfo(){
-  const el=document.getElementById('stockUpdateInfo');
-  if(!el)return;
-  if(!lastStockUpdate){el.style.display='none';return}
-  el.style.display='flex';
-  document.getElementById('stockLastUser').textContent=lastStockUpdate.updated_by_email||'Unknown';
-  const t=new Date(lastStockUpdate.created_at);
-  document.getElementById('stockLastTime').textContent='Last update: '+t.toLocaleString();
-  document.getElementById('stockLastNotes').textContent=lastStockUpdate.notes?'Note: '+lastStockUpdate.notes:'';
+  }catch(e){lastStockUpdate=null}
 }
 
 async function saveStoreCloud(store){
@@ -2425,7 +1731,7 @@ async function saveStoreCloud(store){
   try{
     const {error}=await supabaseClient.from('stores').upsert({workspace_id:activeWorkspace.id,code:store.code,area:store.area,status:store.status,launch:store.launch,cap:store.cap,updated_at:new Date().toISOString()});
     if(error)throw error;
-  }catch(e){toast('Sync error: '+e.message,'error')}
+  }catch(e){toast('Sync error','error')}
   hideSync();
 }
 
@@ -2480,47 +1786,7 @@ async function logActivity(action,entityType,entityId,fieldName,oldVal,newVal,me
       p_new_value:newVal!==undefined&&newVal!==null?JSON.stringify(newVal):null,
       p_metadata:metadata
     });
-  }catch(e){console.warn('Failed to log activity:',e.message)}
-}
-
-async function loadActivityLog(filters){
-  filters=filters||{};
-  if(!activeWorkspace)return[];
-  try{
-    let query=supabaseClient
-      .from('activity_log_view')
-      .select('*')
-      .eq('workspace_id',activeWorkspace.id)
-      .order('created_at',{ascending:false})
-      .limit(filters.limit||500);
-    if(filters.action)query=query.eq('action',filters.action);
-    if(filters.entityType)query=query.eq('entity_type',filters.entityType);
-    if(filters.daysBack){
-      const date=new Date();
-      date.setDate(date.getDate()-filters.daysBack);
-      query=query.gte('created_at',date.toISOString());
-    }
-    const {data,error}=await query;
-    if(error)throw error;
-    return data||[];
-  }catch(e){console.error('Load log error:',e);return[]}
-}
-
-function formatLogTime(dateStr){
-  const d=new Date(dateStr);
-  const now=new Date();
-  const diff=Math.floor((now-d)/1000);
-  if(diff<60)return 'just now';
-  if(diff<3600)return Math.floor(diff/60)+'m ago';
-  if(diff<86400)return Math.floor(diff/3600)+'h ago';
-  if(diff<604800)return Math.floor(diff/86400)+'d ago';
-  return d.toLocaleDateString();
-}
-
-function debouncedSave(key,fn,delay){
-  delay=delay||500;
-  if(saveTimers[key])clearTimeout(saveTimers[key]);
-  saveTimers[key]=setTimeout(fn,delay);
+  }catch(e){console.warn('Log failed:',e.message)}
 }
 
 async function bulkSyncAll(){
@@ -2542,20 +1808,15 @@ async function bulkSyncAll(){
       {workspace_id:wsId,key:'stkDate',value:state.stkDate,updated_at:new Date().toISOString()},
       {workspace_id:wsId,key:'cons',value:state.cons,updated_at:new Date().toISOString()}
     ]);
-    await logActivity('bulk_import','workspace',null,null,null,null,{
-      stores:state.stores.length,
-      forecasts:Object.keys(state.fc).length,
-      stock:Object.keys(state.stock).length
-    });
+    await logActivity('bulk_import','workspace',null,null,null,null,{stores:state.stores.length,forecasts:Object.keys(state.fc).length,stock:Object.keys(state.stock).length});
     toast('Synced to cloud');
-  }catch(e){console.error(e);toast('Sync failed: '+e.message,'error')}
+  }catch(e){console.error(e);toast('Sync failed','error')}
   hideSync();
 }
 
 async function resetWorkspaceData(){
   if(!canDeleteWorkspace()){denyAccess('reset workspace');return}
-  if(!activeWorkspace)return;
-  if(!confirm('DELETE ALL data in workspace "'+activeWorkspace.name+'"?\n\nThis cannot be undone!'))return;
+  if(!confirm('DELETE ALL data in "'+activeWorkspace.name+'"?'))return;
   if(!confirm('Are you ABSOLUTELY sure?'))return;
   showSync('Deleting...');
   try{
@@ -2571,6 +1832,10 @@ async function resetWorkspaceData(){
   hideSync();
 }
 
+// ============================================
+// CALCULATIONS
+// ============================================
+
 function calcNeeded(sc,ck){
   const orders=(state.fc[sc]||0)*state.buffer;
   const iU=state.fcUnits[sc];
@@ -2585,42 +1850,12 @@ function calcNeeded(sc,ck){
 function calcSOH(s,c){const ct=readStock(s,c);return{cartons:ct,ea:ct*(state.cons[c]?.units||0)}}
 function calcDOC(s,c){const so=calcSOH(s,c),ne=calcNeeded(s,c);return ne.dayEA>0?so.ea/ne.dayEA:0}
 function calcReplen(s,c){const so=calcSOH(s,c),ne=calcNeeded(s,c);const sh=Math.max(0,ne.weekEA-so.ea);const u=state.cons[c]?.units||1;return{ea:Math.round(sh),ct:Math.ceil(sh/u)}}
-function n(x,d){d=d||0;return x==null||isNaN(x)?'-':Number(x).toLocaleString(undefined,{maximumFractionDigits:d,minimumFractionDigits:d})}
 function docColor(d){if(!d||d<1)return{bg:'#FCE4E4',fg:'#B12704',br:'#F5B7B1'};if(d<3)return{bg:'#FFF3CD',fg:'#B66A00',br:'#F5D99C'};if(d<7)return{bg:'#D5F5E3',fg:'#067D62',br:'#A9D5BE'};return{bg:'#D9EDF7',fg:'#146EB4',br:'#AED6F1'}}
 function docPill(d){if(!d||isNaN(d)||d===0)return'<span class="pill pill-nl">NO DATA</span>';if(d<1)return'<span class="pill pill-crit">'+d.toFixed(1)+'d</span>';if(d<3)return'<span class="pill pill-low">'+d.toFixed(1)+'d</span>';if(d<7)return'<span class="pill pill-ok">'+d.toFixed(1)+'d</span>';return'<span class="pill pill-hi">'+d.toFixed(1)+'d</span>'}
 
-
-document.querySelectorAll('.tab').forEach(el=>{
-  el.onclick=()=>{
-    const tabId=el.dataset.tab;
-    const view=el.dataset.view;
-    
-    // Hub tab clicked - go back to hub
-    if(tabId==='hub'){goToHub();return}
-    
-    // Admin tab - special handling
-    if(tabId==='admin'){
-      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-      el.classList.add('active');
-      document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
-      document.getElementById('admin').classList.add('active');
-      renderAdmin();
-      window.scrollTo(0,0);
-      return;
-    }
-    
-    // Standard tab navigation within current view
-    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-    el.classList.add('active');
-    document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    window.scrollTo(0,0);
-    
-    if(tabId==='activity')renderActivity();
-    if(tabId==='stock')renderStockUpdateInfo();
-    if(tabId==='historical')initHistoricalView();
-  };
-});
+// ============================================
+// RENDER FUNCTIONS
+// ============================================
 
 function renderOverview(){
   const live=state.stores.filter(s=>s.status==='Live');
@@ -2638,7 +1873,7 @@ function renderOverview(){
   const byStat={};state.stores.forEach(s=>byStat[s.status]=(byStat[s.status]||0)+1);
   const total=state.stores.length;
   const liveCap=state.stores.filter(s=>s.status==='Live').reduce((a,b)=>a+(+b.cap||0),0);
-  document.getElementById('statusBreakdown').innerHTML=total?Object.entries(byStat).map(([k,v])=>{const pct=(v/total*100).toFixed(0);return'<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span class="pill '+(k==='Live'?'pill-live':'pill-nl')+'">'+k+'</span><span class="mono" style="font-weight:700">'+v+' ('+pct+'%)</span></div><div class="bar '+(k==='Live'?'success':'warn')+'"><span style="width:'+pct+'%"></span></div></div>'}).join('')+'<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border-light);font-size:12px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--text-mut)">Total Live Capacity</span><span class="mono" style="font-weight:700">'+n(liveCap)+' BPO</span></div><div style="display:flex;justify-content:space-between"><span style="color:var(--text-mut)">Avg per Store</span><span class="mono" style="font-weight:700">'+n(liveCap/(live.length||1),0)+' BPO</span></div></div>':'<div class="empty"><div class="ic">No Stores</div><p>No stores yet</p></div>';
+  document.getElementById('statusBreakdown').innerHTML=total?Object.entries(byStat).map(([k,v])=>{const pct=(v/total*100).toFixed(0);return'<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span class="pill '+(k==='Live'?'pill-live':'pill-nl')+'">'+k+'</span><span class="mono" style="font-weight:700">'+v+' ('+pct+'%)</span></div><div class="bar '+(k==='Live'?'success':'warn')+'"><span style="width:'+pct+'%"></span></div></div>'}).join('')+'<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border-light);font-size:12px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--text-mut)">Total Live Capacity</span><span class="mono" style="font-weight:700">'+n(liveCap)+' BPO</span></div><div style="display:flex;justify-content:space-between"><span style="color:var(--text-mut)">Avg per Store</span><span class="mono" style="font-weight:700">'+n(liveCap/(live.length||1),0)+' BPO</span></div></div>':'<div class="empty"><div class="ic">No Stores</div></div>';
   let h='<table class="heatmap"><tr><th style="min-width:180px"></th>'+CONS_KEYS.map(c=>'<th>'+(state.cons[c]?.icon||'')+'<br>'+c.replace('Wrap','').replace('Label','Lbl')+'</th>').join('')+'</tr>';
   if(live.length){
     live.forEach(s=>{
@@ -2655,19 +1890,18 @@ function renderOverview(){
   document.getElementById('heatmap').innerHTML=h;
 }
 
-let editStore=null;
 function openStore(code){editStore=code;const s=code?state.stores.find(x=>x.code===code):{code:'',area:'',status:'Live',launch:'',cap:100};document.getElementById('mdTitle').textContent=code?'Edit '+code:'Add Store';mCode.value=s.code;mArea.value=s.area;mStat.value=s.status;mLaunch.value=s.launch||'';mCap.value=s.cap;mCode.disabled=!!code;document.getElementById('mdStore').classList.add('show')}
 function closeStore(){document.getElementById('mdStore').classList.remove('show')}
+
 async function saveStore(){
-  if(!canEdit()){denyAccess('edit stores');return}
+  if(!canEdit()){denyAccess('edit');return}
   const d={code:mCode.value.trim().toUpperCase(),area:mArea.value.trim(),status:mStat.value,launch:mLaunch.value,cap:+mCap.value||0};
   if(!d.code||!d.area)return toast('Required','error');
   if(editStore){
     const old={...state.stores.find(x=>x.code===editStore)};
     Object.assign(state.stores.find(x=>x.code===editStore),d);
     await saveStoreCloud(d);
-    const changes=[];
-    ['area','status','launch','cap'].forEach(f=>{if(old[f]!=d[f])changes.push(f)});
+    const changes=[];['area','status','launch','cap'].forEach(f=>{if(old[f]!=d[f])changes.push(f)});
     if(changes.length)await logActivity('update','store',d.code,null,old,d,{changedFields:changes});
   }else{
     if(state.stores.find(x=>x.code===d.code))return toast('Exists','error');
@@ -2677,8 +1911,9 @@ async function saveStore(){
   }
   closeStore();toast('Saved');render();
 }
+
 async function delStore(code){
-  if(!canEdit()){denyAccess('delete stores');return}
+  if(!canEdit()){denyAccess('delete');return}
   if(!confirm('Delete '+code+'?'))return;
   const old=state.stores.find(s=>s.code===code);
   state.stores=state.stores.filter(s=>s.code!==code);
@@ -2687,21 +1922,22 @@ async function delStore(code){
   await logActivity('delete','store',code,null,old,null);
   render();
 }
+
 function renderStores(){
   const q=(document.getElementById('srchSt')?.value||'').toLowerCase();
   const f=document.getElementById('fltSt')?.value||'';
   const filtered=state.stores.filter(s=>(!q||s.code.toLowerCase().includes(q)||(s.area||'').toLowerCase().includes(q))&&(!f||s.status===f));
   document.getElementById('stCount').textContent=filtered.length+' of '+state.stores.length;
   let h='<tr><th>Code</th><th>Location</th><th>Status</th><th>Launch</th><th>Capacity</th><th style="text-align:right">Actions</th></tr>';
-  if(!filtered.length){h+='<tr><td colspan="6" style="padding:40px;text-align:center;color:var(--text-mut)">'+(state.stores.length?'No matches':'No stores yet - upload Excel')+'</td></tr>'}
+  if(!filtered.length){h+='<tr><td colspan="6" style="padding:40px;text-align:center;color:var(--text-mut)">'+(state.stores.length?'No matches':'No stores yet')+'</td></tr>'}
   else{filtered.forEach(s=>{h+='<tr><td><b class="cell-link" onclick="openStore(\''+s.code+'\')">'+s.code+'</b></td><td>'+(s.area||'')+'</td><td><span class="pill '+(s.status==='Live'?'pill-live':'pill-nl')+'">'+s.status+'</span></td><td class="mono">'+(s.launch||'-')+'</td><td><input class="cell-input" type="number" value="'+s.cap+'" onchange="updCap(\''+s.code+'\',this.value)"></td><td style="text-align:right"><button class="btn btn-sm" onclick="openStore(\''+s.code+'\')">Edit</button> <button class="btn btn-sm btn-danger" onclick="delStore(\''+s.code+'\')">Del</button></td></tr>'})}
   document.getElementById('tblStores').innerHTML=h;
 }
+
 async function updCap(code,v){
-  if(!canEdit()){denyAccess('edit capacity');return}
+  if(!canEdit()){denyAccess('edit');return}
   const store=state.stores.find(s=>s.code===code);
-  const oldCap=store.cap;
-  const newCap=+v||0;
+  const oldCap=store.cap;const newCap=+v||0;
   if(oldCap===newCap)return;
   store.cap=newCap;
   debouncedSave('cap_'+code,async()=>{await saveStoreCloud(store);await logActivity('update','store',code,'cap',oldCap,newCap)});
@@ -2717,15 +1953,56 @@ function renderStock(){
   else{live.forEach(s=>{h+='<tr><td><b>'+s.code+'</b><div class="cell-sub">'+(s.area||'')+'</div></td>';CONS_KEYS.forEach(c=>{const v=readStock(s.code,c);h+='<td style="text-align:center"><input class="cell-input" type="number" value="'+v+'" onchange="updStk(\''+s.code+'\',\''+c+'\',this.value)"></td>'});h+='</tr>'})}
   document.getElementById('tblStock').innerHTML=h;
 }
+
 function updStk(code,c,v){
-  if(!canEdit()){denyAccess('edit stock');return}
-  const oldVal=readStock(code,c);
-  const newVal=+v||0;
+  if(!canEdit()){denyAccess('edit');return}
+  const oldVal=readStock(code,c);const newVal=+v||0;
   if(oldVal===newVal)return;
   writeStock(code,c,v);
   debouncedSave('stk_'+code,async()=>{await saveStockCloud(code);await logActivity('update','stock',code,c,oldVal,newVal,{consumable:c})});
 }
+
 function saveStkDate(){state.stkDate=document.getElementById('stkDate').value;saveSettingCloud('stkDate',state.stkDate)}
+
+function markStockUpdated(){
+  if(!canEdit()){denyAccess('mark stock updated');return}
+  document.getElementById('stockUpdateNotes').value='';
+  document.getElementById('mdStockUpdate').classList.add('show');
+}
+
+async function confirmStockUpdate(){
+  if(!canEdit()){denyAccess('mark stock updated');return}
+  const notes=document.getElementById('stockUpdateNotes').value.trim();
+  showSync('Recording update and creating snapshot...');
+  try{
+    const {data,error}=await supabaseClient.from('stock_update_log').insert({
+      workspace_id:activeWorkspace.id,
+      updated_by:currentUser.id,
+      updated_by_email:currentUser.email,
+      update_type:'manual',
+      notes:notes||null
+    }).select().single();
+    if(error)throw error;
+    lastStockUpdate=data;
+    await createSnapshot('manual',notes||'Manual stock update');
+    document.getElementById('mdStockUpdate').classList.remove('show');
+    toast('Stock updated and snapshot saved');
+    renderStockUpdateInfo();
+    await logActivity('update','stock','manual_update',null,null,null,{notes});
+  }catch(e){toast('Failed: '+e.message,'error')}
+  hideSync();
+}
+
+function renderStockUpdateInfo(){
+  const el=document.getElementById('stockUpdateInfo');
+  if(!el)return;
+  if(!lastStockUpdate){el.style.display='none';return}
+  el.style.display='flex';
+  document.getElementById('stockLastUser').textContent=lastStockUpdate.updated_by_email||'Unknown';
+  const t=new Date(lastStockUpdate.created_at);
+  document.getElementById('stockLastTime').textContent='Last update: '+t.toLocaleString();
+  document.getElementById('stockLastNotes').textContent=lastStockUpdate.notes?'Note: '+lastStockUpdate.notes:'';
+}
 
 function renderForecast(){
   const q=(document.getElementById('srchFc')?.value||'').toLowerCase();
@@ -2736,24 +2013,26 @@ function renderForecast(){
   else{list.forEach(s=>{const o=state.fc[s.code]||0;const iU=state.fcUnits[s.code];const hasI=iU!=null&&iU>0;const u=hasI?iU:o*state.upo;h+='<tr><td><b>'+s.code+'</b></td><td>'+(s.area||'')+'</td><td class="nums"><input class="cell-input" type="number" value="'+o+'" onchange="updFc(\''+s.code+'\',this.value)" style="width:100px"></td><td class="nums"><input class="cell-input" type="number" value="'+(hasI?iU:'')+'" placeholder="auto" onchange="updFcUnits(\''+s.code+'\',this.value)" style="width:100px"></td><td class="nums">'+n(o*state.buffer)+'</td><td class="nums">'+n(u*state.buffer)+'</td><td style="text-align:center">'+(hasI?'<span class="pill pill-ok">DATA</span>':'<span class="pill pill-nl">CALC</span>')+'</td></tr>'})}
   document.getElementById('tblFc').innerHTML=h;
 }
+
 function updFc(c,v){
-  if(!canEdit()){denyAccess('edit forecasts');return}
-  const oldVal=state.fc[c]||0;
-  const newVal=+v||0;
+  if(!canEdit()){denyAccess('edit');return}
+  const oldVal=state.fc[c]||0;const newVal=+v||0;
   if(oldVal===newVal)return;
   state.fc[c]=newVal;
   debouncedSave('fc_'+c,async()=>{await saveForecastCloud(c);await logActivity('update','forecast',c,'orders',oldVal,newVal);render()});
 }
+
 function updFcUnits(c,v){
-  if(!canEdit()){denyAccess('edit forecasts');return}
+  if(!canEdit()){denyAccess('edit');return}
   const oldVal=state.fcUnits[c]||null;
   const newVal=(!v||+v<=0)?null:+v;
   if(oldVal===newVal)return;
   if(newVal===null)delete state.fcUnits[c];else state.fcUnits[c]=newVal;
   debouncedSave('fcu_'+c,async()=>{await saveForecastCloud(c);await logActivity('update','forecast',c,'units',oldVal,newVal);render()});
 }
+
 async function bulkFc(){
-  if(!canEdit()){denyAccess('bulk edit forecasts');return}
+  if(!canEdit()){denyAccess('edit');return}
   const txt=prompt('CSV (Code,Orders[,Units]):');
   if(!txt)return;
   txt.split('\n').forEach(l=>{const p=l.split(',').map(x=>x.trim());if(p.length>=2&&p[0]){const c=p[0].toUpperCase();if(!isNaN(+p[1]))state.fc[c]=+p[1];if(p[2]&&!isNaN(+p[2])&&+p[2]>0)state.fcUnits[c]=+p[2]}});
@@ -2762,6 +2041,7 @@ async function bulkFc(){
 }
 
 function onDocConsChange(){docSelected=document.getElementById('docCons').value;renderDOC()}
+
 function renderDOC(){
   const sel=document.getElementById('docCons');
   const keys=Object.keys(state.cons);
@@ -2783,12 +2063,45 @@ function renderReplen(){
   let gt=0;
   const list=state.stores.filter(s=>s.status==='Live'&&state.fc[s.code]);
   if(!list.length)h+='<tr><td colspan="'+(CONS_KEYS.length+2)+'" style="padding:40px;text-align:center;color:var(--text-mut)">No data</td></tr>';
-  else{list.forEach(s=>{let t=0;h+='<tr><td><b>'+s.code+'</b><div class="cell-sub">'+(s.area||'')+'</div></td>';CONS_KEYS.forEach(c=>{const r=calcReplen(s.code,c).ct;t+=r;const bg=r>0?'background:rgba(255,153,0,'+Math.min(r/20,1)*0.18+')':'';h+='<td class="nums" style="'+bg+';text-align:center">'+(r||'-')+'</td>'});gt+=t;h+='<td class="nums" style="font-weight:700;color:var(--amz-orange-dark);background:#FFF4E0">'+t+'</td></tr>'});h+='<tr style="background:var(--amz-navy);color:#fff;font-weight:700"><td style="color:#fff">TOTAL</td>';CONS_KEYS.forEach(c=>{const sm=list.reduce((a,s)=>a+calcReplen(s.code,c).ct,0);h+='<td class="nums" style="text-align:center;color:#fff">'+sm+'</td>'});h+='<td class="nums" style="color:var(--amz-orange);font-size:15px">'+gt+'</td></tr>'}
+  else{
+    list.forEach(s=>{
+      let t=0;
+      h+='<tr><td><b>'+s.code+'</b><div class="cell-sub">'+(s.area||'')+'</div></td>';
+      CONS_KEYS.forEach(c=>{const r=calcReplen(s.code,c).ct;t+=r;const bg=r>0?'background:rgba(255,153,0,'+Math.min(r/20,1)*0.18+')':'';h+='<td class="nums" style="'+bg+';text-align:center">'+(r||'-')+'</td>'});
+      gt+=t;
+      h+='<td class="nums" style="font-weight:700;color:var(--amz-orange-dark);background:#FFF4E0">'+t+'</td></tr>';
+    });
+    h+='<tr style="background:var(--amz-navy);color:#fff;font-weight:700"><td style="color:#fff">TOTAL</td>';
+    CONS_KEYS.forEach(c=>{const sm=list.reduce((a,s)=>a+calcReplen(s.code,c).ct,0);h+='<td class="nums" style="text-align:center;color:#fff">'+sm+'</td>'});
+    h+='<td class="nums" style="color:var(--amz-orange);font-size:15px">'+gt+'</td></tr>';
+  }
   document.getElementById('tblRep').innerHTML=h;
 }
-function expReplenCSV(){const wsName=activeWorkspace?.name||'workspace';let csv='Store,Location,'+CONS_KEYS.map(c=>c+' (ct)').join(',')+',Total\n';state.stores.filter(s=>s.status==='Live'&&state.fc[s.code]).forEach(s=>{const row=[s.code,'"'+(s.area||'')+'"'];let t=0;CONS_KEYS.forEach(c=>{const r=calcReplen(s.code,c).ct;row.push(r);t+=r});row.push(t);csv+=row.join(',')+'\n'});const b=new Blob([csv],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='replen_'+wsName+'_'+new Date().toISOString().slice(0,10)+'.csv';a.click()}
 
-function renderCfg(){let h='';Object.keys(state.cons).forEach(k=>{const c=state.cons[k];h+='<div class="cfg-card"><h4><span>'+k+'</span><span class="type-tag">'+c.type+'</span></h4><div class="cfg-field"><label>Trend</label><input type="number" step="0.0001" id="tr_'+k+'" value="'+c.trend+'"></div><div class="cfg-field"><label>Units/Box</label><input type="number" id="un_'+k+'" value="'+c.units+'"></div><div class="cfg-field"><label>Boxes/Pallet</label><input type="number" id="bx_'+k+'" value="'+c.box+'"></div></div>'});document.getElementById('cfgBox').innerHTML=h;document.getElementById('bufMul').value=state.buffer;document.getElementById('upo').value=state.upo}
+function expReplenCSV(){
+  const wsName=activeWorkspace?.name||'workspace';
+  let csv='Store,Location,'+CONS_KEYS.map(c=>c+' (ct)').join(',')+',Total\n';
+  state.stores.filter(s=>s.status==='Live'&&state.fc[s.code]).forEach(s=>{
+    const row=[s.code,'"'+(s.area||'')+'"'];let t=0;
+    CONS_KEYS.forEach(c=>{const r=calcReplen(s.code,c).ct;row.push(r);t+=r});
+    row.push(t);csv+=row.join(',')+'\n';
+  });
+  const b=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);
+  a.download='replen_'+wsName+'_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+}
+
+function renderCfg(){
+  let h='';
+  Object.keys(state.cons).forEach(k=>{
+    const c=state.cons[k];
+    h+='<div class="cfg-card"><h4><span>'+k+'</span><span class="type-tag">'+c.type+'</span></h4><div class="cfg-field"><label>Trend</label><input type="number" step="0.0001" id="tr_'+k+'" value="'+c.trend+'"></div><div class="cfg-field"><label>Units/Box</label><input type="number" id="un_'+k+'" value="'+c.units+'"></div><div class="cfg-field"><label>Boxes/Pallet</label><input type="number" id="bx_'+k+'" value="'+c.box+'"></div></div>';
+  });
+  document.getElementById('cfgBox').innerHTML=h;
+  document.getElementById('bufMul').value=state.buffer;
+  document.getElementById('upo').value=state.upo;
+}
+
 async function saveCfg(){
   if(!canManageSettings()){denyAccess('manage settings');return}
   const oldCons=JSON.parse(JSON.stringify(state.cons));
@@ -2797,20 +2110,20 @@ async function saveCfg(){
   await logActivity('config_change','consumable',null,'cons',oldCons,state.cons);
   toast('Config saved');render();
 }
+
 async function saveBuf(){
   if(!canManageSettings()){denyAccess('manage settings');return}
-  const oldVal=state.buffer;
-  const newVal=+document.getElementById('bufMul').value||1.3;
+  const oldVal=state.buffer;const newVal=+document.getElementById('bufMul').value||1.3;
   if(oldVal===newVal)return;
   state.buffer=newVal;
   await saveSettingCloud('buffer',newVal);
   await logActivity('config_change','settings','buffer','buffer',oldVal,newVal);
   render();
 }
+
 async function saveUpo(){
   if(!canManageSettings()){denyAccess('manage settings');return}
-  const oldVal=state.upo;
-  const newVal=+document.getElementById('upo').value||8.58;
+  const oldVal=state.upo;const newVal=+document.getElementById('upo').value||8.58;
   if(oldVal===newVal)return;
   state.upo=newVal;
   await saveSettingCloud('upo',newVal);
@@ -2818,13 +2131,39 @@ async function saveUpo(){
   render();
 }
 
-function exportAll(){const wsName=activeWorkspace?.name||'workspace';const dump={workspace:activeWorkspace,...state};const b=new Blob([JSON.stringify(dump,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='anow_'+wsName+'_'+new Date().toISOString().slice(0,10)+'.json';a.click()}
+function exportAll(){
+  const wsName=activeWorkspace?.name||'workspace';
+  const dump={workspace:activeWorkspace,...state};
+  const b=new Blob([JSON.stringify(dump,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);
+  a.download='anow_'+wsName+'_'+new Date().toISOString().slice(0,10)+'.json';a.click();
+}
 
-let cachedLogs=[];
+function render(){renderOverview();renderStores();renderStock();renderForecast();renderDOC();renderReplen();renderCfg()}
+
+
+async function loadActivityLog(filters){
+  filters=filters||{};
+  if(!activeWorkspace)return[];
+  try{
+    let query=supabaseClient.from('activity_log_view').select('*').eq('workspace_id',activeWorkspace.id).order('created_at',{ascending:false}).limit(filters.limit||500);
+    if(filters.action)query=query.eq('action',filters.action);
+    if(filters.entityType)query=query.eq('entity_type',filters.entityType);
+    if(filters.daysBack){
+      const date=new Date();
+      date.setDate(date.getDate()-filters.daysBack);
+      query=query.gte('created_at',date.toISOString());
+    }
+    const {data,error}=await query;
+    if(error)throw error;
+    return data||[];
+  }catch(e){console.error(e);return[]}
+}
+
 async function renderActivity(){
   if(!activeWorkspace)return;
   document.getElementById('logWsName').innerHTML='<b>'+activeWorkspace.name+'</b>';
-  document.getElementById('logList').innerHTML='<div class="empty"><div class="ic">Loading</div><p>Loading activity...</p></div>';
+  document.getElementById('logList').innerHTML='<div class="empty"><div class="ic">Loading</div></div>';
   const action=document.getElementById('logActionFilter')?.value||'';
   const entityType=document.getElementById('logTypeFilter')?.value||'';
   const daysBack=document.getElementById('logDaysFilter')?.value;
@@ -2843,25 +2182,23 @@ async function renderActivity(){
   cachedLogs.forEach(l=>{userSet.add(l.user_email);if(l.action==='create')stats.create++;else if(l.action==='update')stats.update++;else if(l.action==='delete')stats.delete++;else if(l.action==='bulk_import')stats.import++});
   document.getElementById('logStats').innerHTML='<div class="kpi navy"><div class="kpi-head"><div class="kpi-icon">EV</div></div><div class="kpi-label">Total Events</div><div class="kpi-value">'+stats.total+'</div></div><div class="kpi green"><div class="kpi-head"><div class="kpi-icon">CR</div></div><div class="kpi-label">Created</div><div class="kpi-value">'+stats.create+'</div></div><div class="kpi yellow"><div class="kpi-head"><div class="kpi-icon">UP</div></div><div class="kpi-label">Updated</div><div class="kpi-value">'+stats.update+'</div></div><div class="kpi red"><div class="kpi-head"><div class="kpi-icon">DL</div></div><div class="kpi-label">Deleted</div><div class="kpi-value">'+stats.delete+'</div></div><div class="kpi blue"><div class="kpi-head"><div class="kpi-icon">IM</div></div><div class="kpi-label">Imports</div><div class="kpi-value">'+stats.import+'</div></div><div class="kpi orange"><div class="kpi-head"><div class="kpi-icon">US</div></div><div class="kpi-label">Active Users</div><div class="kpi-value">'+userSet.size+'</div></div>';
   document.getElementById('logCount').textContent='Showing '+filtered.length+' entries';
-  if(filtered.length===0){document.getElementById('logList').innerHTML='<div class="empty"><div class="ic">No Activity</div><p>No activity matches your filters</p></div>';return}
+  if(filtered.length===0){document.getElementById('logList').innerHTML='<div class="empty"><div class="ic">No Activity</div></div>';return}
   let html='';
   filtered.forEach(log=>{
     const iconClass={'create':'create','update':'update','delete':'delete','bulk_import':'import','config_change':'config','workspace_reset':'reset'}[log.action]||'';
-    const actionClass=iconClass;
-    const actionLabel={'create':'CREATED','update':'UPDATED','delete':'DELETED','bulk_import':'IMPORTED','bulk_sync':'BULK SYNC','config_change':'CONFIG','workspace_reset':'RESET'}[log.action]||log.action.toUpperCase();
+    const actionLabel={'create':'CREATED','update':'UPDATED','delete':'DELETED','bulk_import':'IMPORTED','config_change':'CONFIG','workspace_reset':'RESET'}[log.action]||log.action.toUpperCase();
     const iconText={'create':'CR','update':'UP','delete':'DL','bulk_import':'IM','config_change':'CF','workspace_reset':'RS'}[log.action]||'EV';
     const time=formatLogTime(log.created_at);
     const fullTime=new Date(log.created_at).toLocaleString();
     let detail='';
     if(log.action==='update'&&log.field_name){
-      const oldV=log.old_value;const newV=log.new_value;
-      detail='<div class="log-change">Field: <b>'+log.field_name+'</b> <span class="old">'+oldV+'</span><span class="arrow">-&gt;</span><span class="new">'+newV+'</span></div>';
+      detail='<div class="log-change">Field: <b>'+log.field_name+'</b> <span class="old">'+log.old_value+'</span><span class="arrow">-&gt;</span><span class="new">'+log.new_value+'</span></div>';
     } else if(log.action==='bulk_import'&&log.metadata){
-      detail='<div class="log-detail">'+(log.metadata.stores||0)+' stores, '+(log.metadata.forecasts||0)+' forecasts, '+(log.metadata.stock||0)+' stock entries</div>';
+      detail='<div class="log-detail">'+(log.metadata.stores||0)+' stores, '+(log.metadata.forecasts||0)+' forecasts, '+(log.metadata.stock||0)+' stock</div>';
     } else if(log.action==='config_change'){
-      detail='<div class="log-detail">Configuration updated: <b>'+(log.field_name||'multiple fields')+'</b></div>';
+      detail='<div class="log-detail">Config: <b>'+(log.field_name||'multiple')+'</b></div>';
     }
-    html+='<div class="log-entry"><div class="log-icon '+iconClass+'">'+iconText+'</div><div class="log-body"><div class="log-header"><span class="log-user">'+(log.user_email||'Unknown')+'</span><span class="log-action '+actionClass+'">'+actionLabel+'</span>'+(log.entity_type?'<span style="color:var(--text-mut);font-size:12px">'+log.entity_type+'</span>':'')+(log.entity_id?'<span class="log-entity">'+log.entity_id+'</span>':'')+'<span class="log-time" title="'+fullTime+'">'+time+'</span></div>'+detail+'</div></div>';
+    html+='<div class="log-entry"><div class="log-icon '+iconClass+'">'+iconText+'</div><div class="log-body"><div class="log-header"><span class="log-user">'+(log.user_email||'Unknown')+'</span><span class="log-action '+iconClass+'">'+actionLabel+'</span>'+(log.entity_type?'<span style="color:var(--text-mut);font-size:12px">'+log.entity_type+'</span>':'')+(log.entity_id?'<span class="log-entity">'+log.entity_id+'</span>':'')+'<span class="log-time" title="'+fullTime+'">'+time+'</span></div>'+detail+'</div></div>';
   });
   document.getElementById('logList').innerHTML=html;
 }
@@ -2875,15 +2212,17 @@ function exportActivityCSV(){
     csv+=row.map(v=>'"'+v+'"').join(',')+'\n';
   });
   const b=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(b);
-  a.download='activity_'+wsName+'_'+new Date().toISOString().slice(0,10)+'.csv';
-  a.click();
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);
+  a.download='activity_'+wsName+'_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
   toast('Exported');
 }
 
+// ============================================
+// ADMIN PANEL
+// ============================================
+
 async function renderAdmin(){
-  if(!isSuperAdmin()){document.getElementById('admin').innerHTML='<div class="empty"><div class="ic">Access Denied</div><p>Super Admin only</p></div>';return}
+  if(!isSuperAdmin()){document.getElementById('admin').innerHTML='<div class="empty"><div class="ic">Access Denied</div></div>';return}
   const [wsRes,profileRes,memberRes,saLogRes]=await Promise.all([
     supabaseClient.from('workspaces').select('*').order('name'),
     supabaseClient.from('user_profiles').select('*').order('email'),
@@ -2927,7 +2266,7 @@ async function renderAdmin(){
       const isMe=u.id===currentUser.id;
       let actionBtn='';
       if(u.is_super_admin){
-        actionBtn=isMe?'<span class="pill pill-owner">You</span>':'<button class="btn btn-sm btn-danger" onclick="revokeSuperAdmin(\''+u.id+'\',\''+u.email+'\')">Revoke Super Admin</button>';
+        actionBtn=isMe?'<span class="pill pill-owner">You</span>':'<button class="btn btn-sm btn-danger" onclick="revokeSuperAdmin(\''+u.id+'\',\''+u.email+'\')">Revoke</button>';
       } else {
         actionBtn='<button class="btn btn-sm" onclick="grantSuperAdmin(\''+u.id+'\',\''+u.email+'\')">Make Super Admin</button>';
       }
@@ -2937,7 +2276,7 @@ async function renderAdmin(){
   document.getElementById('usersList').innerHTML=usersHtml;
   
   let saLogHtml='';
-  if(!saLog.length){saLogHtml='<div class="empty"><div class="ic">No History</div><p>No Super Admin changes recorded yet</p></div>'}
+  if(!saLog.length){saLogHtml='<div class="empty"><div class="ic">No History</div></div>'}
   else{
     saLog.forEach(entry=>{
       const isGrant=entry.action==='granted';
@@ -2948,15 +2287,15 @@ async function renderAdmin(){
 }
 
 async function changeRole(memberId,email,newRole){
-  if(!confirm('Change '+email+'\'s role to '+newRole+'?')){renderAdmin();return}
-  showSync('Updating role...');
+  if(!confirm('Change '+email+' role to '+newRole+'?')){renderAdmin();return}
+  showSync('Updating...');
   try{
     const {error}=await supabaseClient.from('workspace_members').update({role:newRole}).eq('id',memberId);
     if(error)throw error;
-    toast('Role updated to '+newRole);
+    toast('Role updated');
     await loadMyWorkspaces();
     renderAdmin();
-  }catch(e){toast('Failed: '+e.message,'error');renderAdmin()}
+  }catch(e){toast('Failed','error');renderAdmin()}
   hideSync();
 }
 
@@ -2967,7 +2306,7 @@ async function saveWorkspace(){
   const name=mWsName.value.trim();
   const country=mWsCountry.value.trim();
   if(!code||!name){toast('Code and name required','error');return}
-  showSync('Creating workspace...');
+  showSync('Creating...');
   try{
     const {data,error}=await supabaseClient.from('workspaces').insert({code,name,country,created_by:currentUser.id}).select().single();
     if(error)throw error;
@@ -2981,7 +2320,7 @@ async function saveWorkspace(){
 }
 
 async function deleteWorkspace(wsId,name){
-  if(!confirm('DELETE workspace "'+name+'" and ALL its data?\n\nThis cannot be undone!'))return;
+  if(!confirm('DELETE workspace "'+name+'"?'))return;
   if(!confirm('Are you ABSOLUTELY sure?'))return;
   showSync('Deleting...');
   try{
@@ -2990,11 +2329,10 @@ async function deleteWorkspace(wsId,name){
     if(activeWorkspace?.id===wsId){location.reload();return}
     await loadMyWorkspaces();
     renderAdmin();
-  }catch(e){toast('Failed: '+e.message,'error')}
+  }catch(e){toast('Failed','error')}
   hideSync();
 }
 
-let memberWsId=null;
 function openMemberModal(wsId){memberWsId=wsId;mMemberEmail.value='';mMemberRole.value='member';document.getElementById('mdMember').classList.add('show')}
 
 async function addMember(){
@@ -3002,21 +2340,21 @@ async function addMember(){
   const email=mMemberEmail.value.trim().toLowerCase();
   const role=mMemberRole.value;
   if(!email){toast('Email required','error');return}
-  showSync('Adding member...');
+  showSync('Adding...');
   try{
     const {data:user}=await supabaseClient.from('user_profiles').select('id, email').eq('email',email).maybeSingle();
-    if(!user){toast('User "'+email+'" not found. They must sign up first.','error');hideSync();return}
+    if(!user){toast('User not found. They must sign up first.','error');hideSync();return}
     const {error}=await supabaseClient.from('workspace_members').insert({workspace_id:memberWsId,user_id:user.id,role,invited_by:currentUser.id});
-    if(error){if(error.code==='23505')toast('User already in workspace','error');else throw error;hideSync();return}
-    toast('Member added successfully');
+    if(error){if(error.code==='23505')toast('Already in workspace','error');else throw error;hideSync();return}
+    toast('Member added');
     document.getElementById('mdMember').classList.remove('show');
     renderAdmin();
-  }catch(e){toast('Failed: '+e.message,'error')}
+  }catch(e){toast('Failed','error')}
   hideSync();
 }
 
 async function removeMember(memberId,email){
-  if(!confirm('Remove '+email+' from this workspace?'))return;
+  if(!confirm('Remove '+email+'?'))return;
   showSync();
   try{
     await supabaseClient.from('workspace_members').delete().eq('id',memberId);
@@ -3027,49 +2365,39 @@ async function removeMember(memberId,email){
 }
 
 function grantSuperAdmin(userId,email){
-  if(!isSuperAdmin()){toast('Only Super Admins can grant Super Admin access','error');return}
+  if(!isSuperAdmin()){toast('Super Admin only','error');return}
   pendingSuperAdminAction={type:'grant',userId,email};
-  document.getElementById('superAdminTitle').textContent='Grant Super Admin Access';
+  document.getElementById('superAdminTitle').textContent='Grant Super Admin';
   document.getElementById('superAdminTargetEmail').textContent=email;
   document.getElementById('superAdminConfirm').value='';
-  document.getElementById('superAdminConfirmBtn').textContent='Grant Super Admin';
-  document.getElementById('superAdminConfirmBtn').className='btn btn-danger';
+  document.getElementById('superAdminConfirmBtn').textContent='Grant';
   document.getElementById('mdSuperAdmin').classList.add('show');
 }
 
 function revokeSuperAdmin(userId,email){
-  if(!isSuperAdmin()){toast('Only Super Admins can revoke Super Admin access','error');return}
-  if(userId===currentUser.id){toast('You cannot revoke your own Super Admin access','error');return}
+  if(!isSuperAdmin()){toast('Super Admin only','error');return}
+  if(userId===currentUser.id){toast('Cannot revoke your own access','error');return}
   pendingSuperAdminAction={type:'revoke',userId,email};
-  document.getElementById('superAdminTitle').textContent='Revoke Super Admin Access';
+  document.getElementById('superAdminTitle').textContent='Revoke Super Admin';
   document.getElementById('superAdminTargetEmail').textContent=email;
   document.getElementById('superAdminConfirm').value='';
-  document.getElementById('superAdminConfirmBtn').textContent='Revoke Super Admin';
-  document.getElementById('superAdminConfirmBtn').className='btn btn-danger';
+  document.getElementById('superAdminConfirmBtn').textContent='Revoke';
   document.getElementById('mdSuperAdmin').classList.add('show');
 }
 
 async function confirmSuperAdminAction(){
   if(!pendingSuperAdminAction)return;
   const confirmText=document.getElementById('superAdminConfirm').value.trim();
-  if(confirmText!=='CONFIRM'){toast('Type CONFIRM to proceed','error');return}
-  
+  if(confirmText!=='CONFIRM'){toast('Type CONFIRM','error');return}
   const {type,userId,email}=pendingSuperAdminAction;
-  
   if(type==='revoke'){
     const {data:superAdmins}=await supabaseClient.from('user_profiles').select('id').eq('is_super_admin',true);
-    if(superAdmins&&superAdmins.length<=1){
-      toast('Cannot revoke - must have at least one Super Admin','error');
-      return;
-    }
+    if(superAdmins&&superAdmins.length<=1){toast('Must have at least one Super Admin','error');return}
   }
-  
-  showSync(type==='grant'?'Granting access...':'Revoking access...');
+  showSync(type==='grant'?'Granting...':'Revoking...');
   try{
-    const newValue=type==='grant';
-    const {error}=await supabaseClient.from('user_profiles').update({is_super_admin:newValue}).eq('id',userId);
+    const {error}=await supabaseClient.from('user_profiles').update({is_super_admin:type==='grant'}).eq('id',userId);
     if(error)throw error;
-    
     await supabaseClient.from('super_admin_log').insert({
       target_user_id:userId,
       target_email:email,
@@ -3077,8 +2405,7 @@ async function confirmSuperAdminAction(){
       performed_by:currentUser.id,
       performed_by_email:currentUser.email
     });
-    
-    toast(type==='grant'?'Super Admin granted to '+email:'Super Admin revoked from '+email);
+    toast(type==='grant'?'Granted to '+email:'Revoked from '+email);
     document.getElementById('mdSuperAdmin').classList.remove('show');
     pendingSuperAdminAction=null;
     renderAdmin();
@@ -3086,45 +2413,9 @@ async function confirmSuperAdminAction(){
   hideSync();
 }
 
-function normStr(s){return String(s==null?'':s).trim()}
-function normKey(s){return normStr(s).toLowerCase().replace(/[^a-z0-9]/g,'')}
-function toNum(v){
-  if(v==null||v==='')return null;
-  if(typeof v==='number')return isNaN(v)?null:v;
-  const s=String(v).trim();
-  if(!s)return null;
-  if(/^(error|#n\/?a|na|#ref|#div|#value|#name|#null)/i.test(s))return null;
-  if(s==='-'||s==='- 0')return null;
-  if(s.endsWith('%')){const p=parseFloat(s.replace(/[%,\s]/g,''));return isNaN(p)?null:p/100}
-  const cleaned=s.replace(/,/g,'').replace(/\s/g,'').replace(/[()]/g,'');
-  const num=parseFloat(cleaned);
-  return isNaN(num)?null:num;
-}
-function isStoreCode(s){return /^Q[A-Z]{1,3}\d+[A-Z]?$/i.test(normStr(s).trim())}
-function normalizeStatus(raw){const s=normKey(raw);if(!s)return'Live';if(['live','launched','active','open','running'].includes(s))return'Live';return'Not Live'}
-
-function resolveConsKey(header){
-  if(!header)return null;
-  const k=normKey(header);
-  if(!k)return null;
-  if(/sp[o0][o0]/.test(k))return'SPOOLabel';
-  if(k==='label'||k==='labels')return'SPOOLabel';
-  if(k.includes('sealtape')||(k.includes('seal')&&k.includes('tape')))return'SealTape';
-  if(k.includes('bubble')){
-    if(k.endsWith('l')||k.includes('large'))return'BubbleWrap-L';
-    if(k.endsWith('m')||k.includes('medium'))return'BubbleWrap-M';
-    if(k.endsWith('s')||k.includes('small'))return'BubbleWrap-S';
-  }
-  if(k.includes('paperbag')||k.includes('brownbag')){
-    if(k.endsWith('l')||k.includes('large'))return'PaperBag-L';
-    if(k.endsWith('m')||k.includes('medium'))return'PaperBag-M';
-  }
-  if(k.includes('icecream'))return'IceCreamBags';
-  if(k.includes('gelpad')||k.includes('gelpack'))return'GelPads';
-  return null;
-}
-
-function sheetToRows(wb,name){if(!name||!wb.Sheets[name])return[];return XLSX.utils.sheet_to_json(wb.Sheets[name],{header:1,defval:null,raw:true})}
+// ============================================
+// EXCEL PARSERS
+// ============================================
 
 function parseCapacity(rows,name,log){
   let hdrIdx=-1;
@@ -3158,14 +2449,14 @@ function parseCapacity(rows,name,log){
 }
 
 function parseForecast(rows,name,log){
-  let hdrIdx=-1,isOrders=false,isUnits=false;
+  let hdrIdx=-1,isUnits=false;
   for(let i=0;i<Math.min(rows.length,10);i++){
     if(!rows[i])continue;
     const cells=rows[i].map(c=>normKey(c));
     const hasStore=cells.includes('store')||cells.includes('storecode');
     const hasOrders=cells.includes('totalorders');
     const hasUnits=cells.includes('totalunits');
-    if(hasStore&&(hasOrders||hasUnits)){hdrIdx=i;isOrders=hasOrders;isUnits=hasUnits;break}
+    if(hasStore&&(hasOrders||hasUnits)){hdrIdx=i;isUnits=hasUnits;break}
   }
   if(hdrIdx===-1)return 0;
   const hdr=rows[hdrIdx].map(c=>normKey(c));
@@ -3202,19 +2493,15 @@ function parseStock(rows,name,log){
     const consCount=rows[i].filter(c=>resolveConsKey(c)).length;
     if(consCount>=3){hdrIdx=i;break}
   }
-  if(hdrIdx===-1){log('warn','<b>'+name+'</b>: no consumable header found');return 0}
+  if(hdrIdx===-1){log('warn','<b>'+name+'</b>: no consumable header');return 0}
   const hdr=rows[hdrIdx];
   const codeCol=0;
   const colMap={};
-  const mapped=[],skipped=[];
   hdr.forEach((h,i)=>{
     if(i===codeCol||!h)return;
     const ck=resolveConsKey(h);
-    if(ck){colMap[i]=ck;mapped.push(normStr(h)+'->'+ck)}
-    else{skipped.push(normStr(h))}
+    if(ck)colMap[i]=ck;
   });
-  if(mapped.length)log('info','<b>'+name+'</b> mapped: '+mapped.map(s=>'<code>'+s+'</code>').join(', '));
-  if(skipped.length)log('warn','Skipped: '+skipped.map(s=>'<code>'+s+'</code>').join(', '));
   let updated=0;
   for(let i=hdrIdx+1;i<rows.length;i++){
     const row=rows[i];if(!row)continue;
@@ -3224,8 +2511,7 @@ function parseStock(rows,name,log){
     if(!state.stock[code])state.stock[code]={};
     const tempStock={};
     Object.entries(colMap).forEach(([ciStr,ck])=>{
-      const ci=+ciStr;
-      const v=toNum(row[ci]);
+      const ci=+ciStr;const v=toNum(row[ci]);
       if(v==null)return;
       const key=stockKey(ck);
       tempStock[key]=(tempStock[key]||0)+v;
@@ -3260,117 +2546,83 @@ function parseTrends(rows,name,log){
       break;
     }
   }
-  if(updated>0)log('ok','<b>'+name+'</b> [Trends]: '+updated+' consumables');
+  if(updated>0)log('ok','<b>'+name+'</b> [Trends]: '+updated);
 }
 
 async function importExcel(e){
-  if(!canEdit()){denyAccess('import data');e.target.value='';return}
+  if(!canEdit()){denyAccess('import');e.target.value='';return}
   const f=e.target.files[0];if(!f)return;
-  if(!activeWorkspace){toast('No active workspace','error');return}
   const report=[];
   const log=(t,m)=>report.push('<div class="'+t+'">'+(t==='ok'?'OK':t==='warn'?'!':t==='info'?'i':'X')+' '+m+'</div>');
-  log('info','<b>Target Workspace:</b> '+activeWorkspace.name);
+  log('info','<b>Workspace:</b> '+activeWorkspace.name);
   const r=new FileReader();
   r.onload=async ev=>{
     try{
       const data=new Uint8Array(ev.target.result);
       const wb=XLSX.read(data,{type:'array'});
-      log('info','<b>Workbook loaded</b> - '+wb.SheetNames.length+' sheets');
-      log('info','Sheets: '+wb.SheetNames.map(n=>'<code>'+n+'</code>').join(', '));
-      
+      log('info','<b>Loaded</b> - '+wb.SheetNames.length+' sheets');
       for(const sheetName of wb.SheetNames){
         const rows=sheetToRows(wb,sheetName);
         if(!rows.length)continue;
         const lower=sheetName.toLowerCase();
         if(lower.includes('capacity')){parseCapacity(rows,sheetName,log);parseTrends(rows,sheetName,log);continue}
-        if(lower.includes('stock')||lower==='stockcount'){parseStock(rows,sheetName,log);continue}
-        if(lower.includes('forecast')||lower==='orders'||lower==='units'||lower==='untis'){parseForecast(rows,sheetName,log);continue}
-        if(lower.includes('doc')||lower.includes('paper bag')||lower.includes('seal tape')||lower.includes('sp00')||lower.includes('bubble pouches')){log('info','<code>'+sheetName+'</code> -> skipped (DOC analysis sheet)');continue}
+        if(lower.includes('stock')){parseStock(rows,sheetName,log);continue}
+        if(lower.includes('forecast')||lower==='orders'||lower==='units'){parseForecast(rows,sheetName,log);continue}
         if(parseForecast(rows,sheetName,log)>0)continue;
         parseStock(rows,sheetName,log);
       }
-      
-      for(const sheetName of wb.SheetNames){
-        const lower=sheetName.toLowerCase();
-        if(lower.includes('capacity')||lower.includes('stock')||lower.includes('doc'))continue;
-        if(lower.includes('forecast')||lower==='orders'||lower==='units'||lower==='untis')continue;
-        const rows=sheetToRows(wb,sheetName);
-        parseForecast(rows,sheetName,log);
-      }
-      
       state.stkDate=new Date().toISOString().slice(0,10);
-      log('info','<b>Syncing to '+activeWorkspace.name+'...</b>');
       await bulkSyncAll();
-      log('ok','<b>Final state</b>:');
-      log('ok','&nbsp;&nbsp;- '+state.stores.length+' stores');
-      log('ok','&nbsp;&nbsp;- '+Object.keys(state.fc).length+' forecasts (orders)');
-      log('ok','&nbsp;&nbsp;- '+Object.keys(state.fcUnits).length+' forecasts (units)');
-      log('ok','&nbsp;&nbsp;- '+Object.keys(state.stock).length+' stock entries');
-      
+      log('ok','<b>Done</b>: '+state.stores.length+' stores');
       docSelected=null;
       render();
-      toast('Imported into '+activeWorkspace.name);
+      toast('Imported');
       document.getElementById('mdImportTitle').textContent='Import Report';
       document.getElementById('importReport').innerHTML=report.join('');
       document.getElementById('mdImport').classList.add('show');
     }catch(err){
-      console.error(err);
       log('err','<b>Failed</b>: '+err.message);
       document.getElementById('importReport').innerHTML=report.join('');
       document.getElementById('mdImport').classList.add('show');
       toast('Failed','error');
     }
   };
-  r.onerror=()=>toast('Cannot read','error');
   r.readAsArrayBuffer(f);
   e.target.value='';
 }
 
 async function importForecastExcel(e){
-  if(!canEdit()){denyAccess('import forecasts');e.target.value='';return}
+  if(!canEdit()){denyAccess('import');e.target.value='';return}
   const f=e.target.files[0];if(!f)return;
-  if(!activeWorkspace){toast('No active workspace','error');return}
   const report=[];
-  const log=(t,m)=>report.push('<div class="'+t+'">'+(t==='ok'?'OK':t==='warn'?'!':t==='info'?'i':'X')+' '+m+'</div>');
-  log('info','<b>Target Workspace:</b> '+activeWorkspace.name);
+  const log=(t,m)=>report.push('<div class="'+t+'">'+(t==='ok'?'OK':t==='warn'?'!':'X')+' '+m+'</div>');
   const r=new FileReader();
   r.onload=async ev=>{
     try{
       const data=new Uint8Array(ev.target.result);
       const wb=XLSX.read(data,{type:'array'});
-      log('info','<b>Forecast workbook loaded</b> - '+wb.SheetNames.length+' sheet(s)');
       let totalParsed=0;
       for(const sheetName of wb.SheetNames){
         const rows=sheetToRows(wb,sheetName);
         if(!rows.length)continue;
-        const result=parseForecast(rows,sheetName,log);
-        if(result>0)totalParsed++;
+        if(parseForecast(rows,sheetName,log)>0)totalParsed++;
       }
-      if(totalParsed===0){log('err','<b>No forecast data found</b>');toast('No forecast data','error')}
-      else{
-        log('info','<b>Syncing...</b>');
-        await bulkSyncAll();
-        log('ok','<b>Done</b>: '+Object.keys(state.fc).length+' stores synced');
-        toast('Synced to '+activeWorkspace.name);
-      }
+      if(totalParsed===0){log('err','No forecast data');toast('No forecast data','error')}
+      else{await bulkSyncAll();toast('Synced')}
       render();
-      document.getElementById('mdImportTitle').textContent='Forecast Import Report';
+      document.getElementById('mdImportTitle').textContent='Forecast Report';
       document.getElementById('importReport').innerHTML=report.join('');
       document.getElementById('mdImport').classList.add('show');
-    }catch(err){
-      console.error(err);
-      log('err','<b>Failed</b>: '+err.message);
-      document.getElementById('importReport').innerHTML=report.join('');
-      document.getElementById('mdImport').classList.add('show');
-      toast('Failed','error');
-    }
+    }catch(err){toast('Failed','error')}
   };
-  r.onerror=()=>toast('Cannot read','error');
   r.readAsArrayBuffer(f);
   e.target.value='';
 }
 
-let pendingStockImport=null;
+// ============================================
+// STOCK BULK UPLOAD
+// ============================================
+
 function closeStockBulkModal(){
   const m=document.getElementById('mdStockBulk');
   if(m)m.classList.remove('show');
@@ -3380,11 +2632,10 @@ function closeStockBulkModal(){
 }
 
 async function importStockBulk(e){
-  if(!canEdit()){denyAccess('import stock');e.target.value='';return}
+  if(!canEdit()){denyAccess('import');e.target.value='';return}
   const f=e.target.files[0];
   if(!f)return;
-  if(!activeWorkspace){toast('No active workspace','error');e.target.value='';return}
-  showSync('Reading Excel file...');
+  showSync('Reading...');
   const r=new FileReader();
   r.onload=ev=>{
     try{
@@ -3392,17 +2643,15 @@ async function importStockBulk(e){
       const wb=XLSX.read(data,{type:'array',cellDates:true});
       const result=parseStockBulkFile(wb,f.name);
       hideSync();
-      if(result.errors.length>0&&result.valid.length===0){toast('Cannot parse this file','error');showStockPreview(result,f.name,true);return}
-      showStockPreview(result,f.name,false);
-    }catch(err){console.error('Parse error:',err);hideSync();toast('Failed to read file: '+err.message,'error')}
+      showStockPreview(result,f.name);
+    }catch(err){hideSync();toast('Failed: '+err.message,'error')}
   };
-  r.onerror=()=>{hideSync();toast('Cannot read file','error')};
   r.readAsArrayBuffer(f);
   e.target.value='';
 }
 
 function parseStockBulkFile(wb,fileName){
-  const result={fileName:fileName,detectedDate:null,valid:[],skipped:[],errors:[],affectedStores:new Set(),affectedItems:new Set()};
+  const result={fileName,detectedDate:null,valid:[],skipped:[],errors:[],affectedStores:new Set(),affectedItems:new Set()};
   let targetSheet=null;
   for(const sheetName of wb.SheetNames){
     const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,defval:null,raw:false});
@@ -3410,18 +2659,18 @@ function parseStockBulkFile(wb,fileName){
     for(let i=0;i<Math.min(rows.length,5);i++){
       const cells=(rows[i]||[]).map(c=>normKey(c));
       const hasStore=cells.some(c=>c==='storeid'||c==='store'||c==='storecode');
-      const hasItem=cells.some(c=>c==='item'||c==='consumable'||c==='material');
-      const hasCount=cells.some(c=>c==='count'||c==='quantity'||c==='qty'||c==='cartons');
+      const hasItem=cells.some(c=>c==='item'||c==='consumable');
+      const hasCount=cells.some(c=>c==='count'||c==='qty'||c==='cartons');
       if(hasStore&&hasItem&&hasCount){targetSheet={name:sheetName,rows,headerIdx:i};break}
     }
     if(targetSheet)break;
   }
-  if(!targetSheet){result.errors.push({row:0,reason:'No valid sheet found. Expected columns: date, storeId, item, count'});return result}
+  if(!targetSheet){result.errors.push({row:0,reason:'No valid sheet'});return result}
   const hdr=(targetSheet.rows[targetSheet.headerIdx]||[]).map(c=>normKey(c));
   const dateCol=hdr.findIndex(c=>c==='date'||c==='stockdate');
   const storeCol=hdr.findIndex(c=>c==='storeid'||c==='store'||c==='storecode');
-  const itemCol=hdr.findIndex(c=>c==='item'||c==='consumable'||c==='material');
-  const countCol=hdr.findIndex(c=>c==='count'||c==='quantity'||c==='qty'||c==='cartons');
+  const itemCol=hdr.findIndex(c=>c==='item'||c==='consumable');
+  const countCol=hdr.findIndex(c=>c==='count'||c==='qty'||c==='cartons');
   const validStoreCodes=new Set(state.stores.map(s=>s.code.toUpperCase()));
   for(let i=targetSheet.headerIdx+1;i<targetSheet.rows.length;i++){
     const row=targetSheet.rows[i];
@@ -3429,277 +2678,97 @@ function parseStockBulkFile(wb,fileName){
     const rowNum=i+1;
     if(dateCol>=0&&row[dateCol]&&!result.detectedDate){
       const d=row[dateCol];
-      if(d instanceof Date){result.detectedDate=d.toISOString().slice(0,10)}
-      else{const parsed=new Date(d);if(!isNaN(parsed.getTime())){result.detectedDate=parsed.toISOString().slice(0,10)}}
+      if(d instanceof Date)result.detectedDate=d.toISOString().slice(0,10);
+      else{const parsed=new Date(d);if(!isNaN(parsed.getTime()))result.detectedDate=parsed.toISOString().slice(0,10)}
     }
     const storeRaw=normStr(row[storeCol]).toUpperCase();
-    if(!storeRaw){result.skipped.push({row:rowNum,reason:'Empty store ID'});continue}
-    if(!validStoreCodes.has(storeRaw)){result.errors.push({row:rowNum,reason:'Store "'+storeRaw+'" not found in this workspace'});continue}
+    if(!storeRaw){result.skipped.push({row:rowNum,reason:'Empty store'});continue}
+    if(!validStoreCodes.has(storeRaw)){result.errors.push({row:rowNum,reason:'Store "'+storeRaw+'" not found'});continue}
     const itemRaw=normStr(row[itemCol]);
-    if(!itemRaw){result.skipped.push({row:rowNum,reason:'Empty item name'});continue}
+    if(!itemRaw){result.skipped.push({row:rowNum,reason:'Empty item'});continue}
     const consKey=resolveConsKey(itemRaw);
     if(!consKey){result.skipped.push({row:rowNum,reason:'Unknown item "'+itemRaw+'"'});continue}
     const countVal=toNum(row[countCol]);
-    if(countVal==null||countVal<0){result.errors.push({row:rowNum,reason:'Invalid count for '+storeRaw+' - '+consKey});continue}
-    result.valid.push({storeId:storeRaw,item:itemRaw,consKey:consKey,count:Math.round(countVal)});
+    if(countVal==null||countVal<0){result.errors.push({row:rowNum,reason:'Invalid count'});continue}
+    result.valid.push({storeId:storeRaw,item:itemRaw,consKey,count:Math.round(countVal)});
     result.affectedStores.add(storeRaw);
     result.affectedItems.add(consKey);
   }
   return result;
 }
 
-function showStockPreview(result,fileName,errorOnly){
+function showStockPreview(result,fileName){
   pendingStockImport=result;
   const previewEl=document.getElementById('stockBulkPreview');
   const confirmBtn=document.getElementById('stockBulkConfirmBtn');
-  let html='<div class="stock-meta"><b>File:</b> '+fileName+(result.detectedDate?' - <b>Date:</b> '+result.detectedDate:'')+' - <b>Workspace:</b> '+activeWorkspace.name+'</div><div class="stock-preview-stats"><div class="stock-stat valid"><div class="stock-stat-num">'+result.valid.length+'</div><div class="stock-stat-lbl">Valid</div></div><div class="stock-stat skip"><div class="stock-stat-num">'+result.skipped.length+'</div><div class="stock-stat-lbl">Skipped</div></div><div class="stock-stat error"><div class="stock-stat-num">'+result.errors.length+'</div><div class="stock-stat-lbl">Errors</div></div><div class="stock-stat info"><div class="stock-stat-num">'+result.affectedStores.size+'</div><div class="stock-stat-lbl">Stores</div></div><div class="stock-stat info"><div class="stock-stat-num">'+result.affectedItems.size+'</div><div class="stock-stat-lbl">Items</div></div></div>';
+  let html='<div class="stock-meta"><b>File:</b> '+fileName+(result.detectedDate?' - <b>Date:</b> '+result.detectedDate:'')+' - <b>Workspace:</b> '+activeWorkspace.name+'</div><div class="stock-preview-stats"><div class="stock-stat valid"><div class="stock-stat-num">'+result.valid.length+'</div><div class="stock-stat-lbl">Valid</div></div><div class="stock-stat skip"><div class="stock-stat-num">'+result.skipped.length+'</div><div class="stock-stat-lbl">Skipped</div></div><div class="stock-stat error"><div class="stock-stat-num">'+result.errors.length+'</div><div class="stock-stat-lbl">Errors</div></div><div class="stock-stat info"><div class="stock-stat-num">'+result.affectedStores.size+'</div><div class="stock-stat-lbl">Stores</div></div></div>';
   if(result.valid.length>0){
-    html+='<div style="font-weight:700;font-size:13px;margin-bottom:6px">Preview (showing '+Math.min(10,result.valid.length)+' of '+result.valid.length+' entries):</div><div class="stock-table-wrap"><table><thead><tr><th>Store</th><th>Item</th><th style="text-align:right">Count</th></tr></thead><tbody>';
-    result.valid.slice(0,10).forEach(v=>{
-      const store=state.stores.find(s=>s.code===v.storeId);
-      html+='<tr><td><b>'+v.storeId+'</b><div class="cell-sub">'+(store?.area||'')+'</div></td><td>'+v.consKey+'</td><td class="nums"><b>'+v.count+'</b> ct</td></tr>';
-    });
+    html+='<div style="font-weight:700;font-size:13px;margin-bottom:6px">Preview:</div><div class="stock-table-wrap"><table><thead><tr><th>Store</th><th>Item</th><th style="text-align:right">Count</th></tr></thead><tbody>';
+    result.valid.slice(0,10).forEach(v=>{html+='<tr><td><b>'+v.storeId+'</b></td><td>'+v.consKey+'</td><td class="nums">'+v.count+'</td></tr>'});
     html+='</tbody></table></div>';
-    if(result.valid.length>10)html+='<div style="font-size:11px;color:var(--text-mut);margin-bottom:14px">... and '+(result.valid.length-10)+' more entries</div>';
   }
   const allIssues=[...result.errors,...result.skipped];
   if(allIssues.length>0){
-    html+='<div class="stock-issues"><h5>Issues ('+allIssues.length+'):</h5><ul>';
-    allIssues.slice(0,15).forEach(issue=>{html+='<li>Row <b>'+issue.row+'</b>: '+issue.reason+'</li>'});
-    if(allIssues.length>15)html+='<li style="color:var(--text-dim);font-style:italic">... and '+(allIssues.length-15)+' more issues</li>';
+    html+='<div class="stock-issues"><h5>Issues:</h5><ul>';
+    allIssues.slice(0,10).forEach(issue=>{html+='<li>Row <b>'+issue.row+'</b>: '+issue.reason+'</li>'});
     html+='</ul></div>';
   }
-  if(result.valid.length===0)html+='<div class="stock-empty"><div class="ic">No Data</div><p><b>No valid entries found</b></p><p style="font-size:11px">Check the file format and try again</p></div>';
   previewEl.innerHTML=html;
-  if(result.valid.length===0){confirmBtn.textContent='No data to import';confirmBtn.disabled=true;confirmBtn.style.opacity='0.5';confirmBtn.style.cursor='not-allowed'}
-  else{confirmBtn.textContent='Import '+result.valid.length+' entries';confirmBtn.disabled=false;confirmBtn.style.opacity='1';confirmBtn.style.cursor='pointer'}
+  if(result.valid.length===0){confirmBtn.textContent='No data';confirmBtn.disabled=true}
+  else{confirmBtn.textContent='Import '+result.valid.length;confirmBtn.disabled=false}
   document.getElementById('mdStockBulk').classList.add('show');
 }
 
 async function confirmStockBulkImport(){
   if(!pendingStockImport||pendingStockImport.valid.length===0){toast('Nothing to import','error');return}
-  if(!canEdit()){denyAccess('import stock');return}
   const result=pendingStockImport;
   const wsId=activeWorkspace.id;
-  showSync('Importing '+result.valid.length+' entries...');
+  showSync('Importing...');
   try{
     const byStore={};
-    result.valid.forEach(v=>{
-      if(!byStore[v.storeId])byStore[v.storeId]={};
-      const key=stockKey(v.consKey);
-      byStore[v.storeId][key]=v.count;
-    });
+    result.valid.forEach(v=>{if(!byStore[v.storeId])byStore[v.storeId]={};byStore[v.storeId][stockKey(v.consKey)]=v.count});
     Object.entries(byStore).forEach(([code,data])=>{
       if(!state.stock[code])state.stock[code]={};
       Object.entries(data).forEach(([k,v])=>{state.stock[code][k]=v});
     });
     if(result.detectedDate)state.stkDate=result.detectedDate;
     const stockRows=Object.entries(byStore).map(([code,data])=>({workspace_id:wsId,store_code:code,data:state.stock[code],updated_at:new Date().toISOString()}));
-    const {error}=await supabaseClient.from('stock').upsert(stockRows);
-    if(error)throw error;
-    if(result.detectedDate){
-      await supabaseClient.from('settings').upsert({workspace_id:wsId,key:'stkDate',value:result.detectedDate,updated_at:new Date().toISOString()});
-    }
-    
-    await supabaseClient.from('stock_update_log').insert({
-      workspace_id:wsId,
-      updated_by:currentUser.id,
-      updated_by_email:currentUser.email,
-      update_type:'bulk_import',
-      notes:'Bulk import: '+result.fileName+' ('+result.valid.length+' entries)'
-    });
+    await supabaseClient.from('stock').upsert(stockRows);
+    if(result.detectedDate)await supabaseClient.from('settings').upsert({workspace_id:wsId,key:'stkDate',value:result.detectedDate,updated_at:new Date().toISOString()});
+    await supabaseClient.from('stock_update_log').insert({workspace_id:wsId,updated_by:currentUser.id,updated_by_email:currentUser.email,update_type:'bulk_import',notes:'Bulk import: '+result.fileName});
     await loadLastStockUpdate();
-    
-    await logActivity('bulk_import','stock',null,null,null,null,{
-      fileName:result.fileName,
-      entries:result.valid.length,
-      stores:result.affectedStores.size,
-      items:result.affectedItems.size,
-      date:result.detectedDate
-    });
-    
+    await createSnapshot('bulk_import','Bulk import: '+result.fileName);
+    await logActivity('bulk_import','stock',null,null,null,null,{fileName:result.fileName,entries:result.valid.length});
     hideSync();
     closeStockBulkModal();
-    toast('Imported '+result.valid.length+' entries to '+result.affectedStores.size+' stores');
+    toast('Imported '+result.valid.length+' entries');
     render();
-  }catch(err){console.error('Import error:',err);hideSync();toast('Import failed: '+err.message,'error')}
+  }catch(err){hideSync();toast('Failed: '+err.message,'error')}
 }
 
 function downloadStockTemplate(){
-  if(!activeWorkspace){toast('No active workspace','error');return}
+  if(!activeWorkspace){toast('No workspace','error');return}
   const today=new Date().toISOString().slice(0,10);
-  const wsName=activeWorkspace.name||'workspace';
   const wsCode=activeWorkspace.code||'XX';
   const sampleStores=state.stores.filter(s=>s.status==='Live').slice(0,3);
-  
   const templateData=[['date','storeId','item','count']];
   if(sampleStores.length>0){
-    CONS_KEYS.forEach((consKey,idx)=>{
-      const store=sampleStores[idx%sampleStores.length];
-      templateData.push([today,store.code,consKey,Math.floor(Math.random()*30)+10]);
-    });
+    CONS_KEYS.forEach((k,i)=>{const store=sampleStores[i%sampleStores.length];templateData.push([today,store.code,k,Math.floor(Math.random()*30)+10])});
   } else {
     templateData.push([today,'QCA1','PaperBag-L',25]);
     templateData.push([today,'QCA1','PaperBag-M',30]);
-    templateData.push([today,'QCA2','SealTape',12]);
   }
   for(let i=0;i<5;i++)templateData.push(['','','','']);
-  
-  const instructionsData=[
-    ['Stock Bulk Upload Template'],[''],
-    ['HOW TO USE:'],
-    ['1. Fill the data in "Stock Data" sheet (first sheet)'],
-    ['2. Each row = one stock entry (one store + one item + count)'],
-    ['3. Save the file and upload it via "Bulk Upload" button'],
-    ['4. The system will validate and show you a preview'],[''],
-    ['REQUIRED COLUMNS:'],
-    ['- date     -> Stock count date (YYYY-MM-DD format)'],
-    ['- storeId  -> Store code (must exist in this workspace)'],
-    ['- item     -> Item name (see "Valid Items" sheet)'],
-    ['- count    -> Cartons count (whole number, >= 0)'],[''],
-    ['NOTES:'],
-    ['- Date is detected from the first valid date in the file'],
-    ['- Existing stock counts will be OVERWRITTEN'],
-    ['- Invalid rows will be reported in the preview'],
-    ['- You can leave the file with extra empty rows'],[''],
-    ['Workspace: '+wsName+' ('+wsCode+')'],
-    ['Generated: '+new Date().toLocaleString()]
-  ];
-  
-  const itemsData=[['Item Name','Type','Description']];
-  Object.keys(state.cons).forEach(key=>{
-    const c=state.cons[key];
-    const desc={'BPO':'Per order','perOrder':'Multiple per order','pctUnits':'Percentage of units','pctOrders':'Percentage of orders','xIcBags':'Linked to ice cream'}[c.type]||'';
-    itemsData.push([key,c.type,desc]);
-  });
-  
-  const storesData=[['Store Code','Area','Status','Capacity']];
-  state.stores.forEach(s=>{storesData.push([s.code,s.area||'',s.status||'',s.cap||0])});
-  if(state.stores.length===0)storesData.push(['(No stores in this workspace yet)','','','']);
-  
   const wb=XLSX.utils.book_new();
-  const ws1=XLSX.utils.aoa_to_sheet(templateData);
-  ws1['!cols']=[{wch:12},{wch:14},{wch:18},{wch:10}];
-  XLSX.utils.book_append_sheet(wb,ws1,'Stock Data');
-  const ws2=XLSX.utils.aoa_to_sheet(instructionsData);
-  ws2['!cols']=[{wch:60}];
-  XLSX.utils.book_append_sheet(wb,ws2,'Instructions');
-  const ws3=XLSX.utils.aoa_to_sheet(itemsData);
-  ws3['!cols']=[{wch:20},{wch:14},{wch:30}];
-  XLSX.utils.book_append_sheet(wb,ws3,'Valid Items');
-  const ws4=XLSX.utils.aoa_to_sheet(storesData);
-  ws4['!cols']=[{wch:14},{wch:25},{wch:12},{wch:12}];
-  XLSX.utils.book_append_sheet(wb,ws4,'Valid Stores');
-  
-  const fileName='stock_template_'+wsCode+'_'+today+'.xlsx';
-  XLSX.writeFile(wb,fileName);
+  const ws=XLSX.utils.aoa_to_sheet(templateData);
+  ws['!cols']=[{wch:12},{wch:14},{wch:18},{wch:10}];
+  XLSX.utils.book_append_sheet(wb,ws,'Stock Data');
+  XLSX.writeFile(wb,'stock_template_'+wsCode+'_'+today+'.xlsx');
   toast('Template downloaded');
 }
 
-function render(){renderOverview();renderStores();renderStock();renderForecast();renderDOC();renderReplen();renderCfg()}
-
-
 // ============================================
-// VIEW NAVIGATION SYSTEM (Hub / Dashboard / History)
-// ============================================
-
-let currentView = 'hub'; // 'hub' | 'dashboard' | 'history'
-let stockHistoryCache = []; // cache of all snapshots for current workspace
-
-function goToHub(){
-  currentView='hub';
-  document.querySelectorAll('.tab').forEach(t=>{
-    const view=t.dataset.view;
-    if(view==='hub'){
-      t.style.display='inline-flex';
-      t.classList.add('active');
-    } else if(view==='dashboard'||view==='history'){
-      t.style.display='none';
-      t.classList.remove('active');
-    }
-  });
-  if(isSuperAdmin()){
-    const adminTab=document.getElementById('adminTab');
-    if(adminTab){adminTab.style.display='inline-flex';adminTab.classList.remove('active')}
-  }
-  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
-  const hub=document.getElementById('hub');
-  if(hub)hub.classList.add('active');
-  window.scrollTo(0,0);
-  if(activeWorkspace){
-    document.getElementById('hubTitle').textContent=activeWorkspace.name+' - Operations Center';
-  }
-}
-
-function enterView(view){
-  currentView=view;
-  if(view==='dashboard'){
-    document.querySelectorAll('.tab').forEach(t=>{
-      const v=t.dataset.view;
-      if(v==='dashboard'){
-        t.style.display='inline-flex';
-        t.classList.remove('active');
-      } else if(v==='hub'||v==='history'){
-        t.style.display='none';
-      }
-    });
-    if(isSuperAdmin()){
-      const adminTab=document.getElementById('adminTab');
-      if(adminTab)adminTab.style.display='inline-flex';
-    }
-    const overviewTab=document.querySelector('[data-tab="overview"]');
-    if(overviewTab){
-      overviewTab.classList.add('active');
-      document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
-      document.getElementById('overview').classList.add('active');
-    }
-    if(!canManageSettings()){
-      const cfgTab=document.querySelector('[data-tab="config"]');
-      if(cfgTab)cfgTab.style.display='none';
-    }
-  } else if(view==='history'){
-    document.querySelectorAll('.tab').forEach(t=>{
-      const v=t.dataset.view;
-      if(v==='history'){
-        t.style.display='inline-flex';
-        t.classList.add('active');
-      } else if(v==='hub'||v==='dashboard'){
-        t.style.display='none';
-        t.classList.remove('active');
-      }
-    });
-    if(isSuperAdmin()){
-      const adminTab=document.getElementById('adminTab');
-      if(adminTab)adminTab.style.display='inline-flex';
-    }
-    document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
-    document.getElementById('historical').classList.add('active');
-    initHistoricalView();
-  }
-  window.scrollTo(0,0);
-}
-
-// ============================================
-// SUB-TABS HANDLER
-// ============================================
-
-document.querySelectorAll('.subtab').forEach(el=>{
-  el.onclick=()=>{
-    document.querySelectorAll('.subtab').forEach(x=>x.classList.remove('active'));
-    el.classList.add('active');
-    document.querySelectorAll('.subpane').forEach(p=>p.classList.remove('active'));
-    const target=document.getElementById('subpane-'+el.dataset.subtab);
-    if(target)target.classList.add('active');
-    const subtab=el.dataset.subtab;
-    if(subtab==='trend')renderTrendChart();
-    else if(subtab==='comparison')renderComparison();
-    else if(subtab==='monthly')renderMonthlySummary();
-    else if(subtab==='consumption')renderConsumption();
-  };
-});
-
-// ============================================
-// AUTO SNAPSHOT SYSTEM
+// SNAPSHOT SYSTEM
 // ============================================
 
 async function checkAndCreateAutoSnapshot(){
@@ -3707,15 +2776,12 @@ async function checkAndCreateAutoSnapshot(){
   if(state.stores.length===0||Object.keys(state.stock).length===0)return;
   const today=new Date().toISOString().slice(0,10);
   try{
-    const {data,error}=await supabaseClient.rpc('snapshot_exists_for_date',{
-      ws_id:activeWorkspace.id,
-      check_date:today
-    });
-    if(error){console.warn('Snapshot check failed:',error.message);return}
-    if(data===true){console.log('Snapshot for today already exists');return}
+    const {data,error}=await supabaseClient.rpc('snapshot_exists_for_date',{ws_id:activeWorkspace.id,check_date:today});
+    if(error){console.warn('Snapshot check:',error.message);return}
+    if(data===true){console.log('Snapshot for today exists');return}
     console.log('Creating auto-snapshot for',today);
-    await createSnapshot('auto','Auto-snapshot on first login of the day');
-  }catch(e){console.warn('Auto-snapshot error:',e.message)}
+    await createSnapshot('auto','Auto-snapshot on first login');
+  }catch(e){console.warn('Auto-snapshot:',e.message)}
 }
 
 async function createSnapshot(source,notes){
@@ -3730,11 +2796,11 @@ async function createSnapshot(source,notes){
       p_notes:notes||null
     });
     if(error)throw error;
-    console.log('Snapshot saved:',data,'stores for date',date);
+    console.log('Snapshot saved:',data,'stores for',date);
     return true;
   }catch(e){
-    console.error('Snapshot error:',e);
-    if(source==='manual')toast('Snapshot failed: '+e.message,'error');
+    console.error('Snapshot:',e);
+    if(source==='manual')toast('Snapshot failed','error');
     return false;
   }
 }
@@ -3742,53 +2808,55 @@ async function createSnapshot(source,notes){
 async function manualSnapshot(){
   if(!canEdit()){denyAccess('save snapshot');return}
   const date=state.stkDate||new Date().toISOString().slice(0,10);
-  if(!confirm('Save a snapshot of the current stock for date: '+date+' ?\n\nThis will overwrite any existing snapshot for this date.'))return;
-  showSync('Saving snapshot...');
-  const ok=await createSnapshot('manual','Manual snapshot via Historical page');
+  if(!confirm('Save snapshot for '+date+'?\nWill overwrite existing snapshot for this date.'))return;
+  showSync('Saving...');
+  const ok=await createSnapshot('manual','Manual snapshot');
   hideSync();
-  if(ok){
-    toast('Snapshot saved successfully');
-    await loadStockHistory();
-    if(currentView==='history')refreshHistorical();
-  }
+  if(ok){toast('Snapshot saved');await loadStockHistory();if(currentView==='history')refreshHistorical()}
 }
 
-// ============================================
-// LOAD STOCK HISTORY
-// ============================================
-
-async function loadStockHistory(daysBack){
-  daysBack=daysBack||365;
+async function loadStockHistory(){
   if(!activeWorkspace){stockHistoryCache=[];return}
   try{
     const cutoff=new Date();
-    cutoff.setDate(cutoff.getDate()-daysBack);
-    const cutoffStr=cutoff.toISOString().slice(0,10);
-    const {data,error}=await supabaseClient
-      .from('stock_history')
-      .select('*')
-      .eq('workspace_id',activeWorkspace.id)
-      .gte('snapshot_date',cutoffStr)
-      .order('snapshot_date',{ascending:false})
-      .limit(10000);
+    cutoff.setDate(cutoff.getDate()-365);
+    const {data,error}=await supabaseClient.from('stock_history').select('*').eq('workspace_id',activeWorkspace.id).gte('snapshot_date',cutoff.toISOString().slice(0,10)).order('snapshot_date',{ascending:false}).limit(10000);
     if(error)throw error;
     stockHistoryCache=data||[];
     console.log('Loaded',stockHistoryCache.length,'history records');
-    return stockHistoryCache;
-  }catch(e){
-    console.error('Load history error:',e);
-    toast('Failed to load history: '+e.message,'error');
-    stockHistoryCache=[];
-    return[];
-  }
+  }catch(e){console.error(e);stockHistoryCache=[]}
 }
 
-// ============================================
-// HISTORICAL VIEW INITIALIZATION
-// ============================================
+function getStockFromSnapshot(snapshotData,consKey){
+  if(!snapshotData)return 0;
+  return +snapshotData[stockKey(consKey)]||0;
+}
+
+function getSnapshotsForDate(date,storeFilter){
+  let snaps=stockHistoryCache.filter(r=>r.snapshot_date===date);
+  if(storeFilter)snaps=snaps.filter(r=>r.store_code===storeFilter);
+  return snaps;
+}
+
+function getSnapshotsByDateRange(fromDate,toDate,storeFilter){
+  let snaps=stockHistoryCache.filter(r=>r.snapshot_date>=fromDate&&r.snapshot_date<=toDate);
+  if(storeFilter)snaps=snaps.filter(r=>r.store_code===storeFilter);
+  return snaps.sort((a,b)=>a.snapshot_date.localeCompare(b.snapshot_date));
+}
+
+function aggregateByDate(snapshots,consKey,asUnits){
+  const byDate={};
+  snapshots.forEach(s=>{
+    const cartons=getStockFromSnapshot(s.data,consKey);
+    if(!byDate[s.snapshot_date])byDate[s.snapshot_date]=0;
+    if(asUnits){const upb=state.cons[consKey]?.units||0;byDate[s.snapshot_date]+=cartons*upb}
+    else byDate[s.snapshot_date]+=cartons;
+  });
+  return Object.entries(byDate).map(([date,val])=>({date,val})).sort((a,b)=>a.date.localeCompare(b.date));
+}
 
 async function initHistoricalView(){
-  showSync('Loading historical data...');
+  showSync('Loading historical...');
   await loadStockHistory();
   hideSync();
   populateHistoricalFilters();
@@ -3819,25 +2887,13 @@ function populateHistoricalFilters(){
   const storeOptions='<option value="">All Stores</option>'+liveStores.map(s=>'<option value="'+s.code+'">'+s.code+' - '+(s.area||'').slice(0,30)+'</option>').join('');
   ['trendStore','cmpStore','monthStore','conStore'].forEach(id=>{
     const el=document.getElementById(id);
-    if(el){
-      const cur=el.value;
-      el.innerHTML=storeOptions;
-      if(cur)el.value=cur;
-    }
+    if(el){const cur=el.value;el.innerHTML=storeOptions;if(cur)el.value=cur}
   });
   const itemOptions=CONS_KEYS.map(c=>'<option value="'+c+'">'+c+'</option>').join('');
   const trendItem=document.getElementById('trendItem');
-  if(trendItem){
-    const cur=trendItem.value||CONS_KEYS[0];
-    trendItem.innerHTML=itemOptions;
-    trendItem.value=cur;
-  }
+  if(trendItem){const cur=trendItem.value||CONS_KEYS[0];trendItem.innerHTML=itemOptions;trendItem.value=cur}
   const conItem=document.getElementById('conItem');
-  if(conItem){
-    const cur=conItem.value;
-    conItem.innerHTML='<option value="">All Items</option>'+itemOptions;
-    if(cur)conItem.value=cur;
-  }
+  if(conItem){const cur=conItem.value;conItem.innerHTML='<option value="">All Items</option>'+itemOptions;if(cur)conItem.value=cur}
   const dates=[...new Set(stockHistoryCache.map(r=>r.snapshot_date))].sort().reverse();
   const dateOptions=dates.map(d=>'<option value="'+d+'">'+d+'</option>').join('');
   ['cmpDate1','cmpDate2'].forEach((id,idx)=>{
@@ -3846,10 +2902,7 @@ function populateHistoricalFilters(){
       const cur=el.value;
       el.innerHTML='<option value="">Select date...</option>'+dateOptions;
       if(cur&&dates.includes(cur))el.value=cur;
-      else if(dates.length>=2){
-        if(idx===0)el.value=dates[Math.min(dates.length-1,7)];
-        else el.value=dates[0];
-      }
+      else if(dates.length>=2){if(idx===0)el.value=dates[Math.min(dates.length-1,7)];else el.value=dates[0]}
     }
   });
   const trendFrom=document.getElementById('trendFrom');
@@ -3882,50 +2935,520 @@ function renderSnapshotStatusBanner(){
   const totalSnapshots=stockHistoryCache.length;
   const uniqueDates=new Set(stockHistoryCache.map(r=>r.snapshot_date)).size;
   if(todaySnapshots.length>0){
-    el.innerHTML='<div class="snapshot-banner"><div class="snapshot-banner-text"><b>Today\'s snapshot saved</b> - '+todaySnapshots.length+' stores captured on '+today+'. Total: <b>'+totalSnapshots+'</b> records across <b>'+uniqueDates+'</b> days.</div></div>';
+    el.innerHTML='<div class="snapshot-banner"><div class="snapshot-banner-text"><b>Today\'s snapshot saved</b> - '+todaySnapshots.length+' stores on '+today+'. Total: <b>'+totalSnapshots+'</b> records / <b>'+uniqueDates+'</b> days.</div></div>';
   } else if(totalSnapshots===0){
-    el.innerHTML='<div class="snapshot-banner warning"><div class="snapshot-banner-text"><b>No snapshots yet</b> - Click "Save Snapshot Now" to create your first historical record.</div></div>';
+    el.innerHTML='<div class="snapshot-banner warning"><div class="snapshot-banner-text"><b>No snapshots yet</b> - Click "Save Snapshot Now" to create your first record.</div></div>';
   } else {
-    el.innerHTML='<div class="snapshot-banner warning"><div class="snapshot-banner-text"><b>No snapshot for today</b> - Last record: '+(stockHistoryCache[0]?.snapshot_date||'-')+'. Total: <b>'+totalSnapshots+'</b> records across <b>'+uniqueDates+'</b> days.</div></div>';
+    el.innerHTML='<div class="snapshot-banner warning"><div class="snapshot-banner-text"><b>No snapshot for today</b> - Last: '+(stockHistoryCache[0]?.snapshot_date||'-')+'. Total: <b>'+totalSnapshots+'</b> records.</div></div>';
   }
 }
 
 // ============================================
-// SNAPSHOT DATA EXTRACTION HELPERS
+// CHARTS - 1. TREND CHART
 // ============================================
 
-function getStockFromSnapshot(snapshotData,consKey){
-  if(!snapshotData)return 0;
-  const key=stockKey(consKey);
-  return +snapshotData[key]||0;
-}
-
-function getSnapshotsForDate(date,storeFilter){
-  let snaps=stockHistoryCache.filter(r=>r.snapshot_date===date);
-  if(storeFilter)snaps=snaps.filter(r=>r.store_code===storeFilter);
-  return snaps;
-}
-
-function getSnapshotsByDateRange(fromDate,toDate,storeFilter){
-  let snaps=stockHistoryCache.filter(r=>r.snapshot_date>=fromDate&&r.snapshot_date<=toDate);
-  if(storeFilter)snaps=snaps.filter(r=>r.store_code===storeFilter);
-  return snaps.sort((a,b)=>a.snapshot_date.localeCompare(b.snapshot_date));
-}
-
-function aggregateByDate(snapshots,consKey,asUnits){
-  const byDate={};
-  snapshots.forEach(s=>{
-    const cartons=getStockFromSnapshot(s.data,consKey);
-    if(!byDate[s.snapshot_date])byDate[s.snapshot_date]=0;
-    if(asUnits){
-      const unitsPerBox=state.cons[consKey]?.units||0;
-      byDate[s.snapshot_date]+=cartons*unitsPerBox;
-    }else{
-      byDate[s.snapshot_date]+=cartons;
+function renderTrendChart(){
+  const storeFilter=document.getElementById('trendStore')?.value||'';
+  const item=document.getElementById('trendItem')?.value||CONS_KEYS[0];
+  const fromDate=document.getElementById('trendFrom')?.value;
+  const toDate=document.getElementById('trendTo')?.value;
+  const viewType=document.getElementById('trendView')?.value||'cartons';
+  const asUnits=viewType==='units';
+  const subtitleEl=document.getElementById('trendSubtitle');
+  const emptyEl=document.getElementById('trendEmpty');
+  const canvasEl=document.getElementById('trendChart');
+  const summaryEl=document.getElementById('trendSummary');
+  
+  if(!fromDate||!toDate){
+    if(subtitleEl)subtitleEl.textContent='Select date range';
+    if(emptyEl)emptyEl.style.display='block';
+    if(canvasEl)canvasEl.style.display='none';
+    if(summaryEl)summaryEl.innerHTML='';
+    return;
+  }
+  
+  const snapshots=getSnapshotsByDateRange(fromDate,toDate,storeFilter);
+  if(snapshots.length===0){
+    if(subtitleEl)subtitleEl.textContent='No data for period';
+    if(emptyEl)emptyEl.style.display='block';
+    if(canvasEl)canvasEl.style.display='none';
+    if(summaryEl)summaryEl.innerHTML='<div class="summary-card neutral"><div class="summary-card-label">No Data</div><div class="summary-card-value">-</div></div>';
+    return;
+  }
+  
+  if(emptyEl)emptyEl.style.display='none';
+  if(canvasEl)canvasEl.style.display='block';
+  const series=aggregateByDate(snapshots,item,asUnits);
+  
+  if(series.length===0){
+    if(subtitleEl)subtitleEl.textContent='No data for '+item;
+    if(emptyEl)emptyEl.style.display='block';
+    if(canvasEl)canvasEl.style.display='none';
+    return;
+  }
+  
+  const values=series.map(s=>s.val);
+  const maxVal=Math.max(...values);
+  const minVal=Math.min(...values);
+  const avgVal=values.reduce((a,b)=>a+b,0)/values.length;
+  const lastVal=values[values.length-1];
+  const firstVal=values[0];
+  const changeAbs=lastVal-firstVal;
+  const changePct=firstVal>0?((changeAbs/firstVal)*100):0;
+  const unit=asUnits?'EA':'CT';
+  
+  if(summaryEl){
+    summaryEl.innerHTML='<div class="summary-card neutral"><div class="summary-card-label">Average</div><div class="summary-card-value">'+n(avgVal,0)+'</div><div class="summary-card-sub">'+unit+'</div></div><div class="summary-card up"><div class="summary-card-label">Maximum</div><div class="summary-card-value">'+n(maxVal,0)+'</div></div><div class="summary-card down"><div class="summary-card-label">Minimum</div><div class="summary-card-value">'+n(minVal,0)+'</div></div><div class="summary-card '+(changeAbs>0?'up':changeAbs<0?'down':'neutral')+'"><div class="summary-card-label">Change</div><div class="summary-card-value">'+(changeAbs>0?'+':'')+n(changeAbs,0)+'</div><div class="summary-card-sub">'+(changePct>0?'+':'')+changePct.toFixed(1)+'%</div></div><div class="summary-card neutral"><div class="summary-card-label">Data Points</div><div class="summary-card-value">'+series.length+'</div></div>';
+  }
+  
+  if(subtitleEl)subtitleEl.textContent=item+' - '+(storeFilter||'All stores')+' - '+series.length+' snapshots';
+  
+  trendChartInstance=destroyChart(trendChartInstance);
+  const ctx=canvasEl.getContext('2d');
+  trendChartInstance=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:series.map(s=>s.date),
+      datasets:[{
+        label:item+' ('+unit+')',
+        data:series.map(s=>s.val),
+        borderColor:'#FF9900',
+        backgroundColor:'rgba(255,153,0,0.1)',
+        borderWidth:2,
+        tension:0.3,
+        fill:true,
+        pointRadius:4,
+        pointHoverRadius:6,
+        pointBackgroundColor:'#FF9900',
+        pointBorderColor:'#fff',
+        pointBorderWidth:2
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      interaction:{intersect:false,mode:'index'},
+      plugins:{
+        legend:{display:true,position:'top'},
+        tooltip:{
+          backgroundColor:'#131A22',
+          titleColor:'#FF9900',
+          bodyColor:'#fff',
+          padding:10,
+          cornerRadius:6,
+          callbacks:{label:function(ctx){return item+': '+n(ctx.parsed.y,0)+' '+unit}}
+        }
+      },
+      scales:{
+        x:{grid:{display:false}},
+        y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{callback:function(v){return n(v,0)}}}
+      }
     }
   });
-  return Object.entries(byDate).map(([date,val])=>({date,val})).sort((a,b)=>a.date.localeCompare(b.date));
 }
+
+// ============================================
+// CHARTS - 2. COMPARISON
+// ============================================
+
+function renderComparison(){
+  const date1=document.getElementById('cmpDate1')?.value;
+  const date2=document.getElementById('cmpDate2')?.value;
+  const storeFilter=document.getElementById('cmpStore')?.value||'';
+  const sortBy=document.getElementById('cmpSort')?.value||'diff_desc';
+  const summaryEl=document.getElementById('cmpSummary');
+  const tblEl=document.getElementById('tblComparison');
+  
+  if(!date1||!date2){
+    if(summaryEl)summaryEl.innerHTML='<div class="summary-card neutral"><div class="summary-card-label">Select Dates</div><div class="summary-card-value">-</div></div>';
+    if(tblEl)tblEl.innerHTML='<tr><td style="padding:30px;text-align:center;color:var(--text-mut)">Select two dates</td></tr>';
+    return;
+  }
+  if(date1===date2){
+    if(tblEl)tblEl.innerHTML='<tr><td style="padding:30px;text-align:center;color:var(--text-mut)">Pick different dates</td></tr>';
+    return;
+  }
+  
+  const snaps1=getSnapshotsForDate(date1,storeFilter);
+  const snaps2=getSnapshotsForDate(date2,storeFilter);
+  const map1={},map2={};
+  snaps1.forEach(s=>{map1[s.store_code]=s.data});
+  snaps2.forEach(s=>{map2[s.store_code]=s.data});
+  const allStores=new Set([...Object.keys(map1),...Object.keys(map2)]);
+  
+  comparisonRows=[];
+  allStores.forEach(code=>{
+    CONS_KEYS.forEach(item=>{
+      const v1=getStockFromSnapshot(map1[code],item);
+      const v2=getStockFromSnapshot(map2[code],item);
+      if(v1===0&&v2===0)return;
+      const store=state.stores.find(s=>s.code===code);
+      comparisonRows.push({store:code,area:store?.area||'',item,v1,v2,diff:v2-v1,pct:v1>0?((v2-v1)/v1*100):(v2>0?100:0)});
+    });
+  });
+  
+  comparisonRows.sort((a,b)=>{
+    if(sortBy==='diff_desc')return b.diff-a.diff;
+    if(sortBy==='diff_asc')return a.diff-b.diff;
+    if(sortBy==='store')return a.store.localeCompare(b.store);
+    if(sortBy==='item')return a.item.localeCompare(b.item);
+    return 0;
+  });
+  
+  let total1=0,total2=0,increases=0,decreases=0,unchanged=0;
+  comparisonRows.forEach(r=>{
+    total1+=r.v1;total2+=r.v2;
+    if(r.diff>0)increases++;else if(r.diff<0)decreases++;else unchanged++;
+  });
+  
+  if(summaryEl){
+    summaryEl.innerHTML='<div class="summary-card neutral"><div class="summary-card-label">'+date1+'</div><div class="summary-card-value">'+n(total1,0)+'</div></div><div class="summary-card neutral"><div class="summary-card-label">'+date2+'</div><div class="summary-card-value">'+n(total2,0)+'</div></div><div class="summary-card '+(total2>total1?'up':total2<total1?'down':'neutral')+'"><div class="summary-card-label">Net Change</div><div class="summary-card-value">'+(total2-total1>0?'+':'')+n(total2-total1,0)+'</div></div><div class="summary-card up"><div class="summary-card-label">Increased</div><div class="summary-card-value">'+increases+'</div></div><div class="summary-card down"><div class="summary-card-label">Decreased</div><div class="summary-card-value">'+decreases+'</div></div>';
+  }
+  
+  if(!tblEl)return;
+  if(comparisonRows.length===0){tblEl.innerHTML='<tr><td style="padding:30px;text-align:center;color:var(--text-mut)">No data</td></tr>';return}
+  
+  let h='<tr><th>Store</th><th>Item</th><th class="nums">'+date1+'</th><th class="nums">'+date2+'</th><th class="nums">Diff</th><th class="nums">%</th></tr>';
+  comparisonRows.forEach(r=>{
+    const cls=r.diff>0?'diff-positive':r.diff<0?'diff-negative':'diff-neutral';
+    const arrow=r.diff>0?'<span class="diff-arrow up">^</span>':r.diff<0?'<span class="diff-arrow down">v</span>':'';
+    h+='<tr><td><b>'+r.store+'</b><div class="cell-sub">'+r.area+'</div></td><td>'+r.item+'</td><td class="nums">'+n(r.v1)+'</td><td class="nums">'+n(r.v2)+'</td><td class="nums '+cls+'">'+arrow+(r.diff>0?'+':'')+n(r.diff)+'</td><td class="nums '+cls+'">'+(r.pct>0?'+':'')+r.pct.toFixed(1)+'%</td></tr>';
+  });
+  tblEl.innerHTML=h;
+}
+
+function exportComparisonCSV(){
+  if(!comparisonRows.length){toast('No data','error');return}
+  const date1=document.getElementById('cmpDate1')?.value||'d1';
+  const date2=document.getElementById('cmpDate2')?.value||'d2';
+  const wsName=activeWorkspace?.name||'workspace';
+  let csv='Store,Area,Item,'+date1+',Date2,Diff,Pct\n';
+  comparisonRows.forEach(r=>{csv+='"'+r.store+'","'+r.area+'","'+r.item+'",'+r.v1+','+r.v2+','+r.diff+','+r.pct.toFixed(2)+'\n'});
+  const b=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);
+  a.download='comparison_'+wsName+'_'+date1+'_vs_'+date2+'.csv';a.click();
+  toast('Exported');
+}
+
+// ============================================
+// CHARTS - 3. MONTHLY SUMMARY
+// ============================================
+
+function renderMonthlySummary(){
+  const monthVal=document.getElementById('monthSelector')?.value;
+  const storeFilter=document.getElementById('monthStore')?.value||'';
+  const summaryEl=document.getElementById('monthSummary');
+  const calEl=document.getElementById('snapshotCalendar');
+  const tblEl=document.getElementById('tblMonthly');
+  
+  if(!monthVal){
+    if(summaryEl)summaryEl.innerHTML='<div class="summary-card neutral"><div class="summary-card-label">No Month</div><div class="summary-card-value">-</div></div>';
+    if(calEl)calEl.innerHTML='<div class="empty"><div class="ic">Select Month</div></div>';
+    if(tblEl)tblEl.innerHTML='<tr><td style="padding:30px;text-align:center">Select a month</td></tr>';
+    return;
+  }
+  
+  const [yearStr,monthStr]=monthVal.split('-');
+  const year=parseInt(yearStr);
+  const month=parseInt(monthStr);
+  const monthStart=monthVal+'-01';
+  const lastDay=new Date(year,month,0).getDate();
+  const monthEnd=monthVal+'-'+String(lastDay).padStart(2,'0');
+  const snaps=getSnapshotsByDateRange(monthStart,monthEnd,storeFilter);
+  const dates=[...new Set(snaps.map(s=>s.snapshot_date))].sort();
+  
+  let totalCartons=0;
+  const byStore={};
+  snaps.forEach(s=>{
+    let storeTotal=0;
+    CONS_KEYS.forEach(c=>{storeTotal+=getStockFromSnapshot(s.data,c)});
+    totalCartons+=storeTotal;
+    if(!byStore[s.store_code]){
+      const store=state.stores.find(x=>x.code===s.store_code);
+      byStore[s.store_code]={code:s.store_code,area:store?.area||'',totals:{},counts:{}};
+      CONS_KEYS.forEach(c=>{byStore[s.store_code].totals[c]=0;byStore[s.store_code].counts[c]=0});
+    }
+    CONS_KEYS.forEach(c=>{const v=getStockFromSnapshot(s.data,c);byStore[s.store_code].totals[c]+=v;byStore[s.store_code].counts[c]++});
+  });
+  
+  const avgPerSnapshot=snaps.length>0?totalCartons/snaps.length:0;
+  const uniqueStores=Object.keys(byStore).length;
+  
+  if(summaryEl){
+    summaryEl.innerHTML='<div class="summary-card neutral"><div class="summary-card-label">Days w/ Data</div><div class="summary-card-value">'+dates.length+'</div><div class="summary-card-sub">of '+lastDay+'</div></div><div class="summary-card neutral"><div class="summary-card-label">Snapshots</div><div class="summary-card-value">'+snaps.length+'</div></div><div class="summary-card up"><div class="summary-card-label">Stores</div><div class="summary-card-value">'+uniqueStores+'</div></div><div class="summary-card neutral"><div class="summary-card-label">Avg/Snap</div><div class="summary-card-value">'+n(avgPerSnapshot,0)+'</div></div><div class="summary-card up"><div class="summary-card-label">Coverage</div><div class="summary-card-value">'+(lastDay>0?Math.round(dates.length/lastDay*100):0)+'%</div></div>';
+  }
+  
+  if(calEl){
+    const dateMap={};
+    snaps.forEach(s=>{if(!dateMap[s.snapshot_date])dateMap[s.snapshot_date]=new Set();dateMap[s.snapshot_date].add(s.store_code)});
+    const firstDayOfMonth=new Date(year,month-1,1).getDay();
+    let calHtml='<div class="calendar-grid">';
+    ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>{calHtml+='<div class="calendar-day-header">'+d+'</div>'});
+    for(let i=0;i<firstDayOfMonth;i++)calHtml+='<div class="calendar-day empty"></div>';
+    for(let d=1;d<=lastDay;d++){
+      const dateStr=monthVal+'-'+String(d).padStart(2,'0');
+      const stores=dateMap[dateStr];
+      if(stores&&stores.size>0){
+        calHtml+='<div class="calendar-day has-snapshot" title="'+dateStr+': '+stores.size+' stores" onclick="loadDateInTrend(\''+dateStr+'\')"><div class="day-num">'+d+'</div><div class="day-stores">'+stores.size+' st</div></div>';
+      } else {
+        calHtml+='<div class="calendar-day no-data"><div class="day-num">'+d+'</div></div>';
+      }
+    }
+    calHtml+='</div>';
+    calEl.innerHTML=calHtml;
+  }
+  
+  monthlyRows=Object.values(byStore).sort((a,b)=>a.code.localeCompare(b.code));
+  if(!tblEl)return;
+  if(monthlyRows.length===0){tblEl.innerHTML='<tr><td style="padding:30px;text-align:center">No data</td></tr>';return}
+  
+  let h='<tr><th>Store</th>'+CONS_KEYS.map(c=>'<th class="nums">'+c.replace('BubbleWrap','BW').replace('PaperBag','PB')+'</th>').join('')+'<th class="nums">Total Avg</th></tr>';
+  monthlyRows.forEach(r=>{
+    let rowTotal=0;
+    h+='<tr><td><b>'+r.code+'</b><div class="cell-sub">'+r.area+'</div></td>';
+    CONS_KEYS.forEach(c=>{const avg=r.counts[c]>0?r.totals[c]/r.counts[c]:0;rowTotal+=avg;h+='<td class="nums">'+n(avg,0)+'</td>'});
+    h+='<td class="nums" style="font-weight:700;color:var(--amz-orange-dark);background:#FFF4E0">'+n(rowTotal,0)+'</td></tr>';
+  });
+  tblEl.innerHTML=h;
+}
+
+function loadDateInTrend(date){
+  const trendFrom=document.getElementById('trendFrom');
+  const trendTo=document.getElementById('trendTo');
+  if(trendFrom)trendFrom.value=date;
+  if(trendTo)trendTo.value=date;
+  document.querySelector('.subtab[data-subtab="trend"]')?.click();
+}
+
+function exportMonthlyCSV(){
+  if(!monthlyRows.length){toast('No data','error');return}
+  const monthVal=document.getElementById('monthSelector')?.value||'month';
+  const wsName=activeWorkspace?.name||'workspace';
+  let csv='Store,Area,'+CONS_KEYS.join(',')+',Total\n';
+  monthlyRows.forEach(r=>{
+    let total=0;
+    const cells=CONS_KEYS.map(c=>{const avg=r.counts[c]>0?r.totals[c]/r.counts[c]:0;total+=avg;return avg.toFixed(1)});
+    csv+='"'+r.code+'","'+r.area+'",'+cells.join(',')+','+total.toFixed(1)+'\n';
+  });
+  const b=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);
+  a.download='monthly_'+wsName+'_'+monthVal+'.csv';a.click();
+  toast('Exported');
+}
+
+// ============================================
+// CHARTS - 4. CONSUMPTION REPORT
+// ============================================
+
+function renderConsumption(){
+  const period=parseInt(document.getElementById('conPeriod')?.value||'30');
+  const storeFilter=document.getElementById('conStore')?.value||'';
+  const itemFilter=document.getElementById('conItem')?.value||'';
+  const groupBy=document.getElementById('conGroup')?.value||'store';
+  const summaryEl=document.getElementById('conSummary');
+  const tblEl=document.getElementById('tblConsumption');
+  const today=new Date();
+  const fromDate=new Date();
+  fromDate.setDate(today.getDate()-period);
+  const fromStr=fromDate.toISOString().slice(0,10);
+  const toStr=today.toISOString().slice(0,10);
+  let snaps=getSnapshotsByDateRange(fromStr,toStr,storeFilter);
+  
+  if(snaps.length<2){
+    if(summaryEl)summaryEl.innerHTML='<div class="summary-card neutral"><div class="summary-card-label">Insufficient Data</div><div class="summary-card-value">-</div><div class="summary-card-sub">Need 2+ snapshots</div></div>';
+    if(tblEl)tblEl.innerHTML='<tr><td style="padding:30px;text-align:center">Need at least 2 snapshots</td></tr>';
+    consumptionChartInstance=destroyChart(consumptionChartInstance);
+    return;
+  }
+  
+  const byStoreFirst={},byStoreLast={};
+  snaps.forEach(s=>{
+    if(!byStoreFirst[s.store_code]||s.snapshot_date<byStoreFirst[s.store_code].snapshot_date)byStoreFirst[s.store_code]=s;
+    if(!byStoreLast[s.store_code]||s.snapshot_date>byStoreLast[s.store_code].snapshot_date)byStoreLast[s.store_code]=s;
+  });
+  
+  const records=[];
+  Object.keys(byStoreFirst).forEach(code=>{
+    const first=byStoreFirst[code];const last=byStoreLast[code];
+    if(first.snapshot_date===last.snapshot_date)return;
+    const store=state.stores.find(s=>s.code===code);
+    CONS_KEYS.forEach(item=>{
+      if(itemFilter&&item!==itemFilter)return;
+      const v1=getStockFromSnapshot(first.data,item);
+      const v2=getStockFromSnapshot(last.data,item);
+      records.push({store:code,area:store?.area||'',item,startStock:v1,endStock:v2,consumed:v1-v2});
+    });
+  });
+  
+  consumptionRows=[];
+  if(groupBy==='store'){
+    const grp={};
+    records.forEach(r=>{
+      if(!grp[r.store])grp[r.store]={store:r.store,area:r.area,startStock:0,endStock:0,consumed:0,positiveCon:0};
+      grp[r.store].startStock+=r.startStock;
+      grp[r.store].endStock+=r.endStock;
+      grp[r.store].consumed+=r.consumed;
+      if(r.consumed>0)grp[r.store].positiveCon+=r.consumed;
+    });
+    consumptionRows=Object.values(grp).sort((a,b)=>b.consumed-a.consumed);
+  } else if(groupBy==='item'){
+    const grp={};
+    records.forEach(r=>{
+      if(!grp[r.item])grp[r.item]={item:r.item,startStock:0,endStock:0,consumed:0,positiveCon:0,storeCount:new Set()};
+      grp[r.item].startStock+=r.startStock;
+      grp[r.item].endStock+=r.endStock;
+      grp[r.item].consumed+=r.consumed;
+      if(r.consumed>0)grp[r.item].positiveCon+=r.consumed;
+      grp[r.item].storeCount.add(r.store);
+    });
+    consumptionRows=Object.values(grp).map(r=>({...r,storeCount:r.storeCount.size})).sort((a,b)=>b.consumed-a.consumed);
+  } else {
+    consumptionRows=records.sort((a,b)=>b.consumed-a.consumed);
+  }
+  
+  let totalConsumed=0,positiveConsumed=0,negativeChange=0;
+  records.forEach(r=>{totalConsumed+=r.consumed;if(r.consumed>0)positiveConsumed+=r.consumed;else if(r.consumed<0)negativeChange+=Math.abs(r.consumed)});
+  const dailyAvg=positiveConsumed/period;
+  
+  if(summaryEl){
+    summaryEl.innerHTML='<div class="summary-card down"><div class="summary-card-label">Consumed</div><div class="summary-card-value">'+n(positiveConsumed,0)+'</div><div class="summary-card-sub">CT in '+period+'d</div></div><div class="summary-card neutral"><div class="summary-card-label">Daily Avg</div><div class="summary-card-value">'+n(dailyAvg,1)+'</div></div><div class="summary-card up"><div class="summary-card-label">Restocked</div><div class="summary-card-value">'+n(negativeChange,0)+'</div></div><div class="summary-card neutral"><div class="summary-card-label">Net</div><div class="summary-card-value">'+(totalConsumed>0?'-':'+')+n(Math.abs(totalConsumed),0)+'</div></div><div class="summary-card neutral"><div class="summary-card-label">Stores</div><div class="summary-card-value">'+Object.keys(byStoreFirst).length+'</div></div>';
+  }
+  
+  renderConsumptionChart(consumptionRows,groupBy);
+  
+  if(!tblEl)return;
+  if(consumptionRows.length===0){tblEl.innerHTML='<tr><td style="padding:30px;text-align:center">No data</td></tr>';return}
+  
+  let h='';
+  if(groupBy==='store'){
+    h='<tr><th>Store</th><th class="nums">Start</th><th class="nums">End</th><th class="nums">Consumed</th><th class="nums">Daily</th></tr>';
+    consumptionRows.forEach(r=>{
+      const dailyR=r.positiveCon/period;
+      h+='<tr><td><b>'+r.store+'</b><div class="cell-sub">'+r.area+'</div></td><td class="nums">'+n(r.startStock)+'</td><td class="nums">'+n(r.endStock)+'</td><td class="nums '+(r.consumed>0?'diff-negative':'diff-positive')+'">'+(r.consumed>0?'-':'+')+n(Math.abs(r.consumed))+'</td><td class="nums">'+n(dailyR,1)+'</td></tr>';
+    });
+  } else if(groupBy==='item'){
+    h='<tr><th>Item</th><th class="nums">Stores</th><th class="nums">Start</th><th class="nums">End</th><th class="nums">Consumed</th><th class="nums">Daily</th></tr>';
+    consumptionRows.forEach(r=>{
+      const dailyR=r.positiveCon/period;
+      h+='<tr><td><b>'+r.item+'</b></td><td class="nums">'+r.storeCount+'</td><td class="nums">'+n(r.startStock)+'</td><td class="nums">'+n(r.endStock)+'</td><td class="nums '+(r.consumed>0?'diff-negative':'diff-positive')+'">'+(r.consumed>0?'-':'+')+n(Math.abs(r.consumed))+'</td><td class="nums">'+n(dailyR,1)+'</td></tr>';
+    });
+  } else {
+    h='<tr><th>Store</th><th>Item</th><th class="nums">Start</th><th class="nums">End</th><th class="nums">Consumed</th></tr>';
+    consumptionRows.forEach(r=>{
+      h+='<tr><td><b>'+r.store+'</b></td><td>'+r.item+'</td><td class="nums">'+n(r.startStock)+'</td><td class="nums">'+n(r.endStock)+'</td><td class="nums '+(r.consumed>0?'diff-negative':'diff-positive')+'">'+(r.consumed>0?'-':'+')+n(Math.abs(r.consumed))+'</td></tr>';
+    });
+  }
+  tblEl.innerHTML=h;
+}
+
+function renderConsumptionChart(rows,groupBy){
+  const canvasEl=document.getElementById('consumptionChart');
+  if(!canvasEl)return;
+  consumptionChartInstance=destroyChart(consumptionChartInstance);
+  const top=rows.slice(0,15);
+  let labels=[],values=[];
+  if(groupBy==='store'){labels=top.map(r=>r.store);values=top.map(r=>r.positiveCon)}
+  else if(groupBy==='item'){labels=top.map(r=>r.item);values=top.map(r=>r.positiveCon)}
+  else{labels=top.map(r=>r.store+' / '+r.item);values=top.map(r=>r.consumed>0?r.consumed:0)}
+  if(!labels.length)return;
+  const ctx=canvasEl.getContext('2d');
+  consumptionChartInstance=new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[{label:'Consumed (CT)',data:values,backgroundColor:'rgba(255,153,0,0.7)',borderColor:'#E88B00',borderWidth:1}]},
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      indexAxis:'y',
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:'#131A22',titleColor:'#FF9900',bodyColor:'#fff',padding:10,cornerRadius:6}
+      },
+      scales:{
+        x:{beginAtZero:true,ticks:{callback:function(v){return n(v,0)}}},
+        y:{grid:{display:false}}
+      }
+    }
+  });
+}
+
+function exportConsumptionCSV(){
+  if(!consumptionRows.length){toast('No data','error');return}
+  const period=document.getElementById('conPeriod')?.value||'30';
+  const groupBy=document.getElementById('conGroup')?.value||'store';
+  const wsName=activeWorkspace?.name||'workspace';
+  let csv='';
+  if(groupBy==='store'){
+    csv='Store,Area,Start,End,Consumed,Daily\n';
+    consumptionRows.forEach(r=>{const d=r.positiveCon/parseInt(period);csv+='"'+r.store+'","'+r.area+'",'+r.startStock+','+r.endStock+','+r.consumed+','+d.toFixed(2)+'\n'});
+  } else if(groupBy==='item'){
+    csv='Item,Stores,Start,End,Consumed,Daily\n';
+    consumptionRows.forEach(r=>{const d=r.positiveCon/parseInt(period);csv+='"'+r.item+'",'+r.storeCount+','+r.startStock+','+r.endStock+','+r.consumed+','+d.toFixed(2)+'\n'});
+  } else {
+    csv='Store,Item,Start,End,Consumed\n';
+    consumptionRows.forEach(r=>{csv+='"'+r.store+'","'+r.item+'",'+r.startStock+','+r.endStock+','+r.consumed+'\n'});
+  }
+  const b=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);
+  a.download='consumption_'+wsName+'_'+period+'days.csv';a.click();
+  toast('Exported');
+}
+
+// ============================================
+// EVENT LISTENERS
+// ============================================
+
+document.querySelectorAll('.tab').forEach(el=>{
+  el.onclick=()=>{
+    const tabId=el.dataset.tab;
+    if(tabId==='hub'){goToHub();return}
+    if(tabId==='admin'){
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      el.classList.add('active');
+      document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+      document.getElementById('admin').classList.add('active');
+      renderAdmin();
+      window.scrollTo(0,0);
+      return;
+    }
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    window.scrollTo(0,0);
+    if(tabId==='activity')renderActivity();
+    if(tabId==='stock')renderStockUpdateInfo();
+    if(tabId==='historical')initHistoricalView();
+  };
+});
+
+document.querySelectorAll('.subtab').forEach(el=>{
+  el.onclick=()=>{
+    document.querySelectorAll('.subtab').forEach(x=>x.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelectorAll('.subpane').forEach(p=>p.classList.remove('active'));
+    const target=document.getElementById('subpane-'+el.dataset.subtab);
+    if(target)target.classList.add('active');
+    const subtab=el.dataset.subtab;
+    if(subtab==='trend')renderTrendChart();
+    else if(subtab==='comparison')renderComparison();
+    else if(subtab==='monthly')renderMonthlySummary();
+    else if(subtab==='consumption')renderConsumption();
+  };
+});
+
+document.addEventListener('click',e=>{
+  const sw=document.querySelector('.ws-switcher');
+  if(sw&&!sw.contains(e.target)){
+    const m=document.getElementById('wsMenu');
+    if(m)m.classList.remove('show');
+  }
+});
+
+// ============================================
+// START THE APP
+// ============================================
+checkSession();
+
 </script>
 </body>
 </html>
