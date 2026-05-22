@@ -7,6 +7,8 @@
 <title>Anow - Consumables Operations Center</title>
 <link href="https://fonts.googleapis.com/css2?family=Amazon+Ember:wght@400;500;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
@@ -312,6 +314,94 @@ tr:last-child td{border-bottom:none}
 .log-change .new{color:var(--success);font-weight:600}
 .role-test-banner{position:fixed;top:0;left:0;right:0;background:#FF9900;color:#131A22;padding:8px 16px;text-align:center;font-weight:700;font-size:13px;z-index:9999;box-shadow:0 2px 5px rgba(0,0,0,.2);display:none}
 .role-test-banner.show{display:block}
+
+/* ============================================
+   OPERATIONS HUB (Cards Grid)
+   ============================================ */
+.hub-container{max-width:1200px;margin:40px auto;padding:0 24px}
+.hub-header{text-align:center;margin-bottom:40px}
+.hub-header h1{font-size:32px;font-weight:700;color:var(--text);margin-bottom:8px;letter-spacing:-.5px}
+.hub-header p{font-size:15px;color:var(--text-mut);max-width:600px;margin:0 auto}
+.hub-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;max-width:900px;margin:0 auto}
+.hub-card{background:var(--surface);border:2px solid var(--border);border-radius:12px;padding:32px 28px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.hub-card:hover{border-color:var(--amz-orange);transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+.hub-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--amz-orange),var(--amz-orange-dark));opacity:0;transition:opacity .2s}
+.hub-card:hover::before{opacity:1}
+.hub-card-icon{width:64px;height:64px;border-radius:12px;background:var(--amz-navy);color:var(--amz-orange);display:grid;place-items:center;font-size:14px;font-weight:700;letter-spacing:1px;margin-bottom:18px}
+.hub-card.dashboard .hub-card-icon{background:linear-gradient(135deg,#131A22,#232F3E)}
+.hub-card.history .hub-card-icon{background:linear-gradient(135deg,#FF9900,#E88B00);color:#fff}
+.hub-card-title{font-size:22px;font-weight:700;margin-bottom:8px;color:var(--text)}
+.hub-card-desc{font-size:13px;color:var(--text-mut);line-height:1.6;margin-bottom:16px}
+.hub-card-features{list-style:none;padding:0;margin:0 0 18px 0}
+.hub-card-features li{font-size:12px;color:var(--text-mut);padding:4px 0;display:flex;align-items:center;gap:8px}
+.hub-card-features li::before{content:'>';color:var(--amz-orange);font-weight:700}
+.hub-card-cta{display:inline-flex;align-items:center;gap:6px;color:var(--amz-orange-dark);font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.5px}
+.hub-card:hover .hub-card-cta{color:var(--link-hover)}
+
+/* Sub-tabs (inside Historical Data) */
+.subtabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:20px;overflow-x:auto}
+.subtab{padding:12px 20px;background:transparent;border:none;cursor:pointer;font-size:13px;font-weight:600;color:var(--text-mut);border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;font-family:inherit;transition:all .15s}
+.subtab:hover{color:var(--text);background:var(--surface-hover)}
+.subtab.active{color:var(--amz-orange-dark);border-bottom-color:var(--amz-orange);background:var(--surface)}
+.subpane{display:none}
+.subpane.active{display:block;animation:fadeIn .2s}
+
+/* Historical Data Filters */
+.hist-filters{background:var(--surface-alt);padding:16px 20px;border-radius:8px;margin-bottom:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;border:1px solid var(--border)}
+.hist-filter-group{display:flex;flex-direction:column;gap:4px}
+.hist-filter-group label{font-size:11px;font-weight:700;color:var(--text-mut);text-transform:uppercase;letter-spacing:.5px}
+.hist-filter-group select,.hist-filter-group input{padding:7px 12px;background:#fff;border:1px solid #888C8C;border-radius:3px;font-size:13px;font-family:inherit;width:100%;box-shadow:inset 0 1px 2px rgba(0,0,0,.05)}
+.hist-filter-group select:focus,.hist-filter-group input:focus{outline:none;border-color:var(--amz-orange);box-shadow:0 0 3px 2px rgba(255,153,0,.5)}
+
+/* Chart Container */
+.chart-container{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin-bottom:16px;position:relative}
+.chart-canvas-wrapper{position:relative;height:400px;margin-top:16px}
+.chart-empty{text-align:center;padding:60px 20px;color:var(--text-mut)}
+.chart-empty .ic{font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;color:var(--amz-orange)}
+
+/* Comparison View */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:900px){.compare-grid{grid-template-columns:1fr}}
+.compare-side{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px}
+.compare-side h4{font-size:14px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.compare-side h4 .date-pill{font-size:11px;font-weight:700;padding:3px 8px;border-radius:3px;background:var(--info-bg);color:var(--info)}
+.compare-side.left h4 .date-pill{background:var(--info-bg);color:var(--info)}
+.compare-side.right h4 .date-pill{background:#FFF4E0;color:var(--amz-orange-dark)}
+.diff-positive{color:var(--success);font-weight:700}
+.diff-negative{color:var(--danger);font-weight:700}
+.diff-neutral{color:var(--text-mut)}
+.diff-arrow{display:inline-block;margin:0 4px;font-weight:700}
+.diff-arrow.up{color:var(--success)}
+.diff-arrow.down{color:var(--danger)}
+
+/* Snapshot Status Banner */
+.snapshot-banner{background:linear-gradient(135deg,#E3F2FD,#D9EDF7);border:1px solid #AED6F1;border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.snapshot-banner.warning{background:linear-gradient(135deg,#FFF8EC,#FFF4E0);border-color:#FFD89C}
+.snapshot-banner-text{font-size:13px;color:var(--text)}
+.snapshot-banner-text b{color:var(--info)}
+.snapshot-banner.warning .snapshot-banner-text b{color:var(--amz-orange-dark)}
+
+/* Stats Summary */
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px}
+.summary-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center}
+.summary-card-label{font-size:11px;color:var(--text-mut);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px}
+.summary-card-value{font-size:24px;font-weight:700;color:var(--text);line-height:1.1}
+.summary-card-sub{font-size:11px;color:var(--text-mut);margin-top:4px}
+.summary-card.up .summary-card-value{color:var(--success)}
+.summary-card.down .summary-card-value{color:var(--danger)}
+.summary-card.neutral .summary-card-value{color:var(--info)}
+
+/* Heatmap Calendar (for monthly view) */
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:14px}
+.calendar-day-header{font-size:10px;font-weight:700;text-align:center;color:var(--text-mut);text-transform:uppercase;padding:6px 0}
+.calendar-day{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:6px;background:var(--surface-alt);font-size:11px;cursor:pointer;border:1px solid var(--border-light);position:relative}
+.calendar-day.has-snapshot{background:var(--success-bg);border-color:#A9D5BE;color:var(--success);font-weight:700}
+.calendar-day.has-snapshot:hover{background:#B8E0CB;transform:scale(1.05)}
+.calendar-day.empty{visibility:hidden}
+.calendar-day .day-num{font-size:13px;font-weight:600}
+.calendar-day .day-stores{font-size:9px;opacity:.7;margin-top:2px}
+.calendar-day.no-data{opacity:.4;cursor:default}
+.calendar-day.no-data:hover{transform:none;background:var(--surface-alt)}
 @media(max-width:768px){.topnav-inner{padding:0 12px}.page{padding:14px}.brand-sub{display:none}.nav-divider{display:none}.user-info{display:none}.page-head h1{font-size:20px}}
 </style>
 </head>
@@ -371,6 +461,13 @@ tr:last-child td{border-bottom:none}
 </div>
 
 <nav class="topnav" style="display:none" id="mainNav">
+  
+<div class="brand" onclick="goToHub()" style="cursor:pointer">
+  <div>
+    <div class="brand-logo">Anow<span class="smile">.</span></div>
+    <div class="brand-sub">OPERATIONS</div>
+  </div>
+</div>
   <div class="topnav-inner">
     <div class="brand">
       <div>
@@ -401,22 +498,71 @@ tr:last-child td{border-bottom:none}
       </div>
     </div>
   </div>
-  <div class="subnav">
-    <div class="subnav-inner">
-      <button class="tab active" data-tab="overview">Overview</button>
-      <button class="tab" data-tab="doc">DOC Analysis</button>
-      <button class="tab" data-tab="replen">Replenishment <span class="badge" id="repBadge">0</span></button>
-      <button class="tab" data-tab="stores">Stores</button>
-      <button class="tab" data-tab="stock">Stock Count</button>
-      <button class="tab" data-tab="forecast">Forecast</button>
-      <button class="tab" data-tab="config">Configuration</button>
-      <button class="tab" data-tab="activity">Activity Log</button>
-      <button class="tab admin-only" data-tab="admin" id="adminTab" style="display:none">Admin</button>
-    </div>
+
+<div class="subnav">
+  <div class="subnav-inner" id="subnavInner">
+    <!-- Hub View (default) -->
+    <button class="tab active" data-tab="hub" data-view="hub">Operations</button>
+    
+    <!-- Dashboard Tabs (hidden by default) -->
+    <button class="tab" data-tab="overview" data-view="dashboard" style="display:none">Overview</button>
+    <button class="tab" data-tab="doc" data-view="dashboard" style="display:none">DOC Analysis</button>
+    <button class="tab" data-tab="replen" data-view="dashboard" style="display:none">Replenishment <span class="badge" id="repBadge">0</span></button>
+    <button class="tab" data-tab="stores" data-view="dashboard" style="display:none">Stores</button>
+    <button class="tab" data-tab="stock" data-view="dashboard" style="display:none">Stock Count</button>
+    <button class="tab" data-tab="forecast" data-view="dashboard" style="display:none">Forecast</button>
+    <button class="tab" data-tab="config" data-view="dashboard" style="display:none">Configuration</button>
+    <button class="tab" data-tab="activity" data-view="dashboard" style="display:none">Activity Log</button>
+    
+    <!-- Historical Tab (hidden by default) -->
+    <button class="tab" data-tab="historical" data-view="history" style="display:none">Historical Data</button>
+    
+    <!-- Admin Tab (super admin only) -->
+    <button class="tab admin-only" data-tab="admin" id="adminTab" style="display:none">Admin</button>
   </div>
+</div>
 </nav>
 
 <div class="page" id="mainPage" style="display:none">
+
+
+<!-- ============================================
+     OPERATIONS HUB (Main Landing Page)
+     ============================================ -->
+<section class="pane active" id="hub">
+  <div class="hub-container">
+    <div class="hub-header">
+      <h1 id="hubTitle">Operations Center</h1>
+      <p>Choose what you want to do today</p>
+    </div>
+    <div class="hub-cards">
+      <div class="hub-card dashboard" onclick="enterView('dashboard')">
+        <div class="hub-card-icon">DASH</div>
+        <div class="hub-card-title">Dashboard</div>
+        <div class="hub-card-desc">Real-time inventory operations and live data management for your store network.</div>
+        <ul class="hub-card-features">
+          <li>Overview & DOC Analysis</li>
+          <li>Stores & Stock Count</li>
+          <li>Forecast & Replenishment</li>
+          <li>Configuration</li>
+        </ul>
+        <div class="hub-card-cta">Open Dashboard &gt;</div>
+      </div>
+      <div class="hub-card history" onclick="enterView('history')">
+        <div class="hub-card-icon">HIST</div>
+        <div class="hub-card-title">Historical Data</div>
+        <div class="hub-card-desc">Analyze trends, compare periods, and track consumption over time across all your stores.</div>
+        <ul class="hub-card-features">
+          <li>Stock Trend Charts</li>
+          <li>Period Comparison</li>
+          <li>Monthly Summaries</li>
+          <li>Consumption Reports</li>
+        </ul>
+        <div class="hub-card-cta">Open History &gt;</div>
+      </div>
+    </div>
+  </div>
+</section>  
 
 <section class="pane active" id="overview">
   <div class="breadcrumb"><a>Operations</a><span class="sep">/</span><a>Consumables</a><span class="sep">/</span><span>Dashboard</span></div>
@@ -645,6 +791,221 @@ tr:last-child td{border-bottom:none}
   </div>
 </section>
 
+<!-- ============================================
+     HISTORICAL DATA PAGE
+     ============================================ -->
+<section class="pane" id="historical">
+  <div class="breadcrumb">
+    <a onclick="goToHub()">Operations</a>
+    <span class="sep">/</span>
+    <span>Historical Data</span>
+  </div>
+  
+  <div class="page-head">
+    <div>
+      <h1>Historical Data &amp; Reports</h1>
+      <p>Track stock trends, compare periods, and analyze consumption patterns</p>
+    </div>
+    <div class="page-actions">
+      <button class="btn" onclick="refreshHistorical()">Refresh</button>
+      <button class="btn btn-cta" onclick="manualSnapshot()">Save Snapshot Now</button>
+    </div>
+  </div>
+  
+  <!-- Snapshot Status Banner -->
+  <div id="snapshotStatusBanner"></div>
+  
+  <!-- Sub-tabs -->
+  <div class="subtabs">
+    <button class="subtab active" data-subtab="trend">Stock Trend</button>
+    <button class="subtab" data-subtab="comparison">Comparison</button>
+    <button class="subtab" data-subtab="monthly">Monthly Summary</button>
+    <button class="subtab" data-subtab="consumption">Consumption Report</button>
+  </div>
+  
+  <!-- ===== TREND SUB-PANE ===== -->
+  <div class="subpane active" id="subpane-trend">
+    <div class="hist-filters">
+      <div class="hist-filter-group">
+        <label>Store</label>
+        <select id="trendStore" onchange="renderTrendChart()">
+          <option value="">All Stores</option>
+        </select>
+      </div>
+      <div class="hist-filter-group">
+        <label>Item</label>
+        <select id="trendItem" onchange="renderTrendChart()"></select>
+      </div>
+      <div class="hist-filter-group">
+        <label>From Date</label>
+        <input type="date" id="trendFrom" onchange="renderTrendChart()">
+      </div>
+      <div class="hist-filter-group">
+        <label>To Date</label>
+        <input type="date" id="trendTo" onchange="renderTrendChart()">
+      </div>
+      <div class="hist-filter-group">
+        <label>View Type</label>
+        <select id="trendView" onchange="renderTrendChart()">
+          <option value="cartons">Cartons (CT)</option>
+          <option value="units">Units (EA)</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="summary-grid" id="trendSummary"></div>
+    
+    <div class="chart-container">
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:4px">Stock Level Over Time</h3>
+      <p style="font-size:12px;color:var(--text-mut);margin-bottom:8px" id="trendSubtitle">Select filters to view chart</p>
+      <div class="chart-canvas-wrapper">
+        <canvas id="trendChart"></canvas>
+      </div>
+      <div id="trendEmpty" class="chart-empty" style="display:none">
+        <div class="ic">No Data</div>
+        <p>No snapshots found for the selected filters</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- ===== COMPARISON SUB-PANE ===== -->
+  <div class="subpane" id="subpane-comparison">
+    <div class="hist-filters">
+      <div class="hist-filter-group">
+        <label>Date 1 (Earlier)</label>
+        <select id="cmpDate1" onchange="renderComparison()"></select>
+      </div>
+      <div class="hist-filter-group">
+        <label>Date 2 (Later)</label>
+        <select id="cmpDate2" onchange="renderComparison()"></select>
+      </div>
+      <div class="hist-filter-group">
+        <label>Filter Store</label>
+        <select id="cmpStore" onchange="renderComparison()">
+          <option value="">All Stores</option>
+        </select>
+      </div>
+      <div class="hist-filter-group">
+        <label>Sort By</label>
+        <select id="cmpSort" onchange="renderComparison()">
+          <option value="diff_desc">Biggest Increase</option>
+          <option value="diff_asc">Biggest Decrease</option>
+          <option value="store">Store Code</option>
+          <option value="item">Item Name</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="summary-grid" id="cmpSummary"></div>
+    
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><span class="icon">CMP</span>Stock Comparison</div>
+        <button class="btn btn-sm" onclick="exportComparisonCSV()">Export CSV</button>
+      </div>
+      <div class="tbl-wrap">
+        <div class="tbl-scroll">
+          <table id="tblComparison"></table>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- ===== MONTHLY SUMMARY SUB-PANE ===== -->
+  <div class="subpane" id="subpane-monthly">
+    <div class="hist-filters">
+      <div class="hist-filter-group">
+        <label>Month</label>
+        <select id="monthSelector" onchange="renderMonthlySummary()"></select>
+      </div>
+      <div class="hist-filter-group">
+        <label>Filter Store</label>
+        <select id="monthStore" onchange="renderMonthlySummary()">
+          <option value="">All Stores</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="summary-grid" id="monthSummary"></div>
+    
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><span class="icon">CAL</span>Daily Snapshot Calendar</div>
+      </div>
+      <div id="snapshotCalendar"></div>
+    </div>
+    
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><span class="icon">AVG</span>Monthly Average per Store</div>
+        <button class="btn btn-sm" onclick="exportMonthlyCSV()">Export CSV</button>
+      </div>
+      <div class="tbl-wrap">
+        <div class="tbl-scroll">
+          <table id="tblMonthly"></table>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- ===== CONSUMPTION REPORT SUB-PANE ===== -->
+  <div class="subpane" id="subpane-consumption">
+    <div class="hist-filters">
+      <div class="hist-filter-group">
+        <label>Period</label>
+        <select id="conPeriod" onchange="renderConsumption()">
+          <option value="7">Last 7 Days</option>
+          <option value="14">Last 14 Days</option>
+          <option value="30" selected>Last 30 Days</option>
+          <option value="90">Last 90 Days</option>
+        </select>
+      </div>
+      <div class="hist-filter-group">
+        <label>Filter Store</label>
+        <select id="conStore" onchange="renderConsumption()">
+          <option value="">All Stores</option>
+        </select>
+      </div>
+      <div class="hist-filter-group">
+        <label>Filter Item</label>
+        <select id="conItem" onchange="renderConsumption()">
+          <option value="">All Items</option>
+        </select>
+      </div>
+      <div class="hist-filter-group">
+        <label>Group By</label>
+        <select id="conGroup" onchange="renderConsumption()">
+          <option value="store">By Store</option>
+          <option value="item">By Item</option>
+          <option value="store_item">By Store &amp; Item</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="summary-grid" id="conSummary"></div>
+    
+    <div class="chart-container">
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:4px">Consumption Chart</h3>
+      <p style="font-size:12px;color:var(--text-mut);margin-bottom:8px">Total cartons consumed in the selected period</p>
+      <div class="chart-canvas-wrapper" style="height:300px">
+        <canvas id="consumptionChart"></canvas>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><span class="icon">CON</span>Consumption Details</div>
+        <button class="btn btn-sm" onclick="exportConsumptionCSV()">Export CSV</button>
+      </div>
+      <div class="tbl-wrap">
+        <div class="tbl-scroll">
+          <table id="tblConsumption"></table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+  
 </div>
 
 <div class="modal" id="mdStore">
@@ -1188,11 +1549,37 @@ async function selectWorkspace(wsId){
   await loadPermissions();
   applyPermissionsToUI();
   
+
+async function selectWorkspace(wsId){
+  activeWorkspace=myWorkspaces.find(w=>w.id===wsId);
+  if(!activeWorkspace){toast('Workspace not found','error');return}
+  localStorage.setItem('lastWorkspaceId',wsId);
+  document.getElementById('wsSelectScreen').classList.remove('show');
+  document.getElementById('mainNav').style.display='block';
+  document.getElementById('mainPage').style.display='block';
+  const email=currentUser.email;
+  const name=email.split('@')[0];
+  const initials=name.slice(0,2).toUpperCase();
+  document.getElementById('userName').textContent=name;
+  document.getElementById('userAvatar').textContent=initials;
+  document.getElementById('curWsName').textContent=activeWorkspace.name;
+  document.getElementById('bannerTitle').textContent=activeWorkspace.name+' - Operations Center';
+  document.getElementById('dzWsName').textContent=activeWorkspace.name;
+  document.getElementById('adminTab').style.display=isSuperAdmin()?'inline-flex':'none';
+  
+  await loadPermissions();
+  applyPermissionsToUI();
+  
   showSync('Loading workspace data...');
   await loadFromCloud();
   await loadLastStockUpdate();
   hideSync();
   render();
+  
+  // 🆕 NEW: Reset to hub view + auto-snapshot check
+  goToHub();
+  setTimeout(()=>checkAndCreateAutoSnapshot(),1500);
+}
 }
 
 function toggleWsMenu(){
@@ -1232,6 +1619,641 @@ async function logout(){
   location.reload();
 }
 
+
+// ============================================
+// CHART INSTANCES
+// ============================================
+
+let trendChartInstance = null;
+let consumptionChartInstance = null;
+
+function destroyChart(instance){
+  if(instance){
+    try{instance.destroy()}catch(e){}
+  }
+  return null;
+}
+
+// ============================================
+// 1. STOCK TREND CHART
+// ============================================
+
+function renderTrendChart(){
+  const storeFilter=document.getElementById('trendStore')?.value||'';
+  const item=document.getElementById('trendItem')?.value||CONS_KEYS[0];
+  const fromDate=document.getElementById('trendFrom')?.value;
+  const toDate=document.getElementById('trendTo')?.value;
+  const viewType=document.getElementById('trendView')?.value||'cartons';
+  const asUnits=viewType==='units';
+  
+  const subtitleEl=document.getElementById('trendSubtitle');
+  const emptyEl=document.getElementById('trendEmpty');
+  const canvasEl=document.getElementById('trendChart');
+  const summaryEl=document.getElementById('trendSummary');
+  
+  if(!fromDate||!toDate){
+    if(subtitleEl)subtitleEl.textContent='Select a date range to view trend';
+    if(emptyEl)emptyEl.style.display='block';
+    if(canvasEl)canvasEl.style.display='none';
+    if(summaryEl)summaryEl.innerHTML='';
+    return;
+  }
+  
+  const snapshots=getSnapshotsByDateRange(fromDate,toDate,storeFilter);
+  
+  if(snapshots.length===0){
+    if(subtitleEl)subtitleEl.textContent='No data for selected period';
+    if(emptyEl)emptyEl.style.display='block';
+    if(canvasEl)canvasEl.style.display='none';
+    if(summaryEl)summaryEl.innerHTML='<div class="summary-card neutral"><div class="summary-card-label">No Data</div><div class="summary-card-value">-</div><div class="summary-card-sub">No snapshots in range</div></div>';
+    return;
+  }
+  
+  if(emptyEl)emptyEl.style.display='none';
+  if(canvasEl)canvasEl.style.display='block';
+  
+  const series=aggregateByDate(snapshots,item,asUnits);
+  
+  if(series.length===0){
+    if(subtitleEl)subtitleEl.textContent='No data for '+item;
+    if(emptyEl)emptyEl.style.display='block';
+    if(canvasEl)canvasEl.style.display='none';
+    return;
+  }
+  
+  const values=series.map(s=>s.val);
+  const maxVal=Math.max(...values);
+  const minVal=Math.min(...values);
+  const avgVal=values.reduce((a,b)=>a+b,0)/values.length;
+  const lastVal=values[values.length-1];
+  const firstVal=values[0];
+  const changeAbs=lastVal-firstVal;
+  const changePct=firstVal>0?((changeAbs/firstVal)*100):0;
+  const unit=asUnits?'EA':'CT';
+  
+  if(summaryEl){
+    summaryEl.innerHTML=
+      '<div class="summary-card neutral"><div class="summary-card-label">Average</div><div class="summary-card-value">'+n(avgVal,0)+'</div><div class="summary-card-sub">'+unit+' across period</div></div>'+
+      '<div class="summary-card up"><div class="summary-card-label">Maximum</div><div class="summary-card-value">'+n(maxVal,0)+'</div><div class="summary-card-sub">Peak '+unit+'</div></div>'+
+      '<div class="summary-card down"><div class="summary-card-label">Minimum</div><div class="summary-card-value">'+n(minVal,0)+'</div><div class="summary-card-sub">Lowest '+unit+'</div></div>'+
+      '<div class="summary-card '+(changeAbs>0?'up':changeAbs<0?'down':'neutral')+'"><div class="summary-card-label">Change</div><div class="summary-card-value">'+(changeAbs>0?'+':'')+n(changeAbs,0)+'</div><div class="summary-card-sub">'+(changePct>0?'+':'')+changePct.toFixed(1)+'% vs start</div></div>'+
+      '<div class="summary-card neutral"><div class="summary-card-label">Data Points</div><div class="summary-card-value">'+series.length+'</div><div class="summary-card-sub">snapshots</div></div>';
+  }
+  
+  if(subtitleEl){
+    const storeLabel=storeFilter||'All stores';
+    subtitleEl.textContent=item+' - '+storeLabel+' - '+series.length+' snapshots from '+fromDate+' to '+toDate;
+  }
+  
+  trendChartInstance=destroyChart(trendChartInstance);
+  
+  const ctx=canvasEl.getContext('2d');
+  trendChartInstance=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels:series.map(s=>s.date),
+      datasets:[{
+        label:item+' ('+unit+')',
+        data:series.map(s=>s.val),
+        borderColor:'#FF9900',
+        backgroundColor:'rgba(255,153,0,0.1)',
+        borderWidth:2,
+        tension:0.3,
+        fill:true,
+        pointRadius:4,
+        pointHoverRadius:6,
+        pointBackgroundColor:'#FF9900',
+        pointBorderColor:'#fff',
+        pointBorderWidth:2
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      interaction:{intersect:false,mode:'index'},
+      plugins:{
+        legend:{display:true,position:'top',labels:{font:{size:12,weight:'600'}}},
+        tooltip:{
+          backgroundColor:'#131A22',
+          titleColor:'#FF9900',
+          titleFont:{weight:'700'},
+          bodyColor:'#fff',
+          padding:10,
+          cornerRadius:6,
+          callbacks:{
+            label:function(ctx){return item+': '+n(ctx.parsed.y,0)+' '+unit}
+          }
+        }
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:11}}},
+        y:{
+          beginAtZero:true,
+          grid:{color:'rgba(0,0,0,0.05)'},
+          ticks:{font:{size:11},callback:function(v){return n(v,0)}}
+        }
+      }
+    }
+  });
+}
+
+// ============================================
+// 2. COMPARISON VIEW
+// ============================================
+
+let comparisonRows = [];
+
+function renderComparison(){
+  const date1=document.getElementById('cmpDate1')?.value;
+  const date2=document.getElementById('cmpDate2')?.value;
+  const storeFilter=document.getElementById('cmpStore')?.value||'';
+  const sortBy=document.getElementById('cmpSort')?.value||'diff_desc';
+  
+  const summaryEl=document.getElementById('cmpSummary');
+  const tblEl=document.getElementById('tblComparison');
+  
+  if(!date1||!date2){
+    if(summaryEl)summaryEl.innerHTML='<div class="summary-card neutral"><div class="summary-card-label">Select Dates</div><div class="summary-card-value">-</div><div class="summary-card-sub">Choose two snapshot dates</div></div>';
+    if(tblEl)tblEl.innerHTML='<tr><td style="padding:30px;text-align:center;color:var(--text-mut)">Select two dates to compare</td></tr>';
+    return;
+  }
+  
+  if(date1===date2){
+    if(summaryEl)summaryEl.innerHTML='<div class="summary-card neutral"><div class="summary-card-label">Same Date</div><div class="summary-card-value">-</div><div class="summary-card-sub">Pick different dates</div></div>';
+    if(tblEl)tblEl.innerHTML='<tr><td style="padding:30px;text-align:center;color:var(--text-mut)">Please select two different dates</td></tr>';
+    return;
+  }
+  
+  const snaps1=getSnapshotsForDate(date1,storeFilter);
+  const snaps2=getSnapshotsForDate(date2,storeFilter);
+  const map1={};
+  const map2={};
+  snaps1.forEach(s=>{map1[s.store_code]=s.data});
+  snaps2.forEach(s=>{map2[s.store_code]=s.data});
+  
+  const allStores=new Set([...Object.keys(map1),...Object.keys(map2)]);
+  
+  comparisonRows=[];
+  allStores.forEach(code=>{
+    CONS_KEYS.forEach(item=>{
+      const v1=getStockFromSnapshot(map1[code],item);
+      const v2=getStockFromSnapshot(map2[code],item);
+      if(v1===0&&v2===0)return;
+      const store=state.stores.find(s=>s.code===code);
+      comparisonRows.push({
+        store:code,
+        area:store?.area||'',
+        item,
+        v1,v2,
+        diff:v2-v1,
+        pct:v1>0?((v2-v1)/v1*100):(v2>0?100:0)
+      });
+    });
+  });
+  
+  comparisonRows.sort((a,b)=>{
+    if(sortBy==='diff_desc')return b.diff-a.diff;
+    if(sortBy==='diff_asc')return a.diff-b.diff;
+    if(sortBy==='store')return a.store.localeCompare(b.store)||a.item.localeCompare(b.item);
+    if(sortBy==='item')return a.item.localeCompare(b.item)||a.store.localeCompare(b.store);
+    return 0;
+  });
+  
+  let total1=0,total2=0,increases=0,decreases=0,unchanged=0;
+  comparisonRows.forEach(r=>{
+    total1+=r.v1;total2+=r.v2;
+    if(r.diff>0)increases++;
+    else if(r.diff<0)decreases++;
+    else unchanged++;
+  });
+  
+  if(summaryEl){
+    summaryEl.innerHTML=
+      '<div class="summary-card neutral"><div class="summary-card-label">'+date1+'</div><div class="summary-card-value">'+n(total1,0)+'</div><div class="summary-card-sub">Total cartons</div></div>'+
+      '<div class="summary-card neutral"><div class="summary-card-label">'+date2+'</div><div class="summary-card-value">'+n(total2,0)+'</div><div class="summary-card-sub">Total cartons</div></div>'+
+      '<div class="summary-card '+(total2>total1?'up':total2<total1?'down':'neutral')+'"><div class="summary-card-label">Net Change</div><div class="summary-card-value">'+(total2-total1>0?'+':'')+n(total2-total1,0)+'</div><div class="summary-card-sub">'+(total1>0?(((total2-total1)/total1)*100).toFixed(1)+'%':'-')+'</div></div>'+
+      '<div class="summary-card up"><div class="summary-card-label">Increased</div><div class="summary-card-value">'+increases+'</div><div class="summary-card-sub">SKU rows</div></div>'+
+      '<div class="summary-card down"><div class="summary-card-label">Decreased</div><div class="summary-card-value">'+decreases+'</div><div class="summary-card-sub">SKU rows</div></div>'+
+      '<div class="summary-card neutral"><div class="summary-card-label">Unchanged</div><div class="summary-card-value">'+unchanged+'</div><div class="summary-card-sub">SKU rows</div></div>';
+  }
+  
+  if(!tblEl)return;
+  
+  if(comparisonRows.length===0){
+    tblEl.innerHTML='<tr><td style="padding:30px;text-align:center;color:var(--text-mut)">No data for selected dates</td></tr>';
+    return;
+  }
+  
+  let h='<tr><th>Store</th><th>Item</th><th class="nums">'+date1+'</th><th class="nums">'+date2+'</th><th class="nums">Diff (CT)</th><th class="nums">Change %</th></tr>';
+  comparisonRows.forEach(r=>{
+    const diffClass=r.diff>0?'diff-positive':r.diff<0?'diff-negative':'diff-neutral';
+    const arrow=r.diff>0?'<span class="diff-arrow up">^</span>':r.diff<0?'<span class="diff-arrow down">v</span>':'';
+    h+='<tr>';
+    h+='<td><b>'+r.store+'</b><div class="cell-sub">'+r.area+'</div></td>';
+    h+='<td>'+r.item+'</td>';
+    h+='<td class="nums">'+n(r.v1)+'</td>';
+    h+='<td class="nums">'+n(r.v2)+'</td>';
+    h+='<td class="nums '+diffClass+'">'+arrow+(r.diff>0?'+':'')+n(r.diff)+'</td>';
+    h+='<td class="nums '+diffClass+'">'+(r.pct>0?'+':'')+r.pct.toFixed(1)+'%</td>';
+    h+='</tr>';
+  });
+  tblEl.innerHTML=h;
+}
+
+function exportComparisonCSV(){
+  if(!comparisonRows.length){toast('No data to export','error');return}
+  const date1=document.getElementById('cmpDate1')?.value||'date1';
+  const date2=document.getElementById('cmpDate2')?.value||'date2';
+  const wsName=activeWorkspace?.name||'workspace';
+  let csv='Store,Area,Item,'+date1+' (CT),'+date2+' (CT),Diff (CT),Change %\n';
+  comparisonRows.forEach(r=>{
+    csv+='"'+r.store+'","'+r.area+'","'+r.item+'",'+r.v1+','+r.v2+','+r.diff+','+r.pct.toFixed(2)+'\n';
+  });
+  const b=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(b);
+  a.download='comparison_'+wsName+'_'+date1+'_vs_'+date2+'.csv';
+  a.click();
+  toast('Exported');
+}
+
+// ============================================
+// 3. MONTHLY SUMMARY + CALENDAR
+// ============================================
+
+let monthlyRows = [];
+
+function renderMonthlySummary(){
+  const monthVal=document.getElementById('monthSelector')?.value;
+  const storeFilter=document.getElementById('monthStore')?.value||'';
+  
+  const summaryEl=document.getElementById('monthSummary');
+  const calEl=document.getElementById('snapshotCalendar');
+  const tblEl=document.getElementById('tblMonthly');
+  
+  if(!monthVal){
+    if(summaryEl)summaryEl.innerHTML='<div class="summary-card neutral"><div class="summary-card-label">No Month</div><div class="summary-card-value">-</div><div class="summary-card-sub">Select a month</div></div>';
+    if(calEl)calEl.innerHTML='<div class="empty"><div class="ic">No Month</div><p>Select a month to view calendar</p></div>';
+    if(tblEl)tblEl.innerHTML='<tr><td style="padding:30px;text-align:center;color:var(--text-mut)">Select a month</td></tr>';
+    return;
+  }
+  
+  const [yearStr,monthStr]=monthVal.split('-');
+  const year=parseInt(yearStr);
+  const month=parseInt(monthStr);
+  const monthStart=monthVal+'-01';
+  const lastDay=new Date(year,month,0).getDate();
+  const monthEnd=monthVal+'-'+String(lastDay).padStart(2,'0');
+  
+  const snaps=getSnapshotsByDateRange(monthStart,monthEnd,storeFilter);
+  const dates=[...new Set(snaps.map(s=>s.snapshot_date))].sort();
+  
+  let totalCartons=0;
+  const byStore={};
+  snaps.forEach(s=>{
+    let storeTotal=0;
+    CONS_KEYS.forEach(c=>{storeTotal+=getStockFromSnapshot(s.data,c)});
+    totalCartons+=storeTotal;
+    if(!byStore[s.store_code]){
+      const store=state.stores.find(x=>x.code===s.store_code);
+      byStore[s.store_code]={code:s.store_code,area:store?.area||'',totals:{},counts:{}};
+      CONS_KEYS.forEach(c=>{byStore[s.store_code].totals[c]=0;byStore[s.store_code].counts[c]=0});
+    }
+    CONS_KEYS.forEach(c=>{
+      const v=getStockFromSnapshot(s.data,c);
+      byStore[s.store_code].totals[c]+=v;
+      byStore[s.store_code].counts[c]++;
+    });
+  });
+  
+  const avgPerSnapshot=snaps.length>0?totalCartons/snaps.length:0;
+  const uniqueStores=Object.keys(byStore).length;
+  
+  if(summaryEl){
+    summaryEl.innerHTML=
+      '<div class="summary-card neutral"><div class="summary-card-label">Days with Data</div><div class="summary-card-value">'+dates.length+'</div><div class="summary-card-sub">of '+lastDay+' days in month</div></div>'+
+      '<div class="summary-card neutral"><div class="summary-card-label">Total Snapshots</div><div class="summary-card-value">'+snaps.length+'</div><div class="summary-card-sub">store-day records</div></div>'+
+      '<div class="summary-card up"><div class="summary-card-label">Stores Tracked</div><div class="summary-card-value">'+uniqueStores+'</div><div class="summary-card-sub">unique stores</div></div>'+
+      '<div class="summary-card neutral"><div class="summary-card-label">Avg per Snapshot</div><div class="summary-card-value">'+n(avgPerSnapshot,0)+'</div><div class="summary-card-sub">CT all items</div></div>'+
+      '<div class="summary-card up"><div class="summary-card-label">Coverage</div><div class="summary-card-value">'+(lastDay>0?Math.round(dates.length/lastDay*100):0)+'%</div><div class="summary-card-sub">days with data</div></div>';
+  }
+  
+  if(calEl){
+    const dateMap={};
+    snaps.forEach(s=>{
+      if(!dateMap[s.snapshot_date])dateMap[s.snapshot_date]=new Set();
+      dateMap[s.snapshot_date].add(s.store_code);
+    });
+    const firstDayOfMonth=new Date(year,month-1,1).getDay();
+    let calHtml='<div class="calendar-grid">';
+    ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>{
+      calHtml+='<div class="calendar-day-header">'+d+'</div>';
+    });
+    for(let i=0;i<firstDayOfMonth;i++){
+      calHtml+='<div class="calendar-day empty"></div>';
+    }
+    for(let d=1;d<=lastDay;d++){
+      const dateStr=monthVal+'-'+String(d).padStart(2,'0');
+      const stores=dateMap[dateStr];
+      if(stores&&stores.size>0){
+        calHtml+='<div class="calendar-day has-snapshot" title="'+dateStr+': '+stores.size+' stores" onclick="loadDateInTrend(\''+dateStr+'\')">';
+        calHtml+='<div class="day-num">'+d+'</div>';
+        calHtml+='<div class="day-stores">'+stores.size+' st</div>';
+        calHtml+='</div>';
+      } else {
+        calHtml+='<div class="calendar-day no-data" title="No data on '+dateStr+'"><div class="day-num">'+d+'</div></div>';
+      }
+    }
+    calHtml+='</div>';
+    calEl.innerHTML=calHtml;
+  }
+  
+  monthlyRows=Object.values(byStore).sort((a,b)=>a.code.localeCompare(b.code));
+  
+  if(!tblEl)return;
+  
+  if(monthlyRows.length===0){
+    tblEl.innerHTML='<tr><td style="padding:30px;text-align:center;color:var(--text-mut)">No data for this month</td></tr>';
+    return;
+  }
+  
+  let h='<tr><th>Store</th>'+CONS_KEYS.map(c=>'<th class="nums">'+c.replace('BubbleWrap','BW').replace('PaperBag','PB')+'</th>').join('')+'<th class="nums">Total Avg</th></tr>';
+  monthlyRows.forEach(r=>{
+    let rowTotal=0;
+    h+='<tr><td><b>'+r.code+'</b><div class="cell-sub">'+r.area+'</div></td>';
+    CONS_KEYS.forEach(c=>{
+      const avg=r.counts[c]>0?r.totals[c]/r.counts[c]:0;
+      rowTotal+=avg;
+      h+='<td class="nums">'+n(avg,0)+'</td>';
+    });
+    h+='<td class="nums" style="font-weight:700;color:var(--amz-orange-dark);background:#FFF4E0">'+n(rowTotal,0)+'</td>';
+    h+='</tr>';
+  });
+  tblEl.innerHTML=h;
+}
+
+function loadDateInTrend(date){
+  const trendFrom=document.getElementById('trendFrom');
+  const trendTo=document.getElementById('trendTo');
+  if(trendFrom)trendFrom.value=date;
+  if(trendTo)trendTo.value=date;
+  document.querySelector('.subtab[data-subtab="trend"]')?.click();
+}
+
+function exportMonthlyCSV(){
+  if(!monthlyRows.length){toast('No data to export','error');return}
+  const monthVal=document.getElementById('monthSelector')?.value||'month';
+  const wsName=activeWorkspace?.name||'workspace';
+  let csv='Store,Area,'+CONS_KEYS.join(',')+',Total\n';
+  monthlyRows.forEach(r=>{
+    let total=0;
+    const cells=CONS_KEYS.map(c=>{
+      const avg=r.counts[c]>0?r.totals[c]/r.counts[c]:0;
+      total+=avg;
+      return avg.toFixed(1);
+    });
+    csv+='"'+r.code+'","'+r.area+'",'+cells.join(',')+','+total.toFixed(1)+'\n';
+  });
+  const b=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(b);
+  a.download='monthly_'+wsName+'_'+monthVal+'.csv';
+  a.click();
+  toast('Exported');
+}
+
+// ============================================
+// 4. CONSUMPTION REPORT
+// ============================================
+
+let consumptionRows = [];
+
+function renderConsumption(){
+  const period=parseInt(document.getElementById('conPeriod')?.value||'30');
+  const storeFilter=document.getElementById('conStore')?.value||'';
+  const itemFilter=document.getElementById('conItem')?.value||'';
+  const groupBy=document.getElementById('conGroup')?.value||'store';
+  
+  const summaryEl=document.getElementById('conSummary');
+  const tblEl=document.getElementById('tblConsumption');
+  
+  const today=new Date();
+  const fromDate=new Date();
+  fromDate.setDate(today.getDate()-period);
+  const fromStr=fromDate.toISOString().slice(0,10);
+  const toStr=today.toISOString().slice(0,10);
+  
+  let snaps=getSnapshotsByDateRange(fromStr,toStr,storeFilter);
+  
+  if(snaps.length<2){
+    if(summaryEl)summaryEl.innerHTML='<div class="summary-card neutral"><div class="summary-card-label">Insufficient Data</div><div class="summary-card-value">-</div><div class="summary-card-sub">Need at least 2 snapshots</div></div>';
+    if(tblEl)tblEl.innerHTML='<tr><td style="padding:30px;text-align:center;color:var(--text-mut)">Need at least 2 snapshots in this period</td></tr>';
+    consumptionChartInstance=destroyChart(consumptionChartInstance);
+    return;
+  }
+  
+  const byStoreFirst={};
+  const byStoreLast={};
+  snaps.forEach(s=>{
+    if(!byStoreFirst[s.store_code]||s.snapshot_date<byStoreFirst[s.store_code].snapshot_date){
+      byStoreFirst[s.store_code]=s;
+    }
+    if(!byStoreLast[s.store_code]||s.snapshot_date>byStoreLast[s.store_code].snapshot_date){
+      byStoreLast[s.store_code]=s;
+    }
+  });
+  
+  const records=[];
+  Object.keys(byStoreFirst).forEach(code=>{
+    const first=byStoreFirst[code];
+    const last=byStoreLast[code];
+    if(first.snapshot_date===last.snapshot_date)return;
+    const store=state.stores.find(s=>s.code===code);
+    CONS_KEYS.forEach(item=>{
+      if(itemFilter&&item!==itemFilter)return;
+      const v1=getStockFromSnapshot(first.data,item);
+      const v2=getStockFromSnapshot(last.data,item);
+      const consumed=v1-v2;
+      records.push({
+        store:code,
+        area:store?.area||'',
+        item,
+        startStock:v1,
+        endStock:v2,
+        consumed:consumed,
+        firstDate:first.snapshot_date,
+        lastDate:last.snapshot_date
+      });
+    });
+  });
+  
+  consumptionRows=[];
+  if(groupBy==='store'){
+    const grp={};
+    records.forEach(r=>{
+      if(!grp[r.store])grp[r.store]={store:r.store,area:r.area,startStock:0,endStock:0,consumed:0,positiveCon:0};
+      grp[r.store].startStock+=r.startStock;
+      grp[r.store].endStock+=r.endStock;
+      grp[r.store].consumed+=r.consumed;
+      if(r.consumed>0)grp[r.store].positiveCon+=r.consumed;
+    });
+    consumptionRows=Object.values(grp).sort((a,b)=>b.consumed-a.consumed);
+  } else if(groupBy==='item'){
+    const grp={};
+    records.forEach(r=>{
+      if(!grp[r.item])grp[r.item]={item:r.item,startStock:0,endStock:0,consumed:0,positiveCon:0,storeCount:new Set()};
+      grp[r.item].startStock+=r.startStock;
+      grp[r.item].endStock+=r.endStock;
+      grp[r.item].consumed+=r.consumed;
+      if(r.consumed>0)grp[r.item].positiveCon+=r.consumed;
+      grp[r.item].storeCount.add(r.store);
+    });
+    consumptionRows=Object.values(grp).map(r=>({...r,storeCount:r.storeCount.size})).sort((a,b)=>b.consumed-a.consumed);
+  } else {
+    consumptionRows=records.sort((a,b)=>b.consumed-a.consumed);
+  }
+  
+  let totalConsumed=0,positiveConsumed=0,negativeChange=0;
+  records.forEach(r=>{
+    totalConsumed+=r.consumed;
+    if(r.consumed>0)positiveConsumed+=r.consumed;
+    else if(r.consumed<0)negativeChange+=Math.abs(r.consumed);
+  });
+  
+  const dailyAvg=positiveConsumed/period;
+  
+  if(summaryEl){
+    summaryEl.innerHTML=
+      '<div class="summary-card down"><div class="summary-card-label">Total Consumed</div><div class="summary-card-value">'+n(positiveConsumed,0)+'</div><div class="summary-card-sub">CT in '+period+' days</div></div>'+
+      '<div class="summary-card neutral"><div class="summary-card-label">Daily Average</div><div class="summary-card-value">'+n(dailyAvg,1)+'</div><div class="summary-card-sub">CT per day</div></div>'+
+      '<div class="summary-card up"><div class="summary-card-label">Restocked</div><div class="summary-card-value">'+n(negativeChange,0)+'</div><div class="summary-card-sub">CT added back</div></div>'+
+      '<div class="summary-card neutral"><div class="summary-card-label">Net Change</div><div class="summary-card-value">'+(totalConsumed>0?'-':'+')+n(Math.abs(totalConsumed),0)+'</div><div class="summary-card-sub">CT difference</div></div>'+
+      '<div class="summary-card neutral"><div class="summary-card-label">Stores Tracked</div><div class="summary-card-value">'+Object.keys(byStoreFirst).length+'</div><div class="summary-card-sub">with snapshots</div></div>';
+  }
+  
+  renderConsumptionChart(consumptionRows,groupBy);
+  
+  if(!tblEl)return;
+  
+  if(consumptionRows.length===0){
+    tblEl.innerHTML='<tr><td style="padding:30px;text-align:center;color:var(--text-mut)">No consumption data</td></tr>';
+    return;
+  }
+  
+  let h='';
+  if(groupBy==='store'){
+    h='<tr><th>Store</th><th class="nums">Start CT</th><th class="nums">End CT</th><th class="nums">Consumed</th><th class="nums">Daily Avg</th></tr>';
+    consumptionRows.forEach(r=>{
+      const dailyR=r.positiveCon/period;
+      h+='<tr><td><b>'+r.store+'</b><div class="cell-sub">'+r.area+'</div></td><td class="nums">'+n(r.startStock)+'</td><td class="nums">'+n(r.endStock)+'</td><td class="nums '+(r.consumed>0?'diff-negative':'diff-positive')+'">'+(r.consumed>0?'-':'+')+n(Math.abs(r.consumed))+'</td><td class="nums">'+n(dailyR,1)+'</td></tr>';
+    });
+  } else if(groupBy==='item'){
+    h='<tr><th>Item</th><th class="nums">Stores</th><th class="nums">Start CT</th><th class="nums">End CT</th><th class="nums">Consumed</th><th class="nums">Daily Avg</th></tr>';
+    consumptionRows.forEach(r=>{
+      const dailyR=r.positiveCon/period;
+      h+='<tr><td><b>'+r.item+'</b></td><td class="nums">'+r.storeCount+'</td><td class="nums">'+n(r.startStock)+'</td><td class="nums">'+n(r.endStock)+'</td><td class="nums '+(r.consumed>0?'diff-negative':'diff-positive')+'">'+(r.consumed>0?'-':'+')+n(Math.abs(r.consumed))+'</td><td class="nums">'+n(dailyR,1)+'</td></tr>';
+    });
+  } else {
+    h='<tr><th>Store</th><th>Item</th><th class="nums">Start CT</th><th class="nums">End CT</th><th class="nums">Consumed</th></tr>';
+    consumptionRows.forEach(r=>{
+      h+='<tr><td><b>'+r.store+'</b><div class="cell-sub">'+r.area+'</div></td><td>'+r.item+'</td><td class="nums">'+n(r.startStock)+'</td><td class="nums">'+n(r.endStock)+'</td><td class="nums '+(r.consumed>0?'diff-negative':'diff-positive')+'">'+(r.consumed>0?'-':'+')+n(Math.abs(r.consumed))+'</td></tr>';
+    });
+  }
+  tblEl.innerHTML=h;
+}
+
+function renderConsumptionChart(rows,groupBy){
+  const canvasEl=document.getElementById('consumptionChart');
+  if(!canvasEl)return;
+  
+  consumptionChartInstance=destroyChart(consumptionChartInstance);
+  
+  const top=rows.slice(0,15);
+  let labels=[],values=[];
+  
+  if(groupBy==='store'){
+    labels=top.map(r=>r.store);
+    values=top.map(r=>r.positiveCon);
+  } else if(groupBy==='item'){
+    labels=top.map(r=>r.item);
+    values=top.map(r=>r.positiveCon);
+  } else {
+    labels=top.map(r=>r.store+' / '+r.item);
+    values=top.map(r=>r.consumed>0?r.consumed:0);
+  }
+  
+  if(!labels.length)return;
+  
+  const ctx=canvasEl.getContext('2d');
+  consumptionChartInstance=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        label:'Consumed (CT)',
+        data:values,
+        backgroundColor:'rgba(255,153,0,0.7)',
+        borderColor:'#E88B00',
+        borderWidth:1
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      indexAxis:'y',
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#131A22',
+          titleColor:'#FF9900',
+          bodyColor:'#fff',
+          padding:10,
+          cornerRadius:6,
+          callbacks:{
+            label:function(ctx){return n(ctx.parsed.x,0)+' CT consumed'}
+          }
+        }
+      },
+      scales:{
+        x:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:11},callback:function(v){return n(v,0)}}},
+        y:{grid:{display:false},ticks:{font:{size:11}}}
+      }
+    }
+  });
+}
+
+function exportConsumptionCSV(){
+  if(!consumptionRows.length){toast('No data to export','error');return}
+  const period=document.getElementById('conPeriod')?.value||'30';
+  const groupBy=document.getElementById('conGroup')?.value||'store';
+  const wsName=activeWorkspace?.name||'workspace';
+  let csv='';
+  if(groupBy==='store'){
+    csv='Store,Area,Start CT,End CT,Consumed CT,Daily Avg\n';
+    consumptionRows.forEach(r=>{
+      const dailyR=r.positiveCon/parseInt(period);
+      csv+='"'+r.store+'","'+r.area+'",'+r.startStock+','+r.endStock+','+r.consumed+','+dailyR.toFixed(2)+'\n';
+    });
+  } else if(groupBy==='item'){
+    csv='Item,Stores,Start CT,End CT,Consumed CT,Daily Avg\n';
+    consumptionRows.forEach(r=>{
+      const dailyR=r.positiveCon/parseInt(period);
+      csv+='"'+r.item+'",'+r.storeCount+','+r.startStock+','+r.endStock+','+r.consumed+','+dailyR.toFixed(2)+'\n';
+    });
+  } else {
+    csv='Store,Area,Item,Start CT,End CT,Consumed CT\n';
+    consumptionRows.forEach(r=>{
+      csv+='"'+r.store+'","'+r.area+'","'+r.item+'",'+r.startStock+','+r.endStock+','+r.consumed+'\n';
+    });
+  }
+  const b=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(b);
+  a.download='consumption_'+wsName+'_'+period+'days.csv';
+  a.click();
+  toast('Exported');
+}  
+  
 async function checkSession(){
   const hashStr=window.location.hash.substring(1);
   const queryStr=window.location.search.substring(1);
@@ -1363,7 +2385,7 @@ function markStockUpdated(){
 async function confirmStockUpdate(){
   if(!canEdit()){denyAccess('mark stock updated');return}
   const notes=document.getElementById('stockUpdateNotes').value.trim();
-  showSync('Recording update...');
+  showSync('Recording update and creating snapshot...');
   try{
     const {data,error}=await supabaseClient.from('stock_update_log').insert({
       workspace_id:activeWorkspace.id,
@@ -1374,8 +2396,12 @@ async function confirmStockUpdate(){
     }).select().single();
     if(error)throw error;
     lastStockUpdate=data;
+    
+    // 🆕 Auto-create snapshot when user marks stock as updated
+    await createSnapshot('manual',notes||'Manual stock update via Stock Count page');
+    
     document.getElementById('mdStockUpdate').classList.remove('show');
-    toast('Stock marked as updated');
+    toast('Stock updated and snapshot saved');
     renderStockUpdateInfo();
     await logActivity('update','stock','manual_update',null,null,null,{notes,timestamp:data.created_at});
   }catch(e){toast('Failed: '+e.message,'error')}
@@ -1563,7 +2589,38 @@ function n(x,d){d=d||0;return x==null||isNaN(x)?'-':Number(x).toLocaleString(und
 function docColor(d){if(!d||d<1)return{bg:'#FCE4E4',fg:'#B12704',br:'#F5B7B1'};if(d<3)return{bg:'#FFF3CD',fg:'#B66A00',br:'#F5D99C'};if(d<7)return{bg:'#D5F5E3',fg:'#067D62',br:'#A9D5BE'};return{bg:'#D9EDF7',fg:'#146EB4',br:'#AED6F1'}}
 function docPill(d){if(!d||isNaN(d)||d===0)return'<span class="pill pill-nl">NO DATA</span>';if(d<1)return'<span class="pill pill-crit">'+d.toFixed(1)+'d</span>';if(d<3)return'<span class="pill pill-low">'+d.toFixed(1)+'d</span>';if(d<7)return'<span class="pill pill-ok">'+d.toFixed(1)+'d</span>';return'<span class="pill pill-hi">'+d.toFixed(1)+'d</span>'}
 
-document.querySelectorAll('.tab').forEach(el=>{el.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));document.getElementById(el.dataset.tab).classList.add('active');window.scrollTo(0,0);if(el.dataset.tab==='admin')renderAdmin();if(el.dataset.tab==='activity')renderActivity();if(el.dataset.tab==='stock')renderStockUpdateInfo()}});
+
+document.querySelectorAll('.tab').forEach(el=>{
+  el.onclick=()=>{
+    const tabId=el.dataset.tab;
+    const view=el.dataset.view;
+    
+    // Hub tab clicked - go back to hub
+    if(tabId==='hub'){goToHub();return}
+    
+    // Admin tab - special handling
+    if(tabId==='admin'){
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      el.classList.add('active');
+      document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+      document.getElementById('admin').classList.add('active');
+      renderAdmin();
+      window.scrollTo(0,0);
+      return;
+    }
+    
+    // Standard tab navigation within current view
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    window.scrollTo(0,0);
+    
+    if(tabId==='activity')renderActivity();
+    if(tabId==='stock')renderStockUpdateInfo();
+    if(tabId==='historical')initHistoricalView();
+  };
+});
 
 function renderOverview(){
   const live=state.stores.filter(s=>s.status==='Live');
@@ -2541,7 +3598,334 @@ function downloadStockTemplate(){
 
 function render(){renderOverview();renderStores();renderStock();renderForecast();renderDOC();renderReplen();renderCfg()}
 
-checkSession();
+
+// ============================================
+// VIEW NAVIGATION SYSTEM (Hub / Dashboard / History)
+// ============================================
+
+let currentView = 'hub'; // 'hub' | 'dashboard' | 'history'
+let stockHistoryCache = []; // cache of all snapshots for current workspace
+
+function goToHub(){
+  currentView='hub';
+  document.querySelectorAll('.tab').forEach(t=>{
+    const view=t.dataset.view;
+    if(view==='hub'){
+      t.style.display='inline-flex';
+      t.classList.add('active');
+    } else if(view==='dashboard'||view==='history'){
+      t.style.display='none';
+      t.classList.remove('active');
+    }
+  });
+  if(isSuperAdmin()){
+    const adminTab=document.getElementById('adminTab');
+    if(adminTab){adminTab.style.display='inline-flex';adminTab.classList.remove('active')}
+  }
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  const hub=document.getElementById('hub');
+  if(hub)hub.classList.add('active');
+  window.scrollTo(0,0);
+  if(activeWorkspace){
+    document.getElementById('hubTitle').textContent=activeWorkspace.name+' - Operations Center';
+  }
+}
+
+function enterView(view){
+  currentView=view;
+  if(view==='dashboard'){
+    document.querySelectorAll('.tab').forEach(t=>{
+      const v=t.dataset.view;
+      if(v==='dashboard'){
+        t.style.display='inline-flex';
+        t.classList.remove('active');
+      } else if(v==='hub'||v==='history'){
+        t.style.display='none';
+      }
+    });
+    if(isSuperAdmin()){
+      const adminTab=document.getElementById('adminTab');
+      if(adminTab)adminTab.style.display='inline-flex';
+    }
+    const overviewTab=document.querySelector('[data-tab="overview"]');
+    if(overviewTab){
+      overviewTab.classList.add('active');
+      document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+      document.getElementById('overview').classList.add('active');
+    }
+    if(!canManageSettings()){
+      const cfgTab=document.querySelector('[data-tab="config"]');
+      if(cfgTab)cfgTab.style.display='none';
+    }
+  } else if(view==='history'){
+    document.querySelectorAll('.tab').forEach(t=>{
+      const v=t.dataset.view;
+      if(v==='history'){
+        t.style.display='inline-flex';
+        t.classList.add('active');
+      } else if(v==='hub'||v==='dashboard'){
+        t.style.display='none';
+        t.classList.remove('active');
+      }
+    });
+    if(isSuperAdmin()){
+      const adminTab=document.getElementById('adminTab');
+      if(adminTab)adminTab.style.display='inline-flex';
+    }
+    document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+    document.getElementById('historical').classList.add('active');
+    initHistoricalView();
+  }
+  window.scrollTo(0,0);
+}
+
+// ============================================
+// SUB-TABS HANDLER
+// ============================================
+
+document.querySelectorAll('.subtab').forEach(el=>{
+  el.onclick=()=>{
+    document.querySelectorAll('.subtab').forEach(x=>x.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelectorAll('.subpane').forEach(p=>p.classList.remove('active'));
+    const target=document.getElementById('subpane-'+el.dataset.subtab);
+    if(target)target.classList.add('active');
+    const subtab=el.dataset.subtab;
+    if(subtab==='trend')renderTrendChart();
+    else if(subtab==='comparison')renderComparison();
+    else if(subtab==='monthly')renderMonthlySummary();
+    else if(subtab==='consumption')renderConsumption();
+  };
+});
+
+// ============================================
+// AUTO SNAPSHOT SYSTEM
+// ============================================
+
+async function checkAndCreateAutoSnapshot(){
+  if(!activeWorkspace||!canEdit())return;
+  if(state.stores.length===0||Object.keys(state.stock).length===0)return;
+  const today=new Date().toISOString().slice(0,10);
+  try{
+    const {data,error}=await supabaseClient.rpc('snapshot_exists_for_date',{
+      ws_id:activeWorkspace.id,
+      check_date:today
+    });
+    if(error){console.warn('Snapshot check failed:',error.message);return}
+    if(data===true){console.log('Snapshot for today already exists');return}
+    console.log('Creating auto-snapshot for',today);
+    await createSnapshot('auto','Auto-snapshot on first login of the day');
+  }catch(e){console.warn('Auto-snapshot error:',e.message)}
+}
+
+async function createSnapshot(source,notes){
+  if(!activeWorkspace)return false;
+  if(state.stores.length===0)return false;
+  const date=state.stkDate||new Date().toISOString().slice(0,10);
+  try{
+    const {data,error}=await supabaseClient.rpc('save_stock_snapshot',{
+      p_workspace_id:activeWorkspace.id,
+      p_snapshot_date:date,
+      p_source:source||'manual',
+      p_notes:notes||null
+    });
+    if(error)throw error;
+    console.log('Snapshot saved:',data,'stores for date',date);
+    return true;
+  }catch(e){
+    console.error('Snapshot error:',e);
+    if(source==='manual')toast('Snapshot failed: '+e.message,'error');
+    return false;
+  }
+}
+
+async function manualSnapshot(){
+  if(!canEdit()){denyAccess('save snapshot');return}
+  const date=state.stkDate||new Date().toISOString().slice(0,10);
+  if(!confirm('Save a snapshot of the current stock for date: '+date+' ?\n\nThis will overwrite any existing snapshot for this date.'))return;
+  showSync('Saving snapshot...');
+  const ok=await createSnapshot('manual','Manual snapshot via Historical page');
+  hideSync();
+  if(ok){
+    toast('Snapshot saved successfully');
+    await loadStockHistory();
+    if(currentView==='history')refreshHistorical();
+  }
+}
+
+// ============================================
+// LOAD STOCK HISTORY
+// ============================================
+
+async function loadStockHistory(daysBack){
+  daysBack=daysBack||365;
+  if(!activeWorkspace){stockHistoryCache=[];return}
+  try{
+    const cutoff=new Date();
+    cutoff.setDate(cutoff.getDate()-daysBack);
+    const cutoffStr=cutoff.toISOString().slice(0,10);
+    const {data,error}=await supabaseClient
+      .from('stock_history')
+      .select('*')
+      .eq('workspace_id',activeWorkspace.id)
+      .gte('snapshot_date',cutoffStr)
+      .order('snapshot_date',{ascending:false})
+      .limit(10000);
+    if(error)throw error;
+    stockHistoryCache=data||[];
+    console.log('Loaded',stockHistoryCache.length,'history records');
+    return stockHistoryCache;
+  }catch(e){
+    console.error('Load history error:',e);
+    toast('Failed to load history: '+e.message,'error');
+    stockHistoryCache=[];
+    return[];
+  }
+}
+
+// ============================================
+// HISTORICAL VIEW INITIALIZATION
+// ============================================
+
+async function initHistoricalView(){
+  showSync('Loading historical data...');
+  await loadStockHistory();
+  hideSync();
+  populateHistoricalFilters();
+  renderSnapshotStatusBanner();
+  const activeSubtab=document.querySelector('.subtab.active')?.dataset.subtab||'trend';
+  if(activeSubtab==='trend')renderTrendChart();
+  else if(activeSubtab==='comparison')renderComparison();
+  else if(activeSubtab==='monthly')renderMonthlySummary();
+  else if(activeSubtab==='consumption')renderConsumption();
+}
+
+async function refreshHistorical(){
+  showSync('Refreshing...');
+  await loadStockHistory();
+  hideSync();
+  populateHistoricalFilters();
+  renderSnapshotStatusBanner();
+  const activeSubtab=document.querySelector('.subtab.active')?.dataset.subtab||'trend';
+  if(activeSubtab==='trend')renderTrendChart();
+  else if(activeSubtab==='comparison')renderComparison();
+  else if(activeSubtab==='monthly')renderMonthlySummary();
+  else if(activeSubtab==='consumption')renderConsumption();
+  toast('Refreshed');
+}
+
+function populateHistoricalFilters(){
+  const liveStores=state.stores.filter(s=>s.status==='Live');
+  const storeOptions='<option value="">All Stores</option>'+liveStores.map(s=>'<option value="'+s.code+'">'+s.code+' - '+(s.area||'').slice(0,30)+'</option>').join('');
+  ['trendStore','cmpStore','monthStore','conStore'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){
+      const cur=el.value;
+      el.innerHTML=storeOptions;
+      if(cur)el.value=cur;
+    }
+  });
+  const itemOptions=CONS_KEYS.map(c=>'<option value="'+c+'">'+c+'</option>').join('');
+  const trendItem=document.getElementById('trendItem');
+  if(trendItem){
+    const cur=trendItem.value||CONS_KEYS[0];
+    trendItem.innerHTML=itemOptions;
+    trendItem.value=cur;
+  }
+  const conItem=document.getElementById('conItem');
+  if(conItem){
+    const cur=conItem.value;
+    conItem.innerHTML='<option value="">All Items</option>'+itemOptions;
+    if(cur)conItem.value=cur;
+  }
+  const dates=[...new Set(stockHistoryCache.map(r=>r.snapshot_date))].sort().reverse();
+  const dateOptions=dates.map(d=>'<option value="'+d+'">'+d+'</option>').join('');
+  ['cmpDate1','cmpDate2'].forEach((id,idx)=>{
+    const el=document.getElementById(id);
+    if(el){
+      const cur=el.value;
+      el.innerHTML='<option value="">Select date...</option>'+dateOptions;
+      if(cur&&dates.includes(cur))el.value=cur;
+      else if(dates.length>=2){
+        if(idx===0)el.value=dates[Math.min(dates.length-1,7)];
+        else el.value=dates[0];
+      }
+    }
+  });
+  const trendFrom=document.getElementById('trendFrom');
+  const trendTo=document.getElementById('trendTo');
+  if(trendFrom&&trendTo&&dates.length){
+    if(!trendFrom.value)trendFrom.value=dates[dates.length-1];
+    if(!trendTo.value)trendTo.value=dates[0];
+  }
+  const monthSelector=document.getElementById('monthSelector');
+  if(monthSelector){
+    const months=new Set();
+    dates.forEach(d=>months.add(d.slice(0,7)));
+    const monthList=[...months].sort().reverse();
+    const cur=monthSelector.value;
+    monthSelector.innerHTML=monthList.map(m=>{
+      const [y,mo]=m.split('-');
+      const monthName=new Date(parseInt(y),parseInt(mo)-1,1).toLocaleString('en-US',{month:'long',year:'numeric'});
+      return '<option value="'+m+'">'+monthName+'</option>';
+    }).join('');
+    if(cur&&monthList.includes(cur))monthSelector.value=cur;
+    else if(monthList.length)monthSelector.value=monthList[0];
+  }
+}
+
+function renderSnapshotStatusBanner(){
+  const el=document.getElementById('snapshotStatusBanner');
+  if(!el)return;
+  const today=new Date().toISOString().slice(0,10);
+  const todaySnapshots=stockHistoryCache.filter(r=>r.snapshot_date===today);
+  const totalSnapshots=stockHistoryCache.length;
+  const uniqueDates=new Set(stockHistoryCache.map(r=>r.snapshot_date)).size;
+  if(todaySnapshots.length>0){
+    el.innerHTML='<div class="snapshot-banner"><div class="snapshot-banner-text"><b>Today\'s snapshot saved</b> - '+todaySnapshots.length+' stores captured on '+today+'. Total: <b>'+totalSnapshots+'</b> records across <b>'+uniqueDates+'</b> days.</div></div>';
+  } else if(totalSnapshots===0){
+    el.innerHTML='<div class="snapshot-banner warning"><div class="snapshot-banner-text"><b>No snapshots yet</b> - Click "Save Snapshot Now" to create your first historical record.</div></div>';
+  } else {
+    el.innerHTML='<div class="snapshot-banner warning"><div class="snapshot-banner-text"><b>No snapshot for today</b> - Last record: '+(stockHistoryCache[0]?.snapshot_date||'-')+'. Total: <b>'+totalSnapshots+'</b> records across <b>'+uniqueDates+'</b> days.</div></div>';
+  }
+}
+
+// ============================================
+// SNAPSHOT DATA EXTRACTION HELPERS
+// ============================================
+
+function getStockFromSnapshot(snapshotData,consKey){
+  if(!snapshotData)return 0;
+  const key=stockKey(consKey);
+  return +snapshotData[key]||0;
+}
+
+function getSnapshotsForDate(date,storeFilter){
+  let snaps=stockHistoryCache.filter(r=>r.snapshot_date===date);
+  if(storeFilter)snaps=snaps.filter(r=>r.store_code===storeFilter);
+  return snaps;
+}
+
+function getSnapshotsByDateRange(fromDate,toDate,storeFilter){
+  let snaps=stockHistoryCache.filter(r=>r.snapshot_date>=fromDate&&r.snapshot_date<=toDate);
+  if(storeFilter)snaps=snaps.filter(r=>r.store_code===storeFilter);
+  return snaps.sort((a,b)=>a.snapshot_date.localeCompare(b.snapshot_date));
+}
+
+function aggregateByDate(snapshots,consKey,asUnits){
+  const byDate={};
+  snapshots.forEach(s=>{
+    const cartons=getStockFromSnapshot(s.data,consKey);
+    if(!byDate[s.snapshot_date])byDate[s.snapshot_date]=0;
+    if(asUnits){
+      const unitsPerBox=state.cons[consKey]?.units||0;
+      byDate[s.snapshot_date]+=cartons*unitsPerBox;
+    }else{
+      byDate[s.snapshot_date]+=cartons;
+    }
+  });
+  return Object.entries(byDate).map(([date,val])=>({date,val})).sort((a,b)=>a.date.localeCompare(b.date));
+}
 </script>
 </body>
 </html>
