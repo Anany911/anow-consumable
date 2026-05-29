@@ -376,6 +376,52 @@ tr:last-child td{border-bottom:none}
 .calendar-day .day-stores{font-size:9px;opacity:.7;margin-top:2px}
 .calendar-day.no-data{opacity:.4;cursor:default}
 .calendar-day.no-data:hover{transform:none;background:var(--surface-alt)}
+
+/* ============================================
+   DAILY VIEW (Full Snapshot Table)
+   ============================================ */
+.daily-view-controls{background:var(--surface-alt);padding:16px 20px;border-radius:8px;margin-bottom:16px;display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;border:1px solid var(--border)}
+.daily-date-group{display:flex;flex-direction:column;gap:4px}
+.daily-date-group label{font-size:11px;font-weight:700;color:var(--text-mut);text-transform:uppercase;letter-spacing:.5px}
+.daily-date-group input,.daily-date-group select{padding:8px 12px;background:#fff;border:1px solid #888C8C;border-radius:3px;font-size:13px;font-family:inherit;min-width:180px;box-shadow:inset 0 1px 2px rgba(0,0,0,.05)}
+.daily-date-group input:focus,.daily-date-group select:focus{outline:none;border-color:var(--amz-orange);box-shadow:0 0 3px 2px rgba(255,153,0,.5)}
+.daily-nav-btns{display:flex;gap:6px}
+.daily-info-pill{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text-mut)}
+.daily-info-pill b{color:var(--text)}
+.daily-date-header{background:var(--amz-orange)!important;color:var(--amz-navy)!important;font-weight:700!important;font-size:13px!important;position:sticky;left:0;z-index:6}
+.daily-tbl th{white-space:nowrap;min-width:80px;text-align:center;font-size:11px}
+.daily-tbl th.store-col{text-align:left;min-width:90px;position:sticky;left:0;background:var(--surface-alt);z-index:6}
+.daily-tbl th.status-col{min-width:70px}
+.daily-tbl td{text-align:center;font-variant-numeric:tabular-nums;padding:8px 10px}
+.daily-tbl td.store-cell{text-align:left;font-weight:700;position:sticky;left:0;background:var(--surface);z-index:4}
+.daily-tbl tr:hover td.store-cell{background:var(--surface-hover)}
+.daily-tbl td.status-cell{font-size:11px}
+.daily-tbl .extra-col{background:rgba(255,153,0,.06)}
+.daily-tbl th.extra-col{background:#FFF4E0;color:var(--amz-orange-dark)}
+.daily-empty{text-align:center;padding:50px 20px;color:var(--text-mut)}
+.daily-empty .ic{font-size:14px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;color:var(--amz-orange)}
+.daily-legend{display:flex;gap:16px;font-size:11px;color:var(--text-mut);padding:10px 20px;flex-wrap:wrap;align-items:center}
+.daily-legend-item{display:flex;align-items:center;gap:6px}
+.daily-legend-swatch{width:14px;height:14px;border-radius:3px;border:1px solid var(--border)}
+
+/* New Materials Detection Modal */
+.newmat-intro{font-size:13px;color:var(--text-mut);margin-bottom:16px;line-height:1.6}
+.newmat-intro b{color:var(--text)}
+.newmat-list{max-height:340px;overflow-y:auto;border:1px solid var(--border);border-radius:6px;margin-bottom:14px}
+.newmat-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--border-light);cursor:pointer;transition:background .15s}
+.newmat-item:last-child{border-bottom:none}
+.newmat-item:hover{background:var(--surface-hover)}
+.newmat-item.selected{background:#FFF8EC}
+.newmat-checkbox{width:18px;height:18px;border:2px solid #888C8C;border-radius:4px;display:grid;place-items:center;flex-shrink:0;font-size:12px;font-weight:700;color:#fff;background:#fff}
+.newmat-item.selected .newmat-checkbox{background:var(--amz-orange);border-color:var(--amz-orange-dark)}
+.newmat-body{flex:1;min-width:0}
+.newmat-name{font-weight:700;font-size:14px;color:var(--text)}
+.newmat-meta{font-size:11px;color:var(--text-mut);margin-top:2px}
+.newmat-count-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px;background:var(--info-bg);color:var(--info);flex-shrink:0}
+.newmat-actions-bar{display:flex;gap:8px;margin-bottom:12px}
+.newmat-actions-bar button{flex:1}
+.extra-mat-badge{font-size:10px;padding:1px 6px;border-radius:8px;background:#FFF4E0;color:var(--amz-orange-dark);font-weight:700;margin-left:6px}
+  
 @media(max-width:768px){.topnav-inner{padding:0 12px}.page{padding:14px}.brand-sub{display:none}.nav-divider{display:none}.user-info{display:none}.page-head h1{font-size:20px}}
 </style>
 </head>
@@ -762,15 +808,51 @@ tr:last-child td{border-bottom:none}
       <button class="btn btn-cta" onclick="manualSnapshot()">Save Snapshot Now</button>
     </div>
   </div>
-  <div id="snapshotStatusBanner"></div>
+  <div id="snapshotStatusBanner">
+  </div>
   <div class="subtabs">
-    <button class="subtab active" data-subtab="trend">Stock Trend</button>
+    <button class="subtab active" data-subtab="daily">Daily View</button>
+    <button class="subtab" data-subtab="trend">Stock Trend</button>
     <button class="subtab" data-subtab="comparison">Comparison</button>
     <button class="subtab" data-subtab="monthly">Monthly Summary</button>
     <button class="subtab" data-subtab="consumption">Consumption Report</button>
   </div>
+
+
+<!-- ===== DAILY VIEW SUB-PANE ===== -->
+<div class="subpane active" id="subpane-daily">
+  <div class="daily-view-controls">
+    <div class="daily-date-group">
+      <label>Snapshot Date</label>
+      <select id="dailyDateSelect" onchange="renderDailyView()"></select>
+    </div>
+    <div class="daily-nav-btns">
+      <button class="btn btn-sm" onclick="dailyNavDate(-1)" title="Previous date">&lt; Prev</button>
+      <button class="btn btn-sm" onclick="dailyNavDate(1)" title="Next date">Next &gt;</button>
+    </div>
+    <div class="daily-date-group">
+      <label>Filter Store</label>
+      <input type="text" id="dailySearch" placeholder="Search store..." oninput="renderDailyView()" style="min-width:150px">
+    </div>
+    <div class="daily-info-pill" id="dailyInfo"></div>
+    <button class="btn btn-cta btn-sm" onclick="exportDailyViewCSV()">Export CSV</button>
+  </div>
   
-  <div class="subpane active" id="subpane-trend">
+  <div class="daily-legend">
+    <div class="daily-legend-item"><span class="daily-legend-swatch" style="background:#FFF4E0"></span>Extra Material (new type)</div>
+    <div class="daily-legend-item"><span class="daily-legend-swatch" style="background:var(--surface)"></span>Core Material</div>
+  </div>
+  
+  <div class="card">
+    <div class="tbl-wrap">
+      <div class="tbl-scroll">
+        <table class="daily-tbl" id="tblDaily"></table>
+      </div>
+    </div>
+  </div>
+</div>
+  
+  <div class="subpane" id="subpane-trend">
     <div class="hist-filters">
       <div class="hist-filter-group">
         <label>Store</label>
@@ -1040,6 +1122,28 @@ tr:last-child td{border-bottom:none}
       <button class="btn" onclick="document.getElementById('mdSuperAdmin').classList.remove('show')">Cancel</button>
       <button class="btn btn-danger" id="superAdminConfirmBtn" onclick="confirmSuperAdminAction()">Confirm</button>
     </div>
+    
+<div class="modal" id="mdNewMaterials">
+  <div class="modal-box" style="max-width:560px">
+    <div class="modal-head">
+      <h3>New Materials Detected</h3>
+      <button class="modal-close" onclick="cancelNewMaterials()">X</button>
+    </div>
+    <div class="modal-body">
+      <div class="newmat-intro">
+        Found <b id="newMatCount">0</b> material types in the uploaded file that are not in the system yet.<br>
+        Select the ones you want to add as <b>Extra Materials</b>. These will only appear in the Historical Daily View.
+      </div>
+      <div class="newmat-actions-bar">
+        <button class="btn btn-sm" onclick="toggleAllNewMaterials(true)">Select All</button>
+        <button class="btn btn-sm" onclick="toggleAllNewMaterials(false)">Deselect All</button>
+      </div>
+      <div class="newmat-list" id="newMatList"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="cancelNewMaterials()">Skip All</button>
+      <button class="btn btn-cta" id="newMatConfirmBtn" onclick="confirmNewMaterials()">Add Selected</button>
+    </div>
   </div>
 </div>
 
@@ -1104,12 +1208,37 @@ let editStore = null;
 let memberWsId = null;
 let _originalPermissions = null;
 let currentPermissions = {role:'none',canView:false,canEdit:false,canManageSettings:false,canManageMembers:false,canDeleteWorkspace:false};
+  
+let extraMaterials = []; // array of extra material names like ['SealTape(Blue)','SPOOLabel(L)']
+let pendingNewMaterials = []; // for the detection modal
+let dailyViewDates = []; // available snapshot dates for daily view
 
 // ============================================
 // HELPER FUNCTIONS
 // ============================================
 
 function stockKey(c){return String(c).replace(/[-\s_]/g,'')}
+  
+// Returns all material names: core (from cons) + extra
+function getAllMaterials(){
+  return [...CONS_KEYS, ...extraMaterials];
+}
+
+// Check if a material is an "extra" (not a core consumable)
+function isExtraMaterial(name){
+  return extraMaterials.includes(name);
+}
+
+// Get a display label for any material (handles both core and extra)
+function getMaterialLabel(name){
+  if(state.cons[name]?.icon)return state.cons[name].icon;
+  return name;
+}
+
+// Normalize a header to a clean material name (preserves variants like Blue/Orange/L/S)
+function cleanMaterialName(header){
+  return normStr(header).replace(/\s+/g,'');
+}
 function readStock(s,c){const r=state.stock[s];if(!r)return 0;return +r[stockKey(c)]||0}
 function writeStock(s,c,v){if(!state.stock[s])state.stock[s]={};state.stock[s][stockKey(c)]=+v||0}
 
@@ -1707,11 +1836,14 @@ async function loadFromCloud(){
     });
     state.cons=JSON.parse(JSON.stringify(DEFAULT_CONS));
     state.buffer=1.30;state.upo=8.58;state.stkDate=new Date().toISOString().slice(0,10);
+    extraMaterials=[];
     (settings.data||[]).forEach(s=>{
       if(s.key==='buffer')state.buffer=+s.value||1.3;
       else if(s.key==='upo')state.upo=+s.value||8.58;
       else if(s.key==='stkDate')state.stkDate=s.value||new Date().toISOString().slice(0,10);
       else if(s.key==='cons'&&s.value)state.cons=s.value;
+      else if(s.key==='extraMaterials'&&s.value)extraMaterials=Array.isArray(s.value)?s.value:[];
+
     });
     document.getElementById('lastUpd').textContent=new Date().toLocaleString();
   }catch(e){console.error(e);toast('Load failed: '+e.message,'error')}
@@ -2110,6 +2242,7 @@ async function saveCfg(){
   await logActivity('config_change','consumable',null,'cons',oldCons,state.cons);
   toast('Config saved');render();
 }
+ 
 
 async function saveBuf(){
   if(!canManageSettings()){denyAccess('manage settings');return}
@@ -2138,7 +2271,87 @@ function exportAll(){
   const a=document.createElement('a');a.href=URL.createObjectURL(b);
   a.download='anow_'+wsName+'_'+new Date().toISOString().slice(0,10)+'.json';a.click();
 }
+  
+async function saveExtraMaterials(){
+  if(!activeWorkspace)return;
+  showSync();
+  try{
+    await supabaseClient.from('settings').upsert({workspace_id:activeWorkspace.id,key:'extraMaterials',value:extraMaterials,updated_at:new Date().toISOString()});
+  }catch(e){toast('Failed to save materials','error')}
+  hideSync();
+} 
 
+
+// ============================================
+// NEW MATERIALS DETECTION MODAL
+// ============================================
+
+function showNewMaterialsModal(){
+  // Filter out duplicates and already-known materials
+  const known=new Set([...extraMaterials,...CONS_KEYS]);
+  pendingNewMaterials=pendingNewMaterials.filter(m=>!known.has(m.name));
+  // Remove duplicate names
+  const seen=new Set();
+  pendingNewMaterials=pendingNewMaterials.filter(m=>{
+    if(seen.has(m.name))return false;
+    seen.add(m.name);return true;
+  });
+  
+  if(pendingNewMaterials.length===0)return false;
+  
+  document.getElementById('newMatCount').textContent=pendingNewMaterials.length;
+  renderNewMaterialsList();
+  document.getElementById('mdNewMaterials').classList.add('show');
+  return true;
+}
+
+function renderNewMaterialsList(){
+  const listEl=document.getElementById('newMatList');
+  let html='';
+  pendingNewMaterials.forEach((m,idx)=>{
+    html+='<div class="newmat-item '+(m.selected?'selected':'')+'" onclick="toggleNewMaterial('+idx+')">'+
+      '<div class="newmat-checkbox">'+(m.selected?'OK':'')+'</div>'+
+      '<div class="newmat-body"><div class="newmat-name">'+m.name+'</div>'+
+      '<div class="newmat-meta">Found in '+m.count+' store(s) with data</div></div>'+
+      '<div class="newmat-count-badge">'+m.count+' stores</div></div>';
+  });
+  listEl.innerHTML=html;
+}
+
+function toggleNewMaterial(idx){
+  if(pendingNewMaterials[idx]){
+    pendingNewMaterials[idx].selected=!pendingNewMaterials[idx].selected;
+    renderNewMaterialsList();
+  }
+}
+
+function toggleAllNewMaterials(select){
+  pendingNewMaterials.forEach(m=>m.selected=select);
+  renderNewMaterialsList();
+}
+
+async function confirmNewMaterials(){
+  const selected=pendingNewMaterials.filter(m=>m.selected).map(m=>m.name);
+  if(selected.length>0){
+    extraMaterials=[...new Set([...extraMaterials,...selected])];
+    await saveExtraMaterials();
+    toast(selected.length+' new material(s) added');
+  }
+  pendingNewMaterials=[];
+  document.getElementById('mdNewMaterials').classList.remove('show');
+  // Re-render if on historical daily view
+  if(currentView==='history'){
+    const activeSubtab=document.querySelector('.subtab.active')?.dataset.subtab;
+    if(activeSubtab==='daily'){await loadStockHistory();renderDailyView()}
+  }
+}
+
+function cancelNewMaterials(){
+  pendingNewMaterials=[];
+  document.getElementById('mdNewMaterials').classList.remove('show');
+}
+  
+  
 function render(){renderOverview();renderStores();renderStock();renderForecast();renderDOC();renderReplen();renderCfg()}
 
 
@@ -2486,22 +2699,62 @@ function parseForecast(rows,name,log){
   return count;
 }
 
+
 function parseStock(rows,name,log){
   let hdrIdx=-1;
+  // Detect header row: needs at least 3 columns that match core OR look like materials
   for(let i=0;i<Math.min(rows.length,10);i++){
     if(!rows[i])continue;
-    const consCount=rows[i].filter(c=>resolveConsKey(c)).length;
-    if(consCount>=3){hdrIdx=i;break}
+    const coreCount=rows[i].filter(c=>resolveConsKey(c)).length;
+    if(coreCount>=3){hdrIdx=i;break}
   }
   if(hdrIdx===-1){log('warn','<b>'+name+'</b>: no consumable header');return 0}
   const hdr=rows[hdrIdx];
   const codeCol=0;
-  const colMap={};
+  const colMap={};        // column index -> stockKey (core materials)
+  const extraColMap={};   // column index -> material name (extra materials)
+  
+  // Identify which columns are headers (skip store/status/non-material columns)
   hdr.forEach((h,i)=>{
     if(i===codeCol||!h)return;
+    const headerStr=normStr(h);
+    if(!headerStr)return;
+    // Skip known non-material columns
+    const hk=normKey(headerStr);
+    if(hk==='status'||hk==='area'||hk==='location'||hk==='store'||hk==='storecode'||hk==='date'||hk==='total')return;
     const ck=resolveConsKey(h);
-    if(ck)colMap[i]=ck;
+    if(ck){
+      // Core material
+      colMap[i]=ck;
+    } else {
+      // Potential extra material - only treat as material if column has numeric data
+      extraColMap[i]=cleanMaterialName(headerStr);
+    }
   });
+  
+  // Validate extra columns: only keep ones that actually have numeric values in data rows
+  const validExtraCols={};
+  Object.entries(extraColMap).forEach(([ciStr,matName])=>{
+    const ci=+ciStr;
+    let hasNumeric=false;
+    for(let i=hdrIdx+1;i<Math.min(rows.length,hdrIdx+10);i++){
+      const row=rows[i];if(!row)continue;
+      const code=normStr(row[codeCol]).toUpperCase();
+      if(!isStoreCode(code))continue;
+      if(toNum(row[ci])!=null){hasNumeric=true;break}
+    }
+    if(hasNumeric)validExtraCols[ci]=matName;
+  });
+  
+  // Detect NEW extra materials (not already known)
+  const knownExtra=new Set(extraMaterials);
+  const newExtraFound={}; // name -> count of stores with value
+  Object.values(validExtraCols).forEach(matName=>{
+    if(!knownExtra.has(matName)&&!CONS_KEYS.includes(matName)){
+      newExtraFound[matName]=0;
+    }
+  });
+  
   let updated=0;
   for(let i=hdrIdx+1;i<rows.length;i++){
     const row=rows[i];if(!row)continue;
@@ -2510,16 +2763,35 @@ function parseStock(rows,name,log){
     if(!state.stores.find(s=>s.code===code)){state.stores.push({code,area:'(Auto-added)',status:'Live',launch:'',cap:0})}
     if(!state.stock[code])state.stock[code]={};
     const tempStock={};
+    // Core materials
     Object.entries(colMap).forEach(([ciStr,ck])=>{
       const ci=+ciStr;const v=toNum(row[ci]);
       if(v==null)return;
       const key=stockKey(ck);
       tempStock[key]=(tempStock[key]||0)+v;
     });
+    // Extra materials (already known + count new ones)
+    Object.entries(validExtraCols).forEach(([ciStr,matName])=>{
+      const ci=+ciStr;const v=toNum(row[ci]);
+      if(v==null)return;
+      const key=stockKey(matName);
+      tempStock[key]=(tempStock[key]||0)+v;
+      if(matName in newExtraFound&&v>0)newExtraFound[matName]++;
+    });
     Object.entries(tempStock).forEach(([k,v])=>{state.stock[code][k]=v});
     updated++;
   }
-  log('ok','<b>'+name+'</b>: '+updated+' stores');
+  
+  // Store detected new materials for the modal (accumulate across sheets)
+  Object.entries(newExtraFound).forEach(([matName,count])=>{
+    const existing=pendingNewMaterials.find(m=>m.name===matName);
+    if(existing){existing.count+=count}
+    else{pendingNewMaterials.push({name:matName,count:count,selected:true})}
+  });
+  
+  const coreCount=Object.keys(colMap).length;
+  const extraCount=Object.keys(validExtraCols).length;
+  log('ok','<b>'+name+'</b>: '+updated+' stores ('+coreCount+' core + '+extraCount+' extra cols)');
   return updated;
 }
 
@@ -2558,6 +2830,7 @@ async function importExcel(e){
   const r=new FileReader();
   r.onload=async ev=>{
     try{
+      pendingNewMaterials=[];
       const data=new Uint8Array(ev.target.result);
       const wb=XLSX.read(data,{type:'array'});
       log('info','<b>Loaded</b> - '+wb.SheetNames.length+' sheets');
@@ -2580,6 +2853,7 @@ async function importExcel(e){
       document.getElementById('mdImportTitle').textContent='Import Report';
       document.getElementById('importReport').innerHTML=report.join('');
       document.getElementById('mdImport').classList.add('show');
+      setTimeout(()=>showNewMaterialsModal(),400);
     }catch(err){
       log('err','<b>Failed</b>: '+err.message);
       document.getElementById('importReport').innerHTML=report.join('');
@@ -2635,6 +2909,7 @@ async function importStockBulk(e){
   if(!canEdit()){denyAccess('import');e.target.value='';return}
   const f=e.target.files[0];
   if(!f)return;
+  pendingNewMaterials=[];
   showSync('Reading...');
   const r=new FileReader();
   r.onload=ev=>{
@@ -2860,9 +3135,11 @@ async function initHistoricalView(){
   await loadStockHistory();
   hideSync();
   populateHistoricalFilters();
+  populateDailyDates();
   renderSnapshotStatusBanner();
-  const activeSubtab=document.querySelector('.subtab.active')?.dataset.subtab||'trend';
-  if(activeSubtab==='trend')renderTrendChart();
+  const activeSubtab=document.querySelector('.subtab.active')?.dataset.subtab||'daily';
+  if(activeSubtab==='daily')renderDailyView();
+  else if(activeSubtab==='trend')renderTrendChart();
   else if(activeSubtab==='comparison')renderComparison();
   else if(activeSubtab==='monthly')renderMonthlySummary();
   else if(activeSubtab==='consumption')renderConsumption();
@@ -2873,9 +3150,11 @@ async function refreshHistorical(){
   await loadStockHistory();
   hideSync();
   populateHistoricalFilters();
+  populateDailyDates();
   renderSnapshotStatusBanner();
-  const activeSubtab=document.querySelector('.subtab.active')?.dataset.subtab||'trend';
-  if(activeSubtab==='trend')renderTrendChart();
+  const activeSubtab=document.querySelector('.subtab.active')?.dataset.subtab||'daily';
+  if(activeSubtab==='daily')renderDailyView();
+  else if(activeSubtab==='trend')renderTrendChart();
   else if(activeSubtab==='comparison')renderComparison();
   else if(activeSubtab==='monthly')renderMonthlySummary();
   else if(activeSubtab==='consumption')renderConsumption();
@@ -3371,6 +3650,156 @@ function renderConsumptionChart(rows,groupBy){
   });
 }
 
+
+// ============================================
+// 5. DAILY VIEW (Full Snapshot Table)
+// ============================================
+
+function populateDailyDates(){
+  dailyViewDates=[...new Set(stockHistoryCache.map(r=>r.snapshot_date))].sort().reverse();
+  const sel=document.getElementById('dailyDateSelect');
+  if(!sel)return;
+  const cur=sel.value;
+  if(dailyViewDates.length===0){
+    sel.innerHTML='<option value="">No snapshots available</option>';
+    return;
+  }
+  sel.innerHTML=dailyViewDates.map(d=>'<option value="'+d+'">'+d+'</option>').join('');
+  if(cur&&dailyViewDates.includes(cur))sel.value=cur;
+  else sel.value=dailyViewDates[0];
+}
+
+function dailyNavDate(direction){
+  const sel=document.getElementById('dailyDateSelect');
+  if(!sel||dailyViewDates.length===0)return;
+  const curIdx=dailyViewDates.indexOf(sel.value);
+  if(curIdx===-1)return;
+  // dates are sorted newest first, so "next" (newer) = idx-1, "prev" (older) = idx+1
+  let newIdx;
+  if(direction===1){newIdx=curIdx-1} // Next = newer
+  else{newIdx=curIdx+1} // Prev = older
+  if(newIdx<0||newIdx>=dailyViewDates.length){
+    toast(direction===1?'Already at the latest date':'Already at the oldest date');
+    return;
+  }
+  sel.value=dailyViewDates[newIdx];
+  renderDailyView();
+}
+
+function renderDailyView(){
+  const sel=document.getElementById('dailyDateSelect');
+  const date=sel?.value;
+  const search=(document.getElementById('dailySearch')?.value||'').toLowerCase();
+  const infoEl=document.getElementById('dailyInfo');
+  const tblEl=document.getElementById('tblDaily');
+  if(!tblEl)return;
+  
+  if(!date){
+    tblEl.innerHTML='';
+    const wrap=tblEl.closest('.tbl-scroll');
+    if(wrap)wrap.innerHTML='<div class="daily-empty"><div class="ic">No Snapshots</div><p>No historical snapshots found. Go to Stock Count and click "Mark as Updated" to create your first snapshot.</p></div>';
+    if(infoEl)infoEl.innerHTML='';
+    return;
+  }
+  
+  // Get all snapshots for this date
+  const snaps=getSnapshotsForDate(date,'');
+  const snapMap={};
+  snaps.forEach(s=>{snapMap[s.store_code]=s.data});
+  
+  // Build materials list: Core first, then Extra
+  const allMats=getAllMaterials();
+  
+  // Determine which materials actually have any data on this date (to avoid empty columns)
+  const matsWithData=allMats.filter(mat=>{
+    const key=stockKey(mat);
+    return snaps.some(s=>(+s.data?.[key]||0)>0)||CONS_KEYS.includes(mat);
+  });
+  
+  // Filter stores: only those that have a snapshot on this date
+  let storeCodes=snaps.map(s=>s.store_code);
+  // Sort by store code
+  storeCodes=[...new Set(storeCodes)].sort();
+  // Apply search filter
+  if(search){
+    storeCodes=storeCodes.filter(code=>{
+      const store=state.stores.find(s=>s.code===code);
+      return code.toLowerCase().includes(search)||(store?.area||'').toLowerCase().includes(search);
+    });
+  }
+  
+  // Info pill
+  if(infoEl){
+    const extraCount=matsWithData.filter(m=>isExtraMaterial(m)).length;
+    infoEl.innerHTML='<b>'+storeCodes.length+'</b> stores - <b>'+matsWithData.length+'</b> materials'+(extraCount>0?' (<b>'+extraCount+'</b> extra)':'');
+  }
+  
+  if(storeCodes.length===0){
+    tblEl.innerHTML='<tr><td style="padding:40px;text-align:center;color:var(--text-mut)">'+(search?'No stores match your search':'No data for this date')+'</td></tr>';
+    return;
+  }
+  
+  // Build header
+  let h='<thead><tr>';
+  h+='<th class="store-col daily-date-header">'+date+'</th>';
+  h+='<th class="status-col">Status</th>';
+  matsWithData.forEach(mat=>{
+    const isExtra=isExtraMaterial(mat);
+    const label=mat.replace('BubbleWrap','BubbleWraps').replace('PaperBag','PaperBag');
+    h+='<th class="'+(isExtra?'extra-col':'')+'">'+mat+'</th>';
+  });
+  h+='</tr></thead><tbody>';
+  
+  // Build rows
+  storeCodes.forEach(code=>{
+    const store=state.stores.find(s=>s.code===code);
+    const data=snapMap[code]||{};
+    const status=store?.status||'Live';
+    h+='<tr>';
+    h+='<td class="store-cell">'+code+'</td>';
+    h+='<td class="status-cell"><span class="pill '+(status==='Live'?'pill-live':'pill-nl')+'">'+status+'</span></td>';
+    matsWithData.forEach(mat=>{
+      const isExtra=isExtraMaterial(mat);
+      const key=stockKey(mat);
+      const val=+data[key]||0;
+      h+='<td class="'+(isExtra?'extra-col':'')+'">'+val+'</td>';
+    });
+    h+='</tr>';
+  });
+  h+='</tbody>';
+  tblEl.innerHTML=h;
+}
+
+function exportDailyViewCSV(){
+  const date=document.getElementById('dailyDateSelect')?.value;
+  if(!date){toast('No date selected','error');return}
+  const snaps=getSnapshotsForDate(date,'');
+  if(!snaps.length){toast('No data for this date','error');return}
+  const snapMap={};
+  snaps.forEach(s=>{snapMap[s.store_code]=s.data});
+  const allMats=getAllMaterials();
+  const matsWithData=allMats.filter(mat=>{
+    const key=stockKey(mat);
+    return snaps.some(s=>(+s.data?.[key]||0)>0)||CONS_KEYS.includes(mat);
+  });
+  let storeCodes=[...new Set(snaps.map(s=>s.store_code))].sort();
+  const wsName=activeWorkspace?.name||'workspace';
+  
+  let csv='Store,Status,'+matsWithData.map(m=>'"'+m+'"').join(',')+'\n';
+  storeCodes.forEach(code=>{
+    const store=state.stores.find(s=>s.code===code);
+    const data=snapMap[code]||{};
+    const row=[code,store?.status||'Live'];
+    matsWithData.forEach(mat=>{row.push(+data[stockKey(mat)]||0)});
+    csv+=row.join(',')+'\n';
+  });
+  
+  const b=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);
+  a.download='daily_view_'+wsName+'_'+date+'.csv';a.click();
+  toast('Exported');
+}
+
 function exportConsumptionCSV(){
   if(!consumptionRows.length){toast('No data','error');return}
   const period=document.getElementById('conPeriod')?.value||'30';
@@ -3429,7 +3858,8 @@ document.querySelectorAll('.subtab').forEach(el=>{
     const target=document.getElementById('subpane-'+el.dataset.subtab);
     if(target)target.classList.add('active');
     const subtab=el.dataset.subtab;
-    if(subtab==='trend')renderTrendChart();
+    if(subtab==='daily'){populateDailyDates();renderDailyView()}
+    else if(subtab==='trend')renderTrendChart();
     else if(subtab==='comparison')renderComparison();
     else if(subtab==='monthly')renderMonthlySummary();
     else if(subtab==='consumption')renderConsumption();
