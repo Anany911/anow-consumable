@@ -1339,16 +1339,18 @@ function resolveConsKey(header){
   const k=normKey(header);
   if(!k)return null;
   if(/sp[o0][o0]/.test(k))return'SPOOLabel';
-  if(k==='label'||k==='labels')return'SPOOLabel';
+  if(k==='label'||k==='labels'||k==='spoorolls')return'SPOOLabel';
   if(k.includes('sealtape')||(k.includes('seal')&&k.includes('tape')))return'SealTape';
+  // Bubble Wrap OR Bubble Pouches
   if(k.includes('bubble')){
-    if(k.endsWith('l')||k.includes('large'))return'BubbleWrap-L';
-    if(k.endsWith('m')||k.includes('medium'))return'BubbleWrap-M';
-    if(k.endsWith('s')||k.includes('small'))return'BubbleWrap-S';
+    if(k.endsWith('l')||k.includes('large')||k.includes('boxesl'))return'BubbleWrap-L';
+    if(k.endsWith('m')||k.includes('medium')||k.includes('boxesm'))return'BubbleWrap-M';
+    if(k.endsWith('s')||k.includes('small')||k.includes('boxess'))return'BubbleWrap-S';
   }
+  // Paper Bag OR Brown Bag
   if(k.includes('paperbag')||k.includes('brownbag')){
-    if(k.endsWith('l')||k.includes('large'))return'PaperBag-L';
-    if(k.endsWith('m')||k.includes('medium'))return'PaperBag-M';
+    if(k.endsWith('l')||k.includes('large')||k.includes('boxesl'))return'PaperBag-L';
+    if(k.endsWith('m')||k.includes('medium')||k.includes('boxesm'))return'PaperBag-M';
   }
   if(k.includes('icecream'))return'IceCreamBags';
   if(k.includes('gelpad')||k.includes('gelpack'))return'GelPads';
@@ -2880,16 +2882,26 @@ function parseCapacity(rows,name,log){
   for(let i=0;i<Math.min(rows.length,15);i++){
     if(!rows[i])continue;
     const cells=rows[i].map(c=>normKey(c));
-    if(cells.includes('storecode')||cells.includes('store')){hdrIdx=i;break}
+    if(cells.includes('storecode')||cells.includes('store')||cells.includes('sitecode')){hdrIdx=i;break}
   }
   if(hdrIdx===-1){log('warn','<b>'+name+'</b>: no header');return 0}
   const hdr=rows[hdrIdx].map(c=>normKey(c));
-  const codeCol=hdr.findIndex(c=>c==='storecode'||c==='store');
+  const codeCol=hdr.findIndex(c=>c==='storecode'||c==='store'||c==='sitecode');
   const areaCol=hdr.findIndex(c=>c==='area'||c==='location');
   const statusCol=hdr.findIndex(c=>c==='status');
   const launchCol=hdr.findIndex(c=>c==='oblaunch'||c==='launch');
   const capCol=hdr.findIndex(c=>c==='storecapacity'||c==='capacity');
-  let updated=0,added=0;
+
+  // Detect material capacity columns (Brown Bags, Bubble Pouches, SPOO, Seal Tapes)
+  const matCapCols={}; // column index -> stockKey
+  rows[hdrIdx].forEach((h,ci)=>{
+    if(ci===codeCol||ci===areaCol||ci===statusCol||ci===launchCol||ci===capCol)return;
+    const ck=resolveConsKey(h);
+    if(ck)matCapCols[ci]=stockKey(ck);
+  });
+  const matColCount=Object.keys(matCapCols).length;
+
+  let updated=0,added=0,matCapSet=0;
   for(let i=hdrIdx+1;i<rows.length;i++){
     const row=rows[i];if(!row)continue;
     const code=normStr(row[codeCol]).toUpperCase();
@@ -2898,11 +2910,29 @@ function parseCapacity(rows,name,log){
     const status=normalizeStatus(statusCol>=0?row[statusCol]:'Live');
     const launch=launchCol>=0?normStr(row[launchCol]):'';
     const cap=capCol>=0?toNum(row[capCol]):null;
+
+    // Build material capacity object (#N/A or empty -> 0)
+    const matCap={};
+    Object.entries(matCapCols).forEach(([ciStr,key])=>{
+      const v=toNum(row[+ciStr]);
+      if(v!=null&&v>0){matCap[key]=Math.round(v);matCapSet++}
+    });
+
     const ex=state.stores.find(s=>s.code===code);
-    if(ex){if(area)ex.area=area;ex.status=status;ex.launch=launch;if(cap!=null)ex.cap=cap;updated++}
-    else{state.stores.push({code,area:area||'(no area)',status,launch,cap:cap||0});added++}
+    if(ex){
+      if(area)ex.area=area;
+      ex.status=status;
+      ex.launch=launch;
+      if(cap!=null)ex.cap=cap;
+      if(matColCount>0)ex.matCap=matCap; // overwrite with new capacities
+      updated++;
+    } else {
+      state.stores.push({code,area:area||'(no area)',status,launch,cap:cap||0,matCap:matColCount>0?matCap:{}});
+      added++;
+    }
   }
-  log('ok','<b>'+name+'</b>: '+updated+' updated, '+added+' added');
+  const matNote=matColCount>0?' ('+matColCount+' material cols, '+matCapSet+' caps set)':'';
+  log('ok','<b>'+name+'</b>: '+updated+' updated, '+added+' added'+matNote);
   return updated+added;
 }
 
