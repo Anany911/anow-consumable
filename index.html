@@ -452,7 +452,36 @@ tr:last-child td{border-bottom:none}
 .matcap-pill{font-size:10px;padding:1px 6px;border-radius:8px;font-weight:700;cursor:pointer;border:1px solid var(--border)}
 .matcap-pill:hover{border-color:var(--amz-orange);background:#FFF4E0}
 
+/* ============================================
+   DYNAMIC MATERIALS SYSTEM
+   ============================================ */
+.mat-kind-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;text-transform:uppercase;letter-spacing:.3px}
+.mat-kind-forecasted{background:var(--info-bg);color:var(--info)}
+.mat-kind-countonly{background:var(--surface-alt);color:var(--text-mut);border:1px solid var(--border)}
+.mat-replen-tag{font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;background:var(--success-bg);color:var(--success);margin-left:4px}
+.mat-noreplen-tag{font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;background:var(--warn-bg);color:var(--warn);margin-left:4px}
+.cfg-card-actions{display:flex;gap:6px;align-items:center}
+.cfg-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--border-light);margin-top:8px}
+.cfg-toggle-label{font-size:11px;font-weight:600;color:var(--text-mut)}
+.toggle-switch{position:relative;width:40px;height:22px;flex-shrink:0}
+.toggle-switch input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;cursor:pointer;inset:0;background:#ccc;border-radius:22px;transition:.3s}
+.toggle-slider:before{content:"";position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+.toggle-switch input:checked+.toggle-slider{background:var(--success)}
+.toggle-switch input:checked+.toggle-slider:before{transform:translateX(18px)}
+.toggle-switch input:disabled+.toggle-slider{opacity:.5;cursor:not-allowed}
 
+/* Add Material Modal */
+.addmat-modal-box{max-width:560px!important}
+.addmat-type-info{font-size:11px;color:var(--text-mut);margin-top:4px;padding:8px 10px;background:var(--surface-alt);border-radius:4px;line-height:1.5}
+.kind-selector{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:6px}
+.kind-option{border:2px solid var(--border);border-radius:8px;padding:14px;cursor:pointer;text-align:center;transition:all .15s}
+.kind-option:hover{border-color:var(--amz-orange);background:#FFF8EC}
+.kind-option.selected{border-color:var(--amz-orange);background:#FFF4E0}
+.kind-option .kind-title{font-weight:700;font-size:14px;margin-bottom:4px}
+.kind-option .kind-desc{font-size:10px;color:var(--text-mut);line-height:1.4}
+.cfg-section-title{font-size:13px;font-weight:700;color:var(--text);padding:14px 20px 6px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border-light);margin-bottom:0;display:flex;align-items:center;gap:8px}
+.cfg-section-title .count-pill{font-size:10px;background:var(--surface-alt);color:var(--text-mut);padding:2px 8px;border-radius:10px;border:1px solid var(--border)}
   
 @media(max-width:768px){.topnav-inner{padding:0 12px}.page{padding:14px}.brand-sub{display:none}.nav-divider{display:none}.user-info{display:none}.page-head h1{font-size:20px}}
 </style>
@@ -736,12 +765,19 @@ tr:last-child td{border-bottom:none}
       </div>
     </div>
   </div>
+
   <div class="card">
     <div class="card-head">
-      <div class="card-title"><span class="icon">C</span>Consumable Definitions</div>
-      <button class="btn btn-cta btn-sm" onclick="saveCfg()">Save Changes</button>
+      <div class="card-title"><span class="icon">M</span>Material Definitions <span class="card-sub" id="matCountSub"></span></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-action btn-sm" onclick="openAddMaterial()">+ Add Material</button>
+        <button class="btn btn-cta btn-sm" onclick="saveCfg()">Save Changes</button>
+      </div>
     </div>
-    <div class="cfg-grid" id="cfgBox"></div>
+    <div class="cfg-section-title">Forecasted Materials <span class="count-pill" id="fcMatCount">0</span></div>
+    <div class="cfg-grid" id="cfgBoxForecasted"></div>
+    <div class="cfg-section-title">Count-Only Materials <span class="count-pill" id="coMatCount">0</span></div>
+    <div class="cfg-grid" id="cfgBoxCountOnly"></div>
   </div>
   <div class="card" style="border-color:#F5B7B1">
     <div class="card-head" style="background:#FCE4E4">
@@ -1212,6 +1248,66 @@ tr:last-child td{border-bottom:none}
   </div>
 </div>
 
+<div class="modal" id="mdAddMat">
+  <div class="modal-box addmat-modal-box">
+    <div class="modal-head">
+      <h3 id="addMatTitle">Add New Material</h3>
+      <button class="modal-close" onclick="closeAddMaterial()">X</button>
+    </div>
+    <div class="modal-body">
+      <div class="field" style="margin-bottom:14px">
+        <label>Material Kind <span class="req">*</span></label>
+        <div class="kind-selector">
+          <div class="kind-option" id="kindForecasted" onclick="selectKind('forecasted')">
+            <div class="kind-title">Forecasted</div>
+            <div class="kind-desc">Has demand equation. Shows in DOC, Heatmap & Replenishment.</div>
+          </div>
+          <div class="kind-option" id="kindCountonly" onclick="selectKind('countonly')">
+            <div class="kind-title">Count-Only</div>
+            <div class="kind-desc">No equation. Tracked in Stock Count & Daily View only.</div>
+          </div>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="field-row">
+          <div class="field"><label>Material Name <span class="req">*</span></label><input id="amName" placeholder="e.g., SilverThermalPouches-L"></div>
+          <div class="field"><label>Icon / Short</label><input id="amIcon" placeholder="auto"></div>
+        </div>
+        <div id="amForecastedFields">
+          <div class="field" style="margin-bottom:12px">
+            <label>Equation Type <span class="req">*</span></label>
+            <select id="amType" onchange="updateTypeInfo()">
+              <option value="BPO">Per Order (BPO)</option>
+              <option value="perOrder">Per Order</option>
+              <option value="pctOrders">% of Orders</option>
+              <option value="pctUnits">% of Units</option>
+              <option value="xIcBags">× IceCream Bags</option>
+            </select>
+            <div class="addmat-type-info" id="amTypeInfo">orders × trend</div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Trend <span class="req">*</span></label><input type="number" step="0.0001" id="amTrend" placeholder="1.8"></div>
+            <div class="field"><label>Units per Carton <span class="req">*</span></label><input type="number" id="amUnits" placeholder="250"></div>
+          </div>
+        </div>
+        <div id="amCountFields" style="display:none">
+          <div class="field"><label>Units per Carton</label><input type="number" id="amUnitsCount" placeholder="1" value="1"><div class="addmat-type-info">For count-only, this is usually 1 (each carton = 1 unit).</div></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Boxes per Pallet</label><input type="number" id="amBox" placeholder="20" value="20"></div>
+          <div class="field" id="amReplenWrap">
+            <label>Include in Replenishment?</label>
+            <select id="amInReplen"><option value="yes">Yes - show in Replen Plan</option><option value="no">No - DOC/Heatmap only</option></select>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeAddMaterial()">Cancel</button>
+      <button class="btn btn-cta" onclick="saveNewMaterial()">Add Material</button>
+    </div>
+  </div>
+</div>
 
 <script>
 // ============================================
@@ -1222,6 +1318,7 @@ const SUPABASE_URL = 'https://borpelpxgrbpwhwtunns.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJvcnBlbHB4Z3JicHdod3R1bm5zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3ODk3MDIsImV4cCI6MjA5NDM2NTcwMn0.2eTRhtIih6QxuDQrUqA_PymewB85bmHJSWHZXpCVZOQ';
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 
 const DEFAULT_CONS = {
   'PaperBag-L':   {trend:1.8,   units:250,   box:20, type:'BPO',       icon:'PB-L'},
@@ -1234,13 +1331,26 @@ const DEFAULT_CONS = {
   'IceCreamBags': {trend:0.03,  units:40,    box:20, type:'pctOrders', icon:'ICE'},
   'GelPads':      {trend:3,     units:40,    box:80, type:'xIcBags',   icon:'GEL'}
 };
-const CONS_KEYS = ['PaperBag-L','PaperBag-M','SealTape','SPOOLabel','BubbleWrap-L','BubbleWrap-M','BubbleWrap-S','IceCreamBags','GelPads'];
+// Default display order for migrated core materials
+const DEFAULT_ORDER = ['PaperBag-L','PaperBag-M','SealTape','SPOOLabel','BubbleWrap-L','BubbleWrap-M','BubbleWrap-S','IceCreamBags','GelPads'];
+
+// Equation types available for forecasted materials
+const MATERIAL_TYPES = {
+  'BPO':       {label:'Per Order (BPO)',        desc:'orders × trend',          basis:'orders'},
+  'perOrder':  {label:'Per Order',              desc:'orders × trend',          basis:'orders'},
+  'pctOrders': {label:'% of Orders',            desc:'orders × trend',          basis:'orders'},
+  'pctUnits':  {label:'% of Units',             desc:'units × trend',           basis:'units'},
+  'xIcBags':   {label:'× IceCream Bags',        desc:'IceCreamBags orders × trend', basis:'icbags'}
+};
+
+// CONS_KEYS is now DYNAMIC - computed from state.materials
+// Kept as a function-backed getter for backward compatibility
 
 // ============================================
 // GLOBAL STATE
 // ============================================
 
-let state = {cons:JSON.parse(JSON.stringify(DEFAULT_CONS)),stores:[],stock:{},fc:{},fcUnits:{},buffer:1.30,upo:8.58,stkDate:new Date().toISOString().slice(0,10)};
+let state = {cons:JSON.parse(JSON.stringify(DEFAULT_CONS)),materials:{},stores:[],stock:{},fc:{},fcUnits:{},buffer:1.30,upo:8.58,stkDate:new Date().toISOString().slice(0,10)};
 let docSelected = null;
 let currentUser = null;
 let currentProfile = null;
@@ -1267,30 +1377,124 @@ let memberWsId = null;
 let _originalPermissions = null;
 let currentPermissions = {role:'none',canView:false,canEdit:false,canManageSettings:false,canManageMembers:false,canDeleteWorkspace:false};
   
-let extraMaterials = []; // array of extra material names like ['SealTape(Blue)','SPOOLabel(L)']
-let pendingNewMaterials = []; // for the detection modal
+// let extraMaterials = []; // array of extra material names like ['SealTape(Blue)','SPOOLabel(L)']
+// let pendingNewMaterials = []; // for the detection modal
 let dailyViewDates = []; // available snapshot dates for daily view
 
 // ============================================
 // HELPER FUNCTIONS
 // ============================================
 
-function stockKey(c){return String(c).replace(/[-\s_]/g,'')}
+function stockKey(c){return String(c).replace(/[-\s_()]/g,'')}
+  
+// ============================================
+// DYNAMIC MATERIALS SYSTEM - Core Helpers
+// ============================================
+
+// Migrate old DEFAULT_CONS (9 materials) into new state.materials structure
+function migrateMaterials(){
+  if(state.materials&&Object.keys(state.materials).length>0)return; // already migrated
+  state.materials={};
+  let order=0;
+  DEFAULT_ORDER.forEach(name=>{
+    const c=state.cons[name]||DEFAULT_CONS[name];
+    if(!c)return;
+    state.materials[name]={
+      name:name,
+      kind:'forecasted',
+      type:c.type,
+      trend:c.trend,
+      units:c.units,
+      box:c.box||20,
+      icon:c.icon||name,
+      includeInReplen:true,
+      order:order++
+    };
+  });
+  console.log('Migrated',Object.keys(state.materials).length,'core materials to dynamic system');
+}
+
+// Get all material names sorted by order
+function matKeys(){
+  return Object.values(state.materials)
+    .sort((a,b)=>(a.order||0)-(b.order||0))
+    .map(m=>m.name);
+}
+
+// Get only forecasted materials (have equation) - used for DOC/Heatmap/Forecast
+function forecastedKeys(){
+  return Object.values(state.materials)
+    .filter(m=>m.kind==='forecasted')
+    .sort((a,b)=>(a.order||0)-(b.order||0))
+    .map(m=>m.name);
+}
+
+// Get only count-only materials - used for Stock tracking only
+function countOnlyKeys(){
+  return Object.values(state.materials)
+    .filter(m=>m.kind==='countonly')
+    .sort((a,b)=>(a.order||0)-(b.order||0))
+    .map(m=>m.name);
+}
+
+// Get materials that appear in Replenishment Plan (forecasted + includeInReplen)
+function replenKeys(){
+  return Object.values(state.materials)
+    .filter(m=>m.kind==='forecasted'&&m.includeInReplen!==false)
+    .sort((a,b)=>(a.order||0)-(b.order||0))
+    .map(m=>m.name);
+}
+
+// Get material definition object safely
+function matDef(name){return state.materials[name]||null}
+
+// Get icon for any material
+function matIcon(name){return state.materials[name]?.icon||name}
+
+// Get units-per-carton for any material
+function matUnits(name){return state.materials[name]?.units||1}
+
+// Get trend for any material
+function matTrend(name){return state.materials[name]?.trend||0}
+
+// Get type for any material
+function matType(name){return state.materials[name]?.type||'perOrder'}
+
+// Check material kind
+function isForecasted(name){return state.materials[name]?.kind==='forecasted'}
+function isCountOnly(name){return state.materials[name]?.kind==='countonly'}
+
+// Get next available order number
+function nextMatOrder(){
+  const orders=Object.values(state.materials).map(m=>m.order||0);
+  return orders.length?Math.max(...orders)+1:0;
+}
+
+// Generate auto icon from name (e.g. "SilverThermalPouches-L" -> "STP-L")
+function autoIcon(name){
+  const clean=name.replace(/[()]/g,'-').replace(/--+/g,'-').replace(/-$/,'');
+  const parts=clean.split('-');
+  if(parts.length>1){
+    const main=parts[0].replace(/[a-z]/g,'').slice(0,4)||parts[0].slice(0,4).toUpperCase();
+    return (main+'-'+parts.slice(1).join('-')).toUpperCase().slice(0,8);
+  }
+  const caps=name.replace(/[a-z\s()]/g,'');
+  return (caps||name.slice(0,4)).toUpperCase().slice(0,6);
+}
   
 // Returns all material names: core (from cons) + extra
+
 function getAllMaterials(){
-  return [...CONS_KEYS, ...extraMaterials];
+  return matKeys();
 }
 
-// Check if a material is an "extra" (not a core consumable)
 function isExtraMaterial(name){
-  return extraMaterials.includes(name);
+  // "Extra" now means count-only materials (visual highlight in daily view)
+  return isCountOnly(name);
 }
 
-// Get a display label for any material (handles both core and extra)
 function getMaterialLabel(name){
-  if(state.cons[name]?.icon)return state.cons[name].icon;
-  return name;
+  return matIcon(name);
 }
 
 // Normalize a header to a clean material name (preserves variants like Blue/Orange/L/S)
@@ -1895,6 +2099,7 @@ async function loadFromCloud(){
       if(r.units!=null)state.fcUnits[r.store_code]=+r.units;
     });
     state.cons=JSON.parse(JSON.stringify(DEFAULT_CONS));
+    state.materials={};
     state.buffer=1.30;state.upo=8.58;state.stkDate=new Date().toISOString().slice(0,10);
     extraMaterials=[];
     (settings.data||[]).forEach(s=>{
@@ -1902,9 +2107,15 @@ async function loadFromCloud(){
       else if(s.key==='upo')state.upo=+s.value||8.58;
       else if(s.key==='stkDate')state.stkDate=s.value||new Date().toISOString().slice(0,10);
       else if(s.key==='cons'&&s.value)state.cons=s.value;
+      else if(s.key==='materials'&&s.value)state.materials=(typeof s.value==='object'&&!Array.isArray(s.value))?s.value:{};
       else if(s.key==='extraMaterials'&&s.value)extraMaterials=Array.isArray(s.value)?s.value:[];
-
     });
+    // Auto-migrate: if no materials defined yet, convert old cons (9 core) to dynamic
+    if(!state.materials||Object.keys(state.materials).length===0){
+      migrateMaterials();
+      await saveSettingCloud('materials',state.materials);
+      console.log('Auto-migration complete + saved to cloud');
+    }
     document.getElementById('lastUpd').textContent=new Date().toLocaleString();
   }catch(e){console.error(e);toast('Load failed: '+e.message,'error')}
 }
@@ -1964,6 +2175,15 @@ async function saveSettingCloud(key,value){
   hideSync();
 }
 
+ async function saveMaterialsCloud(){
+  if(!activeWorkspace)return;
+  showSync();
+  try{
+    await supabaseClient.from('settings').upsert({workspace_id:activeWorkspace.id,key:'materials',value:state.materials,updated_at:new Date().toISOString()});
+  }catch(e){toast('Materials sync error','error')}
+  hideSync();
+} 
+
 async function logActivity(action,entityType,entityId,fieldName,oldVal,newVal,metadata){
   if(!activeWorkspace)return;
   metadata=metadata||{};
@@ -1998,7 +2218,8 @@ async function bulkSyncAll(){
       {workspace_id:wsId,key:'buffer',value:state.buffer,updated_at:new Date().toISOString()},
       {workspace_id:wsId,key:'upo',value:state.upo,updated_at:new Date().toISOString()},
       {workspace_id:wsId,key:'stkDate',value:state.stkDate,updated_at:new Date().toISOString()},
-      {workspace_id:wsId,key:'cons',value:state.cons,updated_at:new Date().toISOString()}
+      {workspace_id:wsId,key:'cons',value:state.cons,updated_at:new Date().toISOString()},
+      {workspace_id:wsId,key:'materials',value:state.materials,updated_at:new Date().toISOString()}
     ]);
     await logActivity('bulk_import','workspace',null,null,null,null,{stores:state.stores.length,forecasts:Object.keys(state.fc).length,stock:Object.keys(state.stock).length});
     toast('Synced to cloud');
@@ -2016,7 +2237,8 @@ async function resetWorkspaceData(){
     const stats={stores:state.stores.length,forecasts:Object.keys(state.fc).length,stock:Object.keys(state.stock).length};
     await supabaseClient.from('stores').delete().eq('workspace_id',wsId);
     await logActivity('workspace_reset','workspace',activeWorkspace.code,null,stats,null,{workspaceName:activeWorkspace.name});
-    state={cons:JSON.parse(JSON.stringify(DEFAULT_CONS)),stores:[],stock:{},fc:{},fcUnits:{},buffer:1.30,upo:8.58,stkDate:new Date().toISOString().slice(0,10)};
+    state={cons:JSON.parse(JSON.stringify(DEFAULT_CONS)),materials:{},stores:[],stock:{},fc:{},fcUnits:{},buffer:1.30,upo:8.58,stkDate:new Date().toISOString().slice(0,10)};
+    migrateMaterials();
     docSelected=null;
     render();
     toast('Workspace data wiped');
@@ -2028,24 +2250,34 @@ async function resetWorkspaceData(){
 // CALCULATIONS
 // ============================================
 
+
 function calcNeeded(sc,ck){
+  const c=state.materials[ck];
+  if(!c)return{monthEA:0,weekEA:0,dayEA:0};
+  // Count-only materials have no demand equation
+  if(c.kind==='countonly')return{monthEA:0,weekEA:0,dayEA:0};
   const orders=(state.fc[sc]||0)*state.buffer;
   const iU=state.fcUnits[sc];
   const units=(iU!=null&&iU>0)?iU*state.buffer:orders*state.upo;
-  const c=state.cons[ck];if(!c)return{monthEA:0,weekEA:0,dayEA:0};
   let m=0;
   if(c.type==='BPO'||c.type==='perOrder'||c.type==='pctOrders')m=orders*c.trend;
   else if(c.type==='pctUnits')m=units*c.trend;
-  else if(c.type==='xIcBags')m=orders*(state.cons['IceCreamBags']?.trend||0)*c.trend;
+  else if(c.type==='xIcBags'){
+    // Find the IceCreamBags material trend dynamically
+    const icBags=state.materials['IceCreamBags'];
+    m=orders*(icBags?.trend||0)*c.trend;
+  }
   return{monthEA:m,weekEA:m/4,dayEA:m/28};
 }
-function calcSOH(s,c){const ct=readStock(s,c);return{cartons:ct,ea:ct*(state.cons[c]?.units||0)}}
+function calcSOH(s,c){const ct=readStock(s,c);return{cartons:ct,ea:ct*(matUnits(c)||0)}}
 function calcDOC(s,c){const so=calcSOH(s,c),ne=calcNeeded(s,c);return ne.dayEA>0?so.ea/ne.dayEA:0}
+
+// Raw replenishment for ONE material - 3 days demand, capped by material capacity
 
 // Raw replenishment for ONE material - 3 days demand, capped by material capacity
 function calcReplen(s,c){
   const so=calcSOH(s,c),ne=calcNeeded(s,c);
-  const u=state.cons[c]?.units||1;
+  const u=matUnits(c)||1;
   // 3-day demand instead of weekly
   const need3day=ne.dayEA*3;
   const shortfallEA=Math.max(0,need3day-so.ea);
@@ -2062,13 +2294,17 @@ function calcReplen(s,c){
 }
 
 // Full store replenishment with TOTAL capacity proportional scaling
+
+// Full store replenishment with TOTAL capacity proportional scaling
+// Only includes materials that are forecasted AND includeInReplen
 function calcStoreReplen(storeCode){
   const store=state.stores.find(s=>s.code===storeCode);
   const result={items:{},totalReplen:0,scaled:false,anyCapped:false};
   if(!store)return result;
+  const keys=replenKeys();
   // Step 1: per-material replen (already capped by material capacity)
   let currentStockTotal=0;
-  CONS_KEYS.forEach(c=>{
+  keys.forEach(c=>{
     const r=calcReplen(storeCode,c);
     const soh=calcSOH(storeCode,c).cartons;
     result.items[c]={ct:r.ct,raw:r.raw,capped:r.capped,soh};
@@ -2077,16 +2313,15 @@ function calcStoreReplen(storeCode){
   });
   // Step 2: Total capacity constraint
   let replenTotal=0;
-  CONS_KEYS.forEach(c=>{replenTotal+=result.items[c].ct});
+  keys.forEach(c=>{replenTotal+=result.items[c].ct});
   const totalCap=+store.cap||0;
   if(totalCap>0){
     const projectedTotal=currentStockTotal+replenTotal;
     if(projectedTotal>totalCap){
-      // Available room for replen after current stock
       const room=Math.max(0,totalCap-currentStockTotal);
       if(replenTotal>0&&room<replenTotal){
         const scaleFactor=room/replenTotal;
-        CONS_KEYS.forEach(c=>{
+        keys.forEach(c=>{
           const scaled=Math.floor(result.items[c].ct*scaleFactor);
           result.items[c].ct=scaled;
         });
@@ -2095,7 +2330,7 @@ function calcStoreReplen(storeCode){
     }
   }
   // Recompute total
-  CONS_KEYS.forEach(c=>{result.totalReplen+=result.items[c].ct});
+  keys.forEach(c=>{result.totalReplen+=result.items[c].ct});
   return result;
 }
 
@@ -2109,12 +2344,13 @@ function docPill(d){if(!d||isNaN(d)||d===0)return'<span class="pill pill-nl">NO 
 
 function renderOverview(){
   const live=state.stores.filter(s=>s.status==='Live');
+  const fcKeys=forecastedKeys();
   let crit=0,low=0,ok=0,hi=0,totalRep=0,docSum=0,docCount=0;
 
   live.forEach(s=>{
     if(!state.fc[s.code])return;
     const sr=calcStoreReplen(s.code);
-    CONS_KEYS.forEach(c=>{
+    fcKeys.forEach(c=>{
       const d=calcDOC(s.code,c);
       if(d>0){docSum+=d;docCount++}
       if(d<1)crit++;else if(d<3)low++;else if(d<7)ok++;else hi++;
@@ -2125,27 +2361,27 @@ function renderOverview(){
   document.getElementById('bannerNum').textContent=docCount?avgDoc.toFixed(1)+'d':'-';
   const totalOrders=Object.values(state.fc).reduce((a,b)=>a+b,0);
   document.getElementById('repBadge').textContent=crit+low;
-  document.getElementById('kpiBox').innerHTML='<div class="kpi navy"><div class="kpi-head"><div class="kpi-icon">ST</div><span class="kpi-trend up">'+live.length+'/'+state.stores.length+'</span></div><div class="kpi-label">Live Stores</div><div class="kpi-value">'+live.length+'</div><div class="kpi-sub">'+(state.stores.length-live.length)+' not live</div></div><div class="kpi red"><div class="kpi-head"><div class="kpi-icon">!</div><span class="kpi-trend down">URGENT</span></div><div class="kpi-label">Critical</div><div class="kpi-value">'+crit+'</div><div class="kpi-sub">Below 1 day</div></div><div class="kpi yellow"><div class="kpi-head"><div class="kpi-icon">LO</div><span class="kpi-trend neutral">WATCH</span></div><div class="kpi-label">Low Stock</div><div class="kpi-value">'+low+'</div><div class="kpi-sub">1-3 days</div></div><div class="kpi green"><div class="kpi-head"><div class="kpi-icon">OK</div><span class="kpi-trend up">HEALTHY</span></div><div class="kpi-label">Healthy</div><div class="kpi-value">'+(ok+hi)+'</div><div class="kpi-sub">Above 3 days</div></div><div class="kpi orange"><div class="kpi-head"><div class="kpi-icon">CT</div></div><div class="kpi-label">Replen Cartons</div><div class="kpi-value">'+totalRep+'</div><div class="kpi-sub">This week</div></div><div class="kpi blue"><div class="kpi-head"><div class="kpi-icon">OR</div></div><div class="kpi-label">Monthly Orders</div><div class="kpi-value">'+n(totalOrders)+'</div><div class="kpi-sub">Network</div></div>';
+  document.getElementById('kpiBox').innerHTML='<div class="kpi navy"><div class="kpi-head"><div class="kpi-icon">ST</div><span class="kpi-trend up">'+live.length+'/'+state.stores.length+'</span></div><div class="kpi-label">Live Stores</div><div class="kpi-value">'+live.length+'</div><div class="kpi-sub">'+(state.stores.length-live.length)+' not live</div></div><div class="kpi red"><div class="kpi-head"><div class="kpi-icon">!</div><span class="kpi-trend down">URGENT</span></div><div class="kpi-label">Critical</div><div class="kpi-value">'+crit+'</div><div class="kpi-sub">Below 1 day</div></div><div class="kpi yellow"><div class="kpi-head"><div class="kpi-icon">LO</div><span class="kpi-trend neutral">WATCH</span></div><div class="kpi-label">Low Stock</div><div class="kpi-value">'+low+'</div><div class="kpi-sub">1-3 days</div></div><div class="kpi green"><div class="kpi-head"><div class="kpi-icon">OK</div><span class="kpi-trend up">HEALTHY</span></div><div class="kpi-label">Healthy</div><div class="kpi-value">'+(ok+hi)+'</div><div class="kpi-sub">Above 3 days</div></div><div class="kpi orange"><div class="kpi-head"><div class="kpi-icon">CT</div></div><div class="kpi-label">Replen Cartons</div><div class="kpi-value">'+totalRep+'</div><div class="kpi-sub">Next 3 days</div></div><div class="kpi blue"><div class="kpi-head"><div class="kpi-icon">OR</div></div><div class="kpi-label">Monthly Orders</div><div class="kpi-value">'+n(totalOrders)+'</div><div class="kpi-sub">Network</div></div>';
   const alerts=[];
-  live.forEach(s=>CONS_KEYS.forEach(c=>{if(!state.fc[s.code])return;const d=calcDOC(s.code,c);if(d<3&&d>0)alerts.push({s:s.code,area:s.area,c,d,r:calcReplen(s.code,c)})}));
+  live.forEach(s=>fcKeys.forEach(c=>{if(!state.fc[s.code])return;const d=calcDOC(s.code,c);if(d<3&&d>0)alerts.push({s:s.code,area:s.area,c,d,r:calcReplen(s.code,c)})}));
   alerts.sort((a,b)=>a.d-b.d);
-  document.getElementById('critList').innerHTML=alerts.length?alerts.slice(0,7).map(a=>'<div class="alert-item '+(a.d<1?'crit':'low')+'"><div class="alert-icon">'+(state.cons[a.c]?.icon||'')+'</div><div class="alert-body"><div class="alert-title">'+a.s+' - '+a.c+'</div><div class="alert-meta">'+a.area+'</div></div><div class="alert-val">'+docPill(a.d)+'<div class="cell-sub mono">Need: <b>'+a.r.ct+' ct</b></div></div></div>').join(''):'<div class="empty"><div class="ic">All Clear</div><p>'+(state.stores.length?'All systems normal':'Upload Excel to begin')+'</p></div>';
+  document.getElementById('critList').innerHTML=alerts.length?alerts.slice(0,7).map(a=>'<div class="alert-item '+(a.d<1?'crit':'low')+'"><div class="alert-icon">'+matIcon(a.c)+'</div><div class="alert-body"><div class="alert-title">'+a.s+' - '+a.c+'</div><div class="alert-meta">'+a.area+'</div></div><div class="alert-val">'+docPill(a.d)+'<div class="cell-sub mono">Need: <b>'+a.r.ct+' ct</b></div></div></div>').join(''):'<div class="empty"><div class="ic">All Clear</div><p>'+(state.stores.length?'All systems normal':'Upload Excel to begin')+'</p></div>';
   const byStat={};state.stores.forEach(s=>byStat[s.status]=(byStat[s.status]||0)+1);
   const total=state.stores.length;
   const liveCap=state.stores.filter(s=>s.status==='Live').reduce((a,b)=>a+(+b.cap||0),0);
   document.getElementById('statusBreakdown').innerHTML=total?Object.entries(byStat).map(([k,v])=>{const pct=(v/total*100).toFixed(0);return'<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span class="pill '+(k==='Live'?'pill-live':'pill-nl')+'">'+k+'</span><span class="mono" style="font-weight:700">'+v+' ('+pct+'%)</span></div><div class="bar '+(k==='Live'?'success':'warn')+'"><span style="width:'+pct+'%"></span></div></div>'}).join('')+'<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border-light);font-size:12px"><div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:var(--text-mut)">Total Live Capacity</span><span class="mono" style="font-weight:700">'+n(liveCap)+' BPO</span></div><div style="display:flex;justify-content:space-between"><span style="color:var(--text-mut)">Avg per Store</span><span class="mono" style="font-weight:700">'+n(liveCap/(live.length||1),0)+' BPO</span></div></div>':'<div class="empty"><div class="ic">No Stores</div></div>';
-  let h='<table class="heatmap"><tr><th style="min-width:180px"></th>'+CONS_KEYS.map(c=>'<th>'+(state.cons[c]?.icon||'')+'<br>'+c.replace('Wrap','').replace('Label','Lbl')+'</th>').join('')+'</tr>';
+  let h='<table class="heatmap"><tr><th style="min-width:180px"></th>'+fcKeys.map(c=>'<th>'+matIcon(c)+'<br>'+c.replace('Wrap','').replace('Label','Lbl')+'</th>').join('')+'</tr>';
   if(live.length){
     live.forEach(s=>{
       h+='<tr><td class="code"><b>'+s.code+'</b><div class="cell-sub">'+(s.area||'').slice(0,26)+'</div></td>';
-      CONS_KEYS.forEach(c=>{
+      fcKeys.forEach(c=>{
         if(!state.fc[s.code]){h+='<td style="background:#F7F8F8;color:var(--text-dim)">-</td>';return}
         const d=calcDOC(s.code,c);const col=docColor(d);
         h+='<td style="background:'+col.bg+';color:'+col.fg+';border-color:'+col.br+'">'+(d>0?d.toFixed(1):'-')+'</td>';
       });
       h+='</tr>';
     });
-  }else{h+='<tr><td colspan="'+(CONS_KEYS.length+1)+'" style="padding:30px;text-align:center;color:var(--text-mut)">No live stores</td></tr>'}
+  }else{h+='<tr><td colspan="'+(fcKeys.length+1)+'" style="padding:30px;text-align:center;color:var(--text-mut)">No live stores</td></tr>'}
   h+='</table>';
   document.getElementById('heatmap').innerHTML=h;
 }
@@ -2224,10 +2460,10 @@ function openMatCap(code){
   if(!store.matCap)store.matCap={};
   document.getElementById('matCapTitle').textContent='Material Capacities - '+code;
   let h='';
-  CONS_KEYS.forEach(c=>{
+  matKeys().forEach(c=>{
     const key=stockKey(c);
     const val=+store.matCap[key]||0;
-    const label=state.cons[c]?.icon||c;
+    const label=matIcon(c);
     h+='<div class="matcap-field"><label>'+c+'</label><div class="sub">'+label+' (cartons)</div><input type="number" min="0" id="mc_'+key+'" value="'+(val||'')+'" placeholder="0" oninput="updateMatCapTotal()"></div>';
   });
   document.getElementById('matCapGrid').innerHTML=h;
@@ -2239,7 +2475,7 @@ function updateMatCapTotal(){
   const store=state.stores.find(s=>s.code===matCapStore);
   if(!store)return;
   let sum=0;
-  CONS_KEYS.forEach(c=>{
+  matKeys().forEach(c=>{
     const key=stockKey(c);
     const el=document.getElementById('mc_'+key);
     if(el)sum+=+el.value||0;
@@ -2268,7 +2504,7 @@ async function saveMatCap(){
   if(!store)return;
   if(!store.matCap)store.matCap={};
   const oldMatCap={...store.matCap};
-  CONS_KEYS.forEach(c=>{
+  matKeys().forEach(c=>{
     const key=stockKey(c);
     const el=document.getElementById('mc_'+key);
     const v=+el?.value||0;
@@ -2281,20 +2517,16 @@ async function saveMatCap(){
   toast('Capacities saved');
   render();
 }
-  
-  
-
-
-  
 
 function renderStock(){
   const q=(document.getElementById('srchStk')?.value||'').toLowerCase();
   document.getElementById('stkDate').value=state.stkDate;
   renderStockUpdateInfo();
-  let h='<tr><th>Store</th>'+CONS_KEYS.map(c=>'<th style="text-align:center">'+(state.cons[c]?.icon||'')+'</th>').join('')+'</tr>';
+  const keys=matKeys();
+  let h='<tr><th>Store</th>'+keys.map(c=>'<th style="text-align:center" title="'+c+'">'+matIcon(c)+(isCountOnly(c)?'<div style="font-size:8px;color:var(--text-mut)">count</div>':'')+'</th>').join('')+'</tr>';
   const live=state.stores.filter(s=>s.status==='Live'&&(!q||s.code.toLowerCase().includes(q)));
-  if(!live.length){h+='<tr><td colspan="'+(CONS_KEYS.length+1)+'" style="padding:40px;text-align:center;color:var(--text-mut)">No live stores</td></tr>'}
-  else{live.forEach(s=>{h+='<tr><td><b>'+s.code+'</b><div class="cell-sub">'+(s.area||'')+'</div></td>';CONS_KEYS.forEach(c=>{const v=readStock(s.code,c);h+='<td style="text-align:center"><input class="cell-input" type="number" value="'+v+'" onchange="updStk(\''+s.code+'\',\''+c+'\',this.value)"></td>'});h+='</tr>'})}
+  if(!live.length){h+='<tr><td colspan="'+(keys.length+1)+'" style="padding:40px;text-align:center;color:var(--text-mut)">No live stores</td></tr>'}
+  else{live.forEach(s=>{h+='<tr><td><b>'+s.code+'</b><div class="cell-sub">'+(s.area||'')+'</div></td>';keys.forEach(c=>{const v=readStock(s.code,c);const cn=c.replace(/'/g,"\\'");h+='<td style="text-align:center"><input class="cell-input" type="number" value="'+v+'" onchange="updStk(\''+s.code+'\',\''+cn+'\',this.value)"></td>'});h+='</tr>'})}
   document.getElementById('tblStock').innerHTML=h;
 }
 
@@ -2388,12 +2620,15 @@ function onDocConsChange(){docSelected=document.getElementById('docCons').value;
 
 function renderDOC(){
   const sel=document.getElementById('docCons');
-  const keys=Object.keys(state.cons);
-  if(sel.options.length!==keys.length){sel.innerHTML='';keys.forEach(k=>{const o=document.createElement('option');o.value=k;o.text=k;sel.add(o)})}
+  const keys=forecastedKeys();
+  // Rebuild options if changed
+  const curOpts=Array.from(sel.options).map(o=>o.value).join(',');
+  if(curOpts!==keys.join(',')){sel.innerHTML='';keys.forEach(k=>{const o=document.createElement('option');o.value=k;o.text=k;sel.add(o)})}
   if(docSelected&&keys.includes(docSelected))sel.value=docSelected;
   else if(keys.length)sel.value=keys[0];
   docSelected=sel.value;
-  const c=sel.value;if(!c){document.getElementById('tblDoc').innerHTML='';return}
+  const c=sel.value;
+  if(!c){document.getElementById('tblDoc').innerHTML='<tr><td style="padding:30px;text-align:center;color:var(--text-mut)">No forecasted materials</td></tr>';return}
   const q=(document.getElementById('srchDoc')?.value||'').toLowerCase();
   let h='<tr><th>Store</th><th class="nums">Cap</th><th class="nums">SOH ct</th><th class="nums">SOH ea</th><th class="nums">Need/Mo</th><th class="nums">Need/Wk</th><th class="nums">Need/Day</th><th class="nums">Replen</th><th>DOC</th></tr>';
   const rows=state.stores.filter(s=>s.status==='Live'&&(!q||s.code.toLowerCase().includes(q)||(s.area||'').toLowerCase().includes(q)));
@@ -2402,10 +2637,8 @@ function renderDOC(){
   document.getElementById('tblDoc').innerHTML=h;
 }
 
-
 function renderReplen(){
   const tblEl=document.getElementById('tblRep');
-  // Add legend above the table
   const card=tblEl.closest('.card');
   let legendEl=card.querySelector('.replen-legend');
   if(!legendEl){
@@ -2417,20 +2650,24 @@ function renderReplen(){
     card.insertBefore(legendEl,card.querySelector('.tbl-wrap'));
   }
   
-  let h='<tr><th>Store</th>'+CONS_KEYS.map(c=>'<th style="text-align:center">'+(state.cons[c]?.icon||'')+'</th>').join('')+'<th style="text-align:right;background:var(--amz-navy);color:#fff">Total</th></tr>';
+  const keys=replenKeys();
+  let h='<tr><th>Store</th>'+keys.map(c=>'<th style="text-align:center" title="'+c+'">'+matIcon(c)+'</th>').join('')+'<th style="text-align:right;background:var(--amz-navy);color:#fff">Total</th></tr>';
   let gt=0;
   const list=state.stores.filter(s=>s.status==='Live'&&state.fc[s.code]);
-  const colTotals={};CONS_KEYS.forEach(c=>colTotals[c]=0);
+  const colTotals={};keys.forEach(c=>colTotals[c]=0);
   
-  if(!list.length)h+='<tr><td colspan="'+(CONS_KEYS.length+2)+'" style="padding:40px;text-align:center;color:var(--text-mut)">No data</td></tr>';
-  else{
+  if(!keys.length){
+    h+='<tr><td style="padding:40px;text-align:center;color:var(--text-mut)">No materials included in Replenishment. Enable some in Configuration.</td></tr>';
+  } else if(!list.length){
+    h+='<tr><td colspan="'+(keys.length+2)+'" style="padding:40px;text-align:center;color:var(--text-mut)">No data</td></tr>';
+  } else {
     list.forEach(s=>{
       const sr=calcStoreReplen(s.code);
       const t=sr.totalReplen;
       const scaledTag=sr.scaled?' <span class="cap-warn cap-full" title="Reduced to fit total capacity">TOT</span>':'';
       h+='<tr'+(sr.scaled?' class="replen-capped"':'')+'><td><b>'+s.code+'</b><div class="cell-sub">'+(s.area||'')+(s.cap>0?' - Cap: '+s.cap:'')+'</div></td>';
-      CONS_KEYS.forEach(c=>{
-        const item=sr.items[c];
+      keys.forEach(c=>{
+        const item=sr.items[c]||{ct:0,capped:false};
         const r=item.ct;
         colTotals[c]+=r;
         const bg=r>0?'background:rgba(255,153,0,'+Math.min(r/20,1)*0.18+')':'';
@@ -2441,21 +2678,21 @@ function renderReplen(){
       h+='<td class="nums" style="font-weight:700;color:var(--amz-orange-dark);background:#FFF4E0">'+t+scaledTag+'</td></tr>';
     });
     h+='<tr style="background:var(--amz-navy);color:#fff;font-weight:700"><td style="color:#fff">TOTAL</td>';
-    CONS_KEYS.forEach(c=>{h+='<td class="nums" style="text-align:center;color:#fff">'+colTotals[c]+'</td>'});
+    keys.forEach(c=>{h+='<td class="nums" style="text-align:center;color:#fff">'+colTotals[c]+'</td>'});
     h+='<td class="nums" style="color:var(--amz-orange);font-size:15px">'+gt+'</td></tr>';
   }
   tblEl.innerHTML=h;
 }
   
 
-
 function expReplenCSV(){
   const wsName=activeWorkspace?.name||'workspace';
-  let csv='Store,Location,Total Capacity,'+CONS_KEYS.map(c=>c+' (ct)').join(',')+',Total,Notes\n';
+  const keys=replenKeys();
+  let csv='Store,Location,Total Capacity,'+keys.map(c=>'"'+c+' (ct)"').join(',')+',Total,Notes\n';
   state.stores.filter(s=>s.status==='Live'&&state.fc[s.code]).forEach(s=>{
     const sr=calcStoreReplen(s.code);
     const row=[s.code,'"'+(s.area||'')+'"',s.cap||0];
-    CONS_KEYS.forEach(c=>{row.push(sr.items[c].ct)});
+    keys.forEach(c=>{row.push(sr.items[c]?.ct||0)});
     row.push(sr.totalReplen);
     const notes=[];
     if(sr.anyCapped)notes.push('Material cap reached');
@@ -2471,26 +2708,169 @@ function expReplenCSV(){
   
 
 function renderCfg(){
-  let h='';
-  Object.keys(state.cons).forEach(k=>{
-    const c=state.cons[k];
-    h+='<div class="cfg-card"><h4><span>'+k+'</span><span class="type-tag">'+c.type+'</span></h4><div class="cfg-field"><label>Trend</label><input type="number" step="0.0001" id="tr_'+k+'" value="'+c.trend+'"></div><div class="cfg-field"><label>Units/Box</label><input type="number" id="un_'+k+'" value="'+c.units+'"></div><div class="cfg-field"><label>Boxes/Pallet</label><input type="number" id="bx_'+k+'" value="'+c.box+'"></div></div>';
+  const fcKeys=forecastedKeys();
+  const coKeys=countOnlyKeys();
+  
+  // Forecasted materials
+  let hF='';
+  fcKeys.forEach(k=>{
+    const c=state.materials[k];
+    const inReplen=c.includeInReplen!==false;
+    hF+='<div class="cfg-card"><h4><span>'+k+'</span><div class="cfg-card-actions"><span class="type-tag">'+c.type+'</span><button class="btn btn-sm btn-danger" style="padding:2px 8px" onclick="deleteMaterial(\''+k.replace(/'/g,"\\'")+'\')" title="Delete">X</button></div></h4>'+
+      '<div class="cfg-field"><label>Icon</label><input type="text" id="ic_'+stockKey(k)+'" value="'+(c.icon||'')+'"></div>'+
+      '<div class="cfg-field"><label>Trend</label><input type="number" step="0.0001" id="tr_'+stockKey(k)+'" value="'+c.trend+'"></div>'+
+      '<div class="cfg-field"><label>Units/Carton</label><input type="number" id="un_'+stockKey(k)+'" value="'+c.units+'"></div>'+
+      '<div class="cfg-field"><label>Boxes/Pallet</label><input type="number" id="bx_'+stockKey(k)+'" value="'+(c.box||20)+'"></div>'+
+      '<div class="cfg-toggle-row"><span class="cfg-toggle-label">Include in Replenishment</span><label class="toggle-switch"><input type="checkbox" '+(inReplen?'checked':'')+' onchange="toggleReplen(\''+k.replace(/'/g,"\\'")+'\',this.checked)"><span class="toggle-slider"></span></label></div>'+
+      '</div>';
   });
-  document.getElementById('cfgBox').innerHTML=h;
+  document.getElementById('cfgBoxForecasted').innerHTML=hF||'<div style="padding:20px;color:var(--text-mut);font-size:13px">No forecasted materials.</div>';
+  
+  // Count-only materials
+  let hC='';
+  coKeys.forEach(k=>{
+    const c=state.materials[k];
+    hC+='<div class="cfg-card"><h4><span>'+k+'</span><div class="cfg-card-actions"><span class="mat-kind-badge mat-kind-countonly">Count</span><button class="btn btn-sm btn-danger" style="padding:2px 8px" onclick="deleteMaterial(\''+k.replace(/'/g,"\\'")+'\')" title="Delete">X</button></div></h4>'+
+      '<div class="cfg-field"><label>Icon</label><input type="text" id="ic_'+stockKey(k)+'" value="'+(c.icon||'')+'"></div>'+
+      '<div class="cfg-field"><label>Units/Carton</label><input type="number" id="un_'+stockKey(k)+'" value="'+(c.units||1)+'"></div>'+
+      '<div class="cfg-field"><label>Boxes/Pallet</label><input type="number" id="bx_'+stockKey(k)+'" value="'+(c.box||20)+'"></div>'+
+      '</div>';
+  });
+  document.getElementById('cfgBoxCountOnly').innerHTML=hC||'<div style="padding:20px;color:var(--text-mut);font-size:13px">No count-only materials. Click "+ Add Material" to track items without forecasts.</div>';
+  
+  document.getElementById('fcMatCount').textContent=fcKeys.length;
+  document.getElementById('coMatCount').textContent=coKeys.length;
+  document.getElementById('matCountSub').textContent=(fcKeys.length+coKeys.length)+' total';
   document.getElementById('bufMul').value=state.buffer;
   document.getElementById('upo').value=state.upo;
 }
 
+
 async function saveCfg(){
   if(!canManageSettings()){denyAccess('manage settings');return}
-  const oldCons=JSON.parse(JSON.stringify(state.cons));
-  Object.keys(state.cons).forEach(k=>{state.cons[k].trend=+document.getElementById('tr_'+k).value;state.cons[k].units=+document.getElementById('un_'+k).value;state.cons[k].box=+document.getElementById('bx_'+k).value});
-  await saveSettingCloud('cons',state.cons);
-  await logActivity('config_change','consumable',null,'cons',oldCons,state.cons);
+  const oldMats=JSON.parse(JSON.stringify(state.materials));
+  matKeys().forEach(k=>{
+    const sk=stockKey(k);
+    const m=state.materials[k];
+    if(!m)return;
+    const icEl=document.getElementById('ic_'+sk);
+    const unEl=document.getElementById('un_'+sk);
+    const bxEl=document.getElementById('bx_'+sk);
+    if(icEl)m.icon=icEl.value.trim()||k;
+    if(unEl)m.units=+unEl.value||1;
+    if(bxEl)m.box=+bxEl.value||20;
+    if(m.kind==='forecasted'){
+      const trEl=document.getElementById('tr_'+sk);
+      if(trEl)m.trend=+trEl.value||0;
+    }
+  });
+  await saveMaterialsCloud();
+  await logActivity('config_change','material',null,'materials',oldMats,state.materials);
   toast('Config saved');render();
 }
  
 
+// ============================================
+// MATERIAL MANAGEMENT (add / delete / toggle)
+// ============================================
+
+async function toggleReplen(name,checked){
+  if(!canManageSettings()){denyAccess('manage settings');renderCfg();return}
+  const m=state.materials[name];
+  if(!m)return;
+  m.includeInReplen=checked;
+  await saveMaterialsCloud();
+  await logActivity('config_change','material',name,'includeInReplen',!checked,checked);
+  render();
+}
+
+async function deleteMaterial(name){
+  if(!canManageSettings()){denyAccess('manage settings');return}
+  const m=state.materials[name];
+  if(!m)return;
+  if(!confirm('Delete material "'+name+'"?\n\nThis removes it from all calculations. Existing stock data for it will remain in the database but won\'t be shown.'))return;
+  const old={...m};
+  delete state.materials[name];
+  await saveMaterialsCloud();
+  await logActivity('delete','material',name,null,old,null);
+  toast('Material deleted');
+  render();
+}
+
+let addMatKind='forecasted';
+
+function openAddMaterial(){
+  if(!canManageSettings()){denyAccess('manage settings');return}
+  document.getElementById('amName').value='';
+  document.getElementById('amIcon').value='';
+  document.getElementById('amTrend').value='';
+  document.getElementById('amUnits').value='';
+  document.getElementById('amUnitsCount').value='1';
+  document.getElementById('amBox').value='20';
+  document.getElementById('amType').value='perOrder';
+  document.getElementById('amInReplen').value='yes';
+  selectKind('forecasted');
+  updateTypeInfo();
+  document.getElementById('mdAddMat').classList.add('show');
+}
+
+function closeAddMaterial(){
+  document.getElementById('mdAddMat').classList.remove('show');
+}
+
+function selectKind(kind){
+  addMatKind=kind;
+  document.getElementById('kindForecasted').classList.toggle('selected',kind==='forecasted');
+  document.getElementById('kindCountonly').classList.toggle('selected',kind==='countonly');
+  document.getElementById('amForecastedFields').style.display=kind==='forecasted'?'block':'none';
+  document.getElementById('amCountFields').style.display=kind==='countonly'?'block':'none';
+  document.getElementById('amReplenWrap').style.display=kind==='forecasted'?'block':'none';
+}
+
+function updateTypeInfo(){
+  const type=document.getElementById('amType').value;
+  const info=MATERIAL_TYPES[type];
+  document.getElementById('amTypeInfo').textContent=info?info.desc:'';
+}
+
+async function saveNewMaterial(){
+  if(!canManageSettings()){denyAccess('manage settings');return}
+  const name=document.getElementById('amName').value.trim();
+  if(!name){toast('Name required','error');return}
+  if(state.materials[name]){toast('Material already exists','error');return}
+  // Check stockKey collision
+  const sk=stockKey(name);
+  const collision=matKeys().find(k=>stockKey(k)===sk);
+  if(collision){toast('Name conflicts with "'+collision+'" (same key)','error');return}
+  
+  let icon=document.getElementById('amIcon').value.trim();
+  if(!icon)icon=autoIcon(name);
+  const box=+document.getElementById('amBox').value||20;
+  
+  const mat={name,kind:addMatKind,icon,box,order:nextMatOrder()};
+  
+  if(addMatKind==='forecasted'){
+    const type=document.getElementById('amType').value;
+    const trend=+document.getElementById('amTrend').value;
+    const units=+document.getElementById('amUnits').value;
+    if(!trend||trend<=0){toast('Valid trend required','error');return}
+    if(!units||units<=0){toast('Valid units required','error');return}
+    mat.type=type;
+    mat.trend=trend;
+    mat.units=units;
+    mat.includeInReplen=document.getElementById('amInReplen').value==='yes';
+  } else {
+    mat.units=+document.getElementById('amUnitsCount').value||1;
+    mat.includeInReplen=false;
+  }
+  
+  state.materials[name]=mat;
+  await saveMaterialsCloud();
+  await logActivity('create','material',name,null,null,mat);
+  closeAddMaterial();
+  toast('Material "'+name+'" added');
+  render();
+}
 async function saveBuf(){
   if(!canManageSettings()){denyAccess('manage settings');return}
   const oldVal=state.buffer;const newVal=+document.getElementById('bufMul').value||1.3;
@@ -2520,13 +2900,9 @@ function exportAll(){
 }
   
 async function saveExtraMaterials(){
-  if(!activeWorkspace)return;
-  showSync();
-  try{
-    await supabaseClient.from('settings').upsert({workspace_id:activeWorkspace.id,key:'extraMaterials',value:extraMaterials,updated_at:new Date().toISOString()});
-  }catch(e){toast('Failed to save materials','error')}
-  hideSync();
-} 
+  // Deprecated: extra materials are now managed via Configuration > Add Material
+  return;
+}
 
 
 // ============================================
@@ -2877,6 +3253,7 @@ async function confirmSuperAdminAction(){
 // EXCEL PARSERS
 // ============================================
 
+
 function parseCapacity(rows,name,log){
   let hdrIdx=-1;
   for(let i=0;i<Math.min(rows.length,15);i++){
@@ -2892,12 +3269,12 @@ function parseCapacity(rows,name,log){
   const launchCol=hdr.findIndex(c=>c==='oblaunch'||c==='launch');
   const capCol=hdr.findIndex(c=>c==='storecapacity'||c==='capacity');
 
-  // Detect material capacity columns (Brown Bags, Bubble Pouches, SPOO, Seal Tapes)
+  // Detect material capacity columns (any known material)
   const matCapCols={}; // column index -> stockKey
   rows[hdrIdx].forEach((h,ci)=>{
     if(ci===codeCol||ci===areaCol||ci===statusCol||ci===launchCol||ci===capCol)return;
-    const ck=resolveConsKey(h);
-    if(ck)matCapCols[ci]=stockKey(ck);
+    const matName=matchMaterialColumn(h);
+    if(matName)matCapCols[ci]=stockKey(matName);
   });
   const matColCount=Object.keys(matCapCols).length;
 
@@ -2911,7 +3288,6 @@ function parseCapacity(rows,name,log){
     const launch=launchCol>=0?normStr(row[launchCol]):'';
     const cap=capCol>=0?toNum(row[capCol]):null;
 
-    // Build material capacity object (#N/A or empty -> 0)
     const matCap={};
     Object.entries(matCapCols).forEach(([ciStr,key])=>{
       const v=toNum(row[+ciStr]);
@@ -2924,9 +3300,10 @@ function parseCapacity(rows,name,log){
       ex.status=status;
       ex.launch=launch;
       if(cap!=null)ex.cap=cap;
-      if(matColCount>0)ex.matCap=matCap; // overwrite with new capacities
+      if(matColCount>0)ex.matCap=matCap;
       updated++;
     } else {
+      // Capacity sheet DEFINES stores, so adding here is intentional (not auto-add from forecast/stock)
       state.stores.push({code,area:area||'(no area)',status,launch,cap:cap||0,matCap:matColCount>0?matCap:{}});
       added++;
     }
@@ -2952,123 +3329,72 @@ function parseForecast(rows,name,log){
   const totalCol=hdr.findIndex(c=>c==='totalorders'||c==='totalunits');
   if(codeCol===-1||totalCol===-1)return 0;
   const target=isUnits?'units':'orders';
-  let count=0;
-  const newCodes=new Set();
+  let count=0,skipped=0;
   for(let i=hdrIdx+1;i<rows.length;i++){
     const row=rows[i];if(!row)continue;
     const code=normStr(row[codeCol]).toUpperCase();
     if(!isStoreCode(code))continue;
     const v=toNum(row[totalCol]);
     if(v==null||v<=0)continue;
+    // Only update existing stores - do NOT auto-add
+    if(!state.stores.find(s=>s.code===code)){skipped++;continue}
     if(target==='orders')state.fc[code]=v;
     else state.fcUnits[code]=v;
-    count++;newCodes.add(code);
+    count++;
   }
-  newCodes.forEach(code=>{
-    if(!state.stores.find(s=>s.code===code)){
-      state.stores.push({code,area:'(Auto-added)',status:'Live',launch:'',cap:0});
-      if(!state.stock[code])state.stock[code]={};
-    }
-  });
-  log('ok','<b>'+name+'</b> ['+target+']: '+count+' stores');
+  const skipNote=skipped>0?' ('+skipped+' unknown stores skipped)':'';
+  log('ok','<b>'+name+'</b> ['+target+']: '+count+' stores'+skipNote);
   return count;
 }
 
 
+
 function parseStock(rows,name,log){
   let hdrIdx=-1;
-  // Detect header row: needs at least 3 columns that match core OR look like materials
+  // Detect header row: needs at least 2 columns that match known materials
   for(let i=0;i<Math.min(rows.length,10);i++){
     if(!rows[i])continue;
-    const coreCount=rows[i].filter(c=>resolveConsKey(c)).length;
-    if(coreCount>=3){hdrIdx=i;break}
+    const matchCount=rows[i].filter(c=>matchMaterialColumn(c)).length;
+    if(matchCount>=2){hdrIdx=i;break}
   }
-  if(hdrIdx===-1){log('warn','<b>'+name+'</b>: no consumable header');return 0}
+  if(hdrIdx===-1){log('warn','<b>'+name+'</b>: no material header');return 0}
   const hdr=rows[hdrIdx];
   const codeCol=0;
-  const colMap={};        // column index -> stockKey (core materials)
-  const extraColMap={};   // column index -> material name (extra materials)
+  const colMap={};  // column index -> material name (any known material)
   
-  // Identify which columns are headers (skip store/status/non-material columns)
   hdr.forEach((h,i)=>{
     if(i===codeCol||!h)return;
     const headerStr=normStr(h);
     if(!headerStr)return;
-    // Skip known non-material columns
     const hk=normKey(headerStr);
-    if(hk==='status'||hk==='area'||hk==='location'||hk==='store'||hk==='storecode'||hk==='date'||hk==='total')return;
-    const ck=resolveConsKey(h);
-    if(ck){
-      // Core material
-      colMap[i]=ck;
-    } else {
-      // Potential extra material - only treat as material if column has numeric data
-      extraColMap[i]=cleanMaterialName(headerStr);
-    }
+    if(hk==='status'||hk==='area'||hk==='location'||hk==='store'||hk==='storecode'||hk==='sitecode'||hk==='date'||hk==='total')return;
+    const matName=matchMaterialColumn(h);
+    if(matName)colMap[i]=matName;
   });
   
-  // Validate extra columns: only keep ones that actually have numeric values in data rows
-  const validExtraCols={};
-  Object.entries(extraColMap).forEach(([ciStr,matName])=>{
-    const ci=+ciStr;
-    let hasNumeric=false;
-    for(let i=hdrIdx+1;i<Math.min(rows.length,hdrIdx+10);i++){
-      const row=rows[i];if(!row)continue;
-      const code=normStr(row[codeCol]).toUpperCase();
-      if(!isStoreCode(code))continue;
-      if(toNum(row[ci])!=null){hasNumeric=true;break}
-    }
-    if(hasNumeric)validExtraCols[ci]=matName;
-  });
+  if(Object.keys(colMap).length===0){log('warn','<b>'+name+'</b>: no recognized materials');return 0}
   
-  // Detect NEW extra materials (not already known)
-  const knownExtra=new Set(extraMaterials);
-  const newExtraFound={}; // name -> count of stores with value
-  Object.values(validExtraCols).forEach(matName=>{
-    if(!knownExtra.has(matName)&&!CONS_KEYS.includes(matName)){
-      newExtraFound[matName]=0;
-    }
-  });
-  
-  let updated=0;
+  let updated=0,skipped=0;
   for(let i=hdrIdx+1;i<rows.length;i++){
     const row=rows[i];if(!row)continue;
     const code=normStr(row[codeCol]).toUpperCase();
     if(!isStoreCode(code))continue;
-    if(!state.stores.find(s=>s.code===code)){state.stores.push({code,area:'(Auto-added)',status:'Live',launch:'',cap:0})}
+    // Only update existing stores - do NOT auto-add
+    if(!state.stores.find(s=>s.code===code)){skipped++;continue}
     if(!state.stock[code])state.stock[code]={};
-    const tempStock={};
-    // Core materials
-    Object.entries(colMap).forEach(([ciStr,ck])=>{
-      const ci=+ciStr;const v=toNum(row[ci]);
-      if(v==null)return;
-      const key=stockKey(ck);
-      tempStock[key]=(tempStock[key]||0)+v;
-    });
-    // Extra materials (already known + count new ones)
-    Object.entries(validExtraCols).forEach(([ciStr,matName])=>{
+    Object.entries(colMap).forEach(([ciStr,matName])=>{
       const ci=+ciStr;const v=toNum(row[ci]);
       if(v==null)return;
       const key=stockKey(matName);
-      tempStock[key]=(tempStock[key]||0)+v;
-      if(matName in newExtraFound&&v>0)newExtraFound[matName]++;
+      state.stock[code][key]=v;
     });
-    Object.entries(tempStock).forEach(([k,v])=>{state.stock[code][k]=v});
     updated++;
   }
-  
-  // Store detected new materials for the modal (accumulate across sheets)
-  Object.entries(newExtraFound).forEach(([matName,count])=>{
-    const existing=pendingNewMaterials.find(m=>m.name===matName);
-    if(existing){existing.count+=count}
-    else{pendingNewMaterials.push({name:matName,count:count,selected:true})}
-  });
-  
-  const coreCount=Object.keys(colMap).length;
-  const extraCount=Object.keys(validExtraCols).length;
-  log('ok','<b>'+name+'</b>: '+updated+' stores ('+coreCount+' core + '+extraCount+' extra cols)');
+  const skipNote=skipped>0?' ('+skipped+' unknown stores skipped)':'';
+  log('ok','<b>'+name+'</b>: '+updated+' stores, '+Object.keys(colMap).length+' material cols'+skipNote);
   return updated;
 }
+  
 
 function parseTrends(rows,name,log){
   let updated=0;
@@ -3094,6 +3420,31 @@ function parseTrends(rows,name,log){
     }
   }
   if(updated>0)log('ok','<b>'+name+'</b> [Trends]: '+updated);
+}
+
+  
+// Match an Excel column header to ANY existing material (dynamic, exact-aware)
+// Returns the material NAME if matched, else null
+function matchMaterialColumn(header){
+  if(!header)return null;
+  const hk=normKey(header);
+  if(!hk)return null;
+  // 1) Try exact match against existing material names (normalized)
+  const allMats=Object.keys(state.materials);
+  for(const m of allMats){
+    if(normKey(m)===hk)return m;
+  }
+  // 2) Try match ignoring trailing unit words (boxes/rolls/units/ct)
+  const hkClean=hk.replace(/boxes$/,'').replace(/rolls$/,'').replace(/units$/,'').replace(/ct$/,'').replace(/cartons$/,'');
+  for(const m of allMats){
+    const mk=normKey(m).replace(/boxes$/,'').replace(/rolls$/,'');
+    if(mk===hkClean)return m;
+  }
+  // 3) Fall back to legacy resolveConsKey (handles brown bag, bubble pouch synonyms)
+  //    but ONLY if that resolved key exists as a material
+  const legacy=resolveConsKey(header);
+  if(legacy&&state.materials[legacy])return legacy;
+  return null;
 }
 
 async function importExcel(e){
@@ -3128,7 +3479,7 @@ async function importExcel(e){
       document.getElementById('mdImportTitle').textContent='Import Report';
       document.getElementById('importReport').innerHTML=report.join('');
       document.getElementById('mdImport').classList.add('show');
-      setTimeout(()=>showNewMaterialsModal(),400);
+      // New materials are now managed manually via Configuration > Add Material
     }catch(err){
       log('err','<b>Failed</b>: '+err.message);
       document.getElementById('importReport').innerHTML=report.join('');
@@ -3236,8 +3587,8 @@ function parseStockBulkFile(wb,fileName){
     if(!validStoreCodes.has(storeRaw)){result.errors.push({row:rowNum,reason:'Store "'+storeRaw+'" not found'});continue}
     const itemRaw=normStr(row[itemCol]);
     if(!itemRaw){result.skipped.push({row:rowNum,reason:'Empty item'});continue}
-    const consKey=resolveConsKey(itemRaw);
-    if(!consKey){result.skipped.push({row:rowNum,reason:'Unknown item "'+itemRaw+'"'});continue}
+    const consKey=matchMaterialColumn(itemRaw)||resolveConsKey(itemRaw);
+    if(!consKey||!state.materials[consKey]){result.skipped.push({row:rowNum,reason:'Unknown item "'+itemRaw+'"'});continue}
     const countVal=toNum(row[countCol]);
     if(countVal==null||countVal<0){result.errors.push({row:rowNum,reason:'Invalid count'});continue}
     result.valid.push({storeId:storeRaw,item:itemRaw,consKey,count:Math.round(countVal)});
@@ -3303,7 +3654,7 @@ function downloadStockTemplate(){
   const sampleStores=state.stores.filter(s=>s.status==='Live').slice(0,3);
   const templateData=[['date','storeId','item','count']];
   if(sampleStores.length>0){
-    CONS_KEYS.forEach((k,i)=>{const store=sampleStores[i%sampleStores.length];templateData.push([today,store.code,k,Math.floor(Math.random()*30)+10])});
+    matKeys().forEach((k,i)=>{const store=sampleStores[i%sampleStores.length];templateData.push([today,store.code,k,Math.floor(Math.random()*30)+10])});
   } else {
     templateData.push([today,'QCA1','PaperBag-L',25]);
     templateData.push([today,'QCA1','PaperBag-M',30]);
@@ -3443,7 +3794,7 @@ function populateHistoricalFilters(){
     const el=document.getElementById(id);
     if(el){const cur=el.value;el.innerHTML=storeOptions;if(cur)el.value=cur}
   });
-  const itemOptions=CONS_KEYS.map(c=>'<option value="'+c+'">'+c+'</option>').join('');
+  const itemOptions=forecastedKeys().map(c=>'<option value="'+c+'">'+c+'</option>').join('');
   const trendItem=document.getElementById('trendItem');
   if(trendItem){const cur=trendItem.value||CONS_KEYS[0];trendItem.innerHTML=itemOptions;trendItem.value=cur}
   const conItem=document.getElementById('conItem');
@@ -3632,7 +3983,7 @@ function renderComparison(){
   
   comparisonRows=[];
   allStores.forEach(code=>{
-    CONS_KEYS.forEach(item=>{
+    forecastedKeys().forEach(item=>{
       const v1=getStockFromSnapshot(map1[code],item);
       const v2=getStockFromSnapshot(map2[code],item);
       if(v1===0&&v2===0)return;
@@ -3715,14 +4066,14 @@ function renderMonthlySummary(){
   const byStore={};
   snaps.forEach(s=>{
     let storeTotal=0;
-    CONS_KEYS.forEach(c=>{storeTotal+=getStockFromSnapshot(s.data,c)});
+    forecastedKeys().forEach(c=>{storeTotal+=getStockFromSnapshot(s.data,c)});
     totalCartons+=storeTotal;
     if(!byStore[s.store_code]){
       const store=state.stores.find(x=>x.code===s.store_code);
       byStore[s.store_code]={code:s.store_code,area:store?.area||'',totals:{},counts:{}};
-      CONS_KEYS.forEach(c=>{byStore[s.store_code].totals[c]=0;byStore[s.store_code].counts[c]=0});
+      forecastedKeys().forEach(c=>{byStore[s.store_code].totals[c]=0;byStore[s.store_code].counts[c]=0});
     }
-    CONS_KEYS.forEach(c=>{const v=getStockFromSnapshot(s.data,c);byStore[s.store_code].totals[c]+=v;byStore[s.store_code].counts[c]++});
+    forecastedKeys().forEach(c=>{const v=getStockFromSnapshot(s.data,c);byStore[s.store_code].totals[c]+=v;byStore[s.store_code].counts[c]++});
   });
   
   const avgPerSnapshot=snaps.length>0?totalCartons/snaps.length:0;
@@ -3756,11 +4107,11 @@ function renderMonthlySummary(){
   if(!tblEl)return;
   if(monthlyRows.length===0){tblEl.innerHTML='<tr><td style="padding:30px;text-align:center">No data</td></tr>';return}
   
-  let h='<tr><th>Store</th>'+CONS_KEYS.map(c=>'<th class="nums">'+c.replace('BubbleWrap','BW').replace('PaperBag','PB')+'</th>').join('')+'<th class="nums">Total Avg</th></tr>';
+  let h='<tr><th>Store</th>'+forecastedKeys().map(c=>'<th class="nums">'+matIcon(c)+'</th>').join('')+'<th class="nums">Total Avg</th></tr>';
   monthlyRows.forEach(r=>{
     let rowTotal=0;
     h+='<tr><td><b>'+r.code+'</b><div class="cell-sub">'+r.area+'</div></td>';
-    CONS_KEYS.forEach(c=>{const avg=r.counts[c]>0?r.totals[c]/r.counts[c]:0;rowTotal+=avg;h+='<td class="nums">'+n(avg,0)+'</td>'});
+    forecastedKeys().forEach(c=>{const avg=r.counts[c]>0?r.totals[c]/r.counts[c]:0;rowTotal+=avg;h+='<td class="nums">'+n(avg,0)+'</td>'});
     h+='<td class="nums" style="font-weight:700;color:var(--amz-orange-dark);background:#FFF4E0">'+n(rowTotal,0)+'</td></tr>';
   });
   tblEl.innerHTML=h;
@@ -3781,7 +4132,7 @@ function exportMonthlyCSV(){
   let csv='Store,Area,'+CONS_KEYS.join(',')+',Total\n';
   monthlyRows.forEach(r=>{
     let total=0;
-    const cells=CONS_KEYS.map(c=>{const avg=r.counts[c]>0?r.totals[c]/r.counts[c]:0;total+=avg;return avg.toFixed(1)});
+    const cells=forecastedKeys().map(c=>{const avg=r.counts[c]>0?r.totals[c]/r.counts[c]:0;total+=avg;return avg.toFixed(1)});
     csv+='"'+r.code+'","'+r.area+'",'+cells.join(',')+','+total.toFixed(1)+'\n';
   });
   const b=new Blob([csv],{type:'text/csv'});
@@ -3826,7 +4177,7 @@ function renderConsumption(){
     const first=byStoreFirst[code];const last=byStoreLast[code];
     if(first.snapshot_date===last.snapshot_date)return;
     const store=state.stores.find(s=>s.code===code);
-    CONS_KEYS.forEach(item=>{
+    forecastedKeys().forEach(item=>{
       if(itemFilter&&item!==itemFilter)return;
       const v1=getStockFromSnapshot(first.data,item);
       const v2=getStockFromSnapshot(last.data,item);
@@ -3986,9 +4337,10 @@ function renderDailyView(){
   const allMats=getAllMaterials();
   
   // Determine which materials actually have any data on this date (to avoid empty columns)
+  const fcSet=new Set(forecastedKeys());
   const matsWithData=allMats.filter(mat=>{
     const key=stockKey(mat);
-    return snaps.some(s=>(+s.data?.[key]||0)>0)||CONS_KEYS.includes(mat);
+    return snaps.some(s=>(+s.data?.[key]||0)>0)||fcSet.has(mat);
   });
   
   // Filter stores: only those that have a snapshot on this date
@@ -4053,9 +4405,10 @@ function exportDailyViewCSV(){
   const snapMap={};
   snaps.forEach(s=>{snapMap[s.store_code]=s.data});
   const allMats=getAllMaterials();
+  const fcSet=new Set(forecastedKeys());
   const matsWithData=allMats.filter(mat=>{
     const key=stockKey(mat);
-    return snaps.some(s=>(+s.data?.[key]||0)>0)||CONS_KEYS.includes(mat);
+    return snaps.some(s=>(+s.data?.[key]||0)>0)||fcSet.has(mat);
   });
   let storeCodes=[...new Set(snaps.map(s=>s.store_code))].sort();
   const wsName=activeWorkspace?.name||'workspace';
