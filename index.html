@@ -747,7 +747,7 @@ tr:last-child td{border-bottom:none}
 <section class="pane" id="replen">
   <div class="breadcrumb"><a onclick="goToHub()">Operations</a><span class="sep">/</span><a onclick="enterView('dashboard')">Dashboard</a><span class="sep">/</span><span>Replenishment</span></div>
   <div class="page-head">
-    <div><h1>Replenishment Plan</h1><p>Cartons required for the next 3 days (capacity-constrained)</p></div>
+    <div><h1>Replenishment Plan</h1><p>Cartons needed = Forecast demand − SOH, capped by each Material Capacity</p></div>
     <div class="page-actions"><button class="btn btn-cta" onclick="expReplenCSV()">Export CSV</button></div>
   </div>
   <div class="card"><div class="tbl-wrap"><div class="tbl-scroll"><table id="tblRep"></table></div></div></div>
@@ -762,6 +762,7 @@ tr:last-child td{border-bottom:none}
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">
         <div class="field"><label>Buffer Multiplier</label><input type="number" id="bufMul" step="0.01" onchange="saveBuf()"></div>
         <div class="field"><label>Avg Units per Order (fallback)</label><input type="number" id="upo" step="0.01" onchange="saveUpo()"></div>
+        <div class="field"><label>Replenishment Coverage (days)</label><input type="number" id="replenDays" step="1" min="1" onchange="saveReplenDays()"></div>
       </div>
     </div>
   </div>
@@ -1350,7 +1351,7 @@ const MATERIAL_TYPES = {
 // GLOBAL STATE
 // ============================================
 
-let state = {cons:JSON.parse(JSON.stringify(DEFAULT_CONS)),materials:{},stores:[],stock:{},fc:{},fcUnits:{},buffer:1.30,upo:8.58,stkDate:new Date().toISOString().slice(0,10)};
+let state = {cons:JSON.parse(JSON.stringify(DEFAULT_CONS)),materials:{},stores:[],stock:{},fc:{},fcUnits:{},buffer:1.30,upo:8.58,replenDays:7,stkDate:new Date().toISOString().slice(0,10)};
 let docSelected = null;
 let currentUser = null;
 let currentProfile = null;
@@ -2100,10 +2101,11 @@ async function loadFromCloud(){
     });
     state.cons=JSON.parse(JSON.stringify(DEFAULT_CONS));
     state.materials={};
-    state.buffer=1.30;state.upo=8.58;state.stkDate=new Date().toISOString().slice(0,10);
+    state.buffer=1.30;state.upo=8.58;state.replenDays=7;state.stkDate=new Date().toISOString().slice(0,10);
     extraMaterials=[];
     (settings.data||[]).forEach(s=>{
       if(s.key==='buffer')state.buffer=+s.value||1.3;
+      else if(s.key==='replenDays')state.replenDays=+s.value||7;
       else if(s.key==='upo')state.upo=+s.value||8.58;
       else if(s.key==='stkDate')state.stkDate=s.value||new Date().toISOString().slice(0,10);
       else if(s.key==='cons'&&s.value)state.cons=s.value;
@@ -2217,6 +2219,7 @@ async function bulkSyncAll(){
     await supabaseClient.from('settings').upsert([
       {workspace_id:wsId,key:'buffer',value:state.buffer,updated_at:new Date().toISOString()},
       {workspace_id:wsId,key:'upo',value:state.upo,updated_at:new Date().toISOString()},
+      {workspace_id:wsId,key:'replenDays',value:state.replenDays,updated_at:new Date().toISOString()},
       {workspace_id:wsId,key:'stkDate',value:state.stkDate,updated_at:new Date().toISOString()},
       {workspace_id:wsId,key:'cons',value:state.cons,updated_at:new Date().toISOString()},
       {workspace_id:wsId,key:'materials',value:state.materials,updated_at:new Date().toISOString()}
@@ -2237,7 +2240,7 @@ async function resetWorkspaceData(){
     const stats={stores:state.stores.length,forecasts:Object.keys(state.fc).length,stock:Object.keys(state.stock).length};
     await supabaseClient.from('stores').delete().eq('workspace_id',wsId);
     await logActivity('workspace_reset','workspace',activeWorkspace.code,null,stats,null,{workspaceName:activeWorkspace.name});
-    state={cons:JSON.parse(JSON.stringify(DEFAULT_CONS)),materials:{},stores:[],stock:{},fc:{},fcUnits:{},buffer:1.30,upo:8.58,stkDate:new Date().toISOString().slice(0,10)};
+    state={cons:JSON.parse(JSON.stringify(DEFAULT_CONS)),materials:{},stores:[],stock:{},fc:{},fcUnits:{},buffer:1.30,upo:8.58,replenDays:7,stkDate:new Date().toISOString().slice(0,10)};
     migrateMaterials();
     docSelected=null;
     render();
@@ -2278,19 +2281,23 @@ function calcDOC(s,c){const so=calcSOH(s,c),ne=calcNeeded(s,c);return ne.dayEA>0
 function calcReplen(s,c){
   const so=calcSOH(s,c),ne=calcNeeded(s,c);
   const u=matUnits(c)||1;
-  // 3-day demand instead of weekly
-  const need3day=ne.dayEA*3;
-  const shortfallEA=Math.max(0,need3day-so.ea);
-  let ct=Math.ceil(shortfallEA/u);
-  // Material capacity constraint: stock + replen must not exceed material cap
+
+  // الفترة المطلوب تغطيتها (بالأيام) - من الإعدادات
+  const days = state.replenDays || 7;
+  const needEA = ne.dayEA * days;                  // الاحتياج الفعلي من الفوركاست
+  const shortfallEA = Math.max(0, needEA - so.ea); // الشورتاج = الاحتياج − الموجود
+  let ct = Math.ceil(shortfallEA / u);
+  const raw = ct;
+
+  // Material capacity constraint لكل ماتريال على حدة
   const store=state.stores.find(x=>x.code===s);
   const matCap=store?.matCap?.[stockKey(c)];
   let capped=false;
-  if(matCap!=null&&matCap>0){
-    const maxCanAdd=Math.max(0,matCap-so.cartons);
-    if(ct>maxCanAdd){ct=maxCanAdd;capped=true}
+  if(matCap!=null && matCap>0){
+    const maxCanAdd=Math.max(0, matCap - so.cartons);
+    if(ct > maxCanAdd){ ct=maxCanAdd; capped=true; }
   }
-  return{ea:Math.round(ct*u),ct,capped,raw:Math.ceil(shortfallEA/u)};
+  return {ea:Math.round(ct*u), ct, capped, raw};
 }
 
 // Full store replenishment with TOTAL capacity proportional scaling
@@ -2302,35 +2309,13 @@ function calcStoreReplen(storeCode){
   const result={items:{},totalReplen:0,scaled:false,anyCapped:false};
   if(!store)return result;
   const keys=replenKeys();
-  // Step 1: per-material replen (already capped by material capacity)
-  let currentStockTotal=0;
   keys.forEach(c=>{
     const r=calcReplen(storeCode,c);
     const soh=calcSOH(storeCode,c).cartons;
     result.items[c]={ct:r.ct,raw:r.raw,capped:r.capped,soh};
-    currentStockTotal+=soh;
+    result.totalReplen+=r.ct;
     if(r.capped)result.anyCapped=true;
   });
-  // Step 2: Total capacity constraint
-  let replenTotal=0;
-  keys.forEach(c=>{replenTotal+=result.items[c].ct});
-  const totalCap=+store.cap||0;
-  if(totalCap>0){
-    const projectedTotal=currentStockTotal+replenTotal;
-    if(projectedTotal>totalCap){
-      const room=Math.max(0,totalCap-currentStockTotal);
-      if(replenTotal>0&&room<replenTotal){
-        const scaleFactor=room/replenTotal;
-        keys.forEach(c=>{
-          const scaled=Math.floor(result.items[c].ct*scaleFactor);
-          result.items[c].ct=scaled;
-        });
-        result.scaled=true;
-      }
-    }
-  }
-  // Recompute total
-  keys.forEach(c=>{result.totalReplen+=result.items[c].ct});
   return result;
 }
 
@@ -2644,9 +2629,8 @@ function renderReplen(){
   if(!legendEl){
     legendEl=document.createElement('div');
     legendEl.className='replen-legend';
-    legendEl.innerHTML='<div class="replen-legend-item"><b style="color:var(--text)">3-Day Plan</b></div>'+
-      '<div class="replen-legend-item"><span class="cap-warn">CAP</span> Material capacity reached</div>'+
-      '<div class="replen-legend-item"><span class="cap-warn cap-full">TOT</span> Reduced for total capacity</div>';
+    legendEl.innerHTML='<div class="replen-legend-item"><b style="color:var(--text)">Forecast-Driven Plan ('+(state.replenDays||7)+' days coverage)</b></div>'+
+      '<div class="replen-legend-item"><span class="cap-warn">CAP</span> Material capacity reached (sent only what fits)</div>';
     card.insertBefore(legendEl,card.querySelector('.tbl-wrap'));
   }
   
@@ -2743,6 +2727,7 @@ function renderCfg(){
   document.getElementById('matCountSub').textContent=(fcKeys.length+coKeys.length)+' total';
   document.getElementById('bufMul').value=state.buffer;
   document.getElementById('upo').value=state.upo;
+  const rd=document.getElementById('replenDays');if(rd)rd.value=state.replenDays||7;
 }
 
 
@@ -2888,6 +2873,16 @@ async function saveUpo(){
   state.upo=newVal;
   await saveSettingCloud('upo',newVal);
   await logActivity('config_change','settings','upo','upo',oldVal,newVal);
+  render();
+}
+
+async function saveReplenDays(){
+  if(!canManageSettings()){denyAccess('manage settings');return}
+  const oldVal=state.replenDays;const newVal=+document.getElementById('replenDays').value||7;
+  if(oldVal===newVal)return;
+  state.replenDays=newVal;
+  await saveSettingCloud('replenDays',newVal);
+  await logActivity('config_change','settings','replenDays','replenDays',oldVal,newVal);
   render();
 }
 
