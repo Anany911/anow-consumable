@@ -765,7 +765,7 @@ tr:last-child td{border-bottom:none}
   </div>
   <div class="card">
     <div class="filters">
-      <select class="select" id="rlStoreFilter" onchange="renderReplenLog()"><option value="">All Stores</option></select>
+      <input class="input" type="text" id="rlStoreFilter" placeholder="Search store..." oninput="renderReplenLog()" style="min-width:160px">
       <select class="select" id="rlMatFilter" onchange="renderReplenLog()"><option value="">All Materials</option></select>
       <input class="input" type="date" id="rlFromDate" onchange="renderReplenLog()" style="min-width:150px">
       <input class="input" type="date" id="rlToDate" onchange="renderReplenLog()" style="min-width:150px">
@@ -1278,7 +1278,10 @@ tr:last-child td{border-bottom:none}
     <div class="modal-body">
       <div class="form-grid">
         <div class="field-row">
-          <div class="field"><label>Store <span class="req">*</span></label><select id="reStore"></select></div>
+          <div class="field"><label>Store <span class="req">*</span></label>
+            <input class="input" type="text" id="reStoreSearch" placeholder="Type to search..." oninput="filterReStore()" style="width:100%;margin-bottom:6px;min-width:0">
+            <select id="reStore" size="5" style="width:100%;min-width:0"></select>
+          </div>
           <div class="field"><label>Delivery Date <span class="req">*</span></label><input type="date" id="reDate"></div>
         </div>
         <div class="field"><label>Notes (Optional)</label><textarea id="reNotes" rows="2" placeholder="e.g. Weekly delivery" style="resize:vertical"></textarea></div>
@@ -3041,9 +3044,8 @@ async function loadReplenLog(){
 
 function openReplenEntry(){
   if(!canEdit()){denyAccess('add replenishment');return}
-  const storeSel=document.getElementById('reStore');
-  storeSel.innerHTML=state.stores.filter(s=>s.status==='Live')
-    .map(s=>'<option value="'+s.code+'">'+s.code+' - '+(s.area||'')+'</option>').join('');
+  document.getElementById('reStoreSearch').value='';
+  buildReStoreOptions('');
   document.getElementById('reDate').value=state.stkDate||new Date().toISOString().slice(0,10);
   document.getElementById('reNotes').value='';
   // build a field per material
@@ -3058,6 +3060,29 @@ function openReplenEntry(){
   document.getElementById('mdReplenEntry').classList.add('show');
 }
 
+
+  
+function buildReStoreOptions(filter){
+  const storeSel=document.getElementById('reStore');
+  const f=(filter||'').toLowerCase();
+  // Live stores first, then Not Live
+  const sorted=[...state.stores].sort((a,b)=>{
+    if(a.status==='Live'&&b.status!=='Live')return -1;
+    if(a.status!=='Live'&&b.status==='Live')return 1;
+    return a.code.localeCompare(b.code);
+  });
+  const filtered=sorted.filter(s=>!f||s.code.toLowerCase().includes(f)||(s.area||'').toLowerCase().includes(f));
+  storeSel.innerHTML=filtered
+    .map(s=>'<option value="'+s.code+'">'+s.code+' - '+(s.area||'')+(s.status!=='Live'?' (Not Live)':'')+'</option>').join('');
+  // auto-select first match for convenience
+  if(filtered.length)storeSel.value=filtered[0].code;
+}
+
+function filterReStore(){
+  const f=document.getElementById('reStoreSearch').value;
+  buildReStoreOptions(f);
+}
+  
 function closeReplenEntry(){document.getElementById('mdReplenEntry').classList.remove('show')}
 
 function updateReplenTotal(){
@@ -3109,25 +3134,20 @@ async function saveReplenEntry(){
 }
 
 function renderReplenLog(){
-  const storeF=document.getElementById('rlStoreFilter');
-  if(storeF&&storeF.options.length<=1){
-    storeF.innerHTML='<option value="">All Stores</option>'+
-      state.stores.map(s=>'<option value="'+s.code+'">'+s.code+'</option>').join('');
-  }
   const matF=document.getElementById('rlMatFilter');
   if(matF&&matF.options.length<=1){
     matF.innerHTML='<option value="">All Materials</option>'+
       matKeys().map(m=>'<option value="'+m+'">'+m+'</option>').join('');
   }
-
   const sf=document.getElementById('rlStoreFilter')?.value||'';
   const mf=document.getElementById('rlMatFilter')?.value||'';
   const from=document.getElementById('rlFromDate')?.value||'';
   const to=document.getElementById('rlToDate')?.value||'';
 
   // filter rows
+  const sfLower=sf.toLowerCase();
   let rows=replenLogCache.filter(r=>
-    (!sf||r.store_code===sf)&&
+    (!sf||r.store_code.toLowerCase().includes(sfLower))&&
     (!from||r.delivery_date>=from)&&
     (!to||r.delivery_date<=to)
   );
