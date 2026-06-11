@@ -1274,7 +1274,7 @@ tr:last-child td{border-bottom:none}
 
 <div class="modal" id="mdReplenEntry">
   <div class="modal-box" style="max-width:640px">
-    <div class="modal-head"><h3>Add Delivery</h3><button class="modal-close" onclick="closeReplenEntry()">X</button></div>
+    <div class="modal-head"><h3 id="reTitle">Add Delivery</h3><button class="modal-close" onclick="closeReplenEntry()">X</button></div>
     <div class="modal-body">
       <div class="form-grid">
         <div class="field-row">
@@ -3031,6 +3031,8 @@ function cancelNewMaterials(){
 // REPLENISHMENT LOG
 // ============================================
 let replenLogCache = [];
+let editingReplenGroup = null; // {date, store} when editing
+
 
 async function loadReplenLog(){
   if(!activeWorkspace){replenLogCache=[];return}
@@ -3044,10 +3046,10 @@ async function loadReplenLog(){
 
 function openReplenEntry(){
   if(!canEdit()){denyAccess('add replenishment');return}
-  document.getElementById('reStoreSearch').value='';
-  buildReStoreOptions('');
-  document.getElementById('reDate').value=state.stkDate||new Date().toISOString().slice(0,10);
-  document.getElementById('reNotes').value='';
+  editingReplenGroup=null;
+  document.getElementById('reTitle').textContent='Add Delivery';
+  document.getElementById('reStore').disabled=false;
+  document.getElementById('reStoreSearch').disabled=false;
   // build a field per material
   let g='';
   matKeys().forEach(m=>{
@@ -3082,6 +3084,40 @@ function filterReStore(){
   const f=document.getElementById('reStoreSearch').value;
   buildReStoreOptions(f);
 }
+
+
+
+function openEditReplen(date,store){
+  if(!canEdit()){denyAccess('edit');return}
+  editingReplenGroup={date,store};
+  document.getElementById('reTitle').textContent='Edit Delivery';
+  // build store options then lock the store (can't change store/date when editing)
+  buildReStoreOptions('');
+  const storeSel=document.getElementById('reStore');
+  storeSel.value=store;
+  document.getElementById('reStoreSearch').value=store;
+  storeSel.disabled=true;
+  document.getElementById('reStoreSearch').disabled=true;
+  document.getElementById('reDate').value=date;
+  // gather existing entries for this group
+  const existing=replenLogCache.filter(r=>r.delivery_date===date&&r.store_code===store);
+  const notesVal=existing.find(r=>r.notes)?.notes||'';
+  document.getElementById('reNotes').value=notesVal;
+  // build material fields pre-filled
+  let g='';
+  matKeys().forEach(m=>{
+    const key=stockKey(m);
+    const found=existing.find(r=>stockKey(r.material_name)===key);
+    const val=found?(+found.cartons||0):'';
+    g+='<div class="matcap-field"><label>'+m+'</label><div class="sub">'+matIcon(m)+'</div>'+
+       '<input type="number" min="0" id="re_'+key+'" value="'+val+'" placeholder="0" oninput="updateReplenTotal()"></div>';
+  });
+  document.getElementById('reMatGrid').innerHTML=g;
+  updateReplenTotal();
+  document.getElementById('mdReplenEntry').classList.add('show');
+}
+  
+
   
 function closeReplenEntry(){document.getElementById('mdReplenEntry').classList.remove('show')}
 
@@ -3111,6 +3147,13 @@ async function saveReplenEntry(){
   if(entries.length===0){toast('Enter at least one material','error');return}
   showSync('Saving...');
   try{
+    // if editing, delete old entries for this date+store first
+    if(editingReplenGroup){
+      await supabaseClient.from('replenishment_entries').delete()
+        .eq('workspace_id',activeWorkspace.id)
+        .eq('store_code',editingReplenGroup.store)
+        .eq('delivery_date',editingReplenGroup.date);
+    }
     const rows=entries.map(e=>({
       workspace_id:activeWorkspace.id,
       store_code:store,
@@ -3124,9 +3167,11 @@ async function saveReplenEntry(){
     const {error}=await supabaseClient.from('replenishment_entries').insert(rows);
     if(error)throw error;
     const totalCt=entries.reduce((a,b)=>a+b.cartons,0);
-    await logActivity('create','replenishment',store,null,null,totalCt,{date,materials:entries.length,total:totalCt});
+    const wasEditing=!!editingReplenGroup;
+    await logActivity(wasEditing?'update':'create','replenishment',store,null,null,totalCt,{date,materials:entries.length,total:totalCt});
     closeReplenEntry();
-    toast('Delivery recorded ('+entries.length+' materials, '+totalCt+' cartons)');
+    toast(wasEditing?'Delivery updated ('+totalCt+' cartons)':'Delivery recorded ('+entries.length+' materials, '+totalCt+' cartons)');
+    editingReplenGroup=null;
     await loadReplenLog();
     renderReplenLog();
   }catch(e){toast('Failed: '+e.message,'error')}
@@ -3192,7 +3237,7 @@ function renderReplenLog(){
         h+='<td class="nums">'+(v>0?'<b style="color:var(--success)">'+v+'</b>':'-')+'</td>';
       });
       h+='<td class="nums" style="font-weight:700;color:var(--amz-orange-dark);background:#FFF4E0">'+g.total+'</td>';
-      h+='<td style="text-align:right"><button class="btn btn-sm btn-danger" onclick="deleteReplenGroup(\''+g.date+'\',\''+g.store+'\')">Delete</button></td></tr>';
+      h+='<td style="text-align:right;white-space:nowrap"><button class="btn btn-sm" onclick="openEditReplen(\''+g.date+'\',\''+g.store+'\')">Edit</button> <button class="btn btn-sm btn-danger" onclick="deleteReplenGroup(\''+g.date+'\',\''+g.store+'\')">Delete</button></td></tr>';
     });
   }
   document.getElementById('tblReplenLog').innerHTML=h;
