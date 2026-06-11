@@ -3019,7 +3019,7 @@ function cancelNewMaterials(){
 
 
 // ============================================
-// REPLENISHMENT LOG 
+// REPLENISHMENT LOG
 // ============================================
 let replenLogCache = [];
 
@@ -3054,8 +3054,8 @@ async function saveReplenEntry(){
   const cartons=+document.getElementById('reCartons').value;
   const date=document.getElementById('reDate').value;
   const notes=document.getElementById('reNotes').value.trim();
-  if(!store||!material||!cartons||cartons<=0||!date){toast('املأ كل الحقول المطلوبة','error');return}
-  showSync('جاري الحفظ...');
+  if(!store||!material||!cartons||cartons<=0||!date){toast('Fill all required fields','error');return}
+  showSync('Saving...');
   try{
     const {error}=await supabaseClient.from('replenishment_entries').insert({
       workspace_id:activeWorkspace.id,
@@ -3070,22 +3070,22 @@ async function saveReplenEntry(){
     if(error)throw error;
     await logActivity('create','replenishment',store,material,null,cartons,{material,cartons,date});
     closeReplenEntry();
-    toast('تم تسجيل التوريد ('+cartons+' كرتونة)');
+    toast('Delivery recorded ('+cartons+' cartons)');
     await loadReplenLog();
     renderReplenLog();
-  }catch(e){toast('فشل: '+e.message,'error')}
+  }catch(e){toast('Failed: '+e.message,'error')}
   hideSync();
 }
 
 function renderReplenLog(){
   const storeF=document.getElementById('rlStoreFilter');
   if(storeF&&storeF.options.length<=1){
-    storeF.innerHTML='<option value="">كل الاستورات</option>'+
+    storeF.innerHTML='<option value="">All Stores</option>'+
       state.stores.map(s=>'<option value="'+s.code+'">'+s.code+'</option>').join('');
   }
   const matF=document.getElementById('rlMatFilter');
   if(matF&&matF.options.length<=1){
-    matF.innerHTML='<option value="">كل الماتيريال</option>'+
+    matF.innerHTML='<option value="">All Materials</option>'+
       matKeys().map(m=>'<option value="'+m+'">'+m+'</option>').join('');
   }
   
@@ -3101,19 +3101,19 @@ function renderReplenLog(){
     (!to||r.delivery_date<=to)
   );
   
-  document.getElementById('rlCount').textContent=rows.length+' عملية - إجمالي '+
-    rows.reduce((a,b)=>a+(+b.cartons||0),0)+' كرتونة';
+  document.getElementById('rlCount').textContent=rows.length+' deliveries - Total '+
+    rows.reduce((a,b)=>a+(+b.cartons||0),0)+' cartons';
   
-  let h='<tr><th>التاريخ</th><th>الاستور</th><th>الماتيريال</th><th class="nums">الكراتين</th><th>بواسطة</th><th>ملاحظات</th><th></th></tr>';
+  let h='<tr><th>Date</th><th>Store</th><th>Material</th><th class="nums">Cartons</th><th>By</th><th>Notes</th><th></th></tr>';
   if(!rows.length){
-    h+='<tr><td colspan="7" style="padding:40px;text-align:center;color:var(--text-mut)">مفيش توريدات مسجلة</td></tr>';
+    h+='<tr><td colspan="7" style="padding:40px;text-align:center;color:var(--text-mut)">No deliveries recorded yet</td></tr>';
   }else{
     rows.forEach(r=>{
       h+='<tr><td class="mono">'+r.delivery_date+'</td><td><b>'+r.store_code+'</b></td><td>'+r.material_name+'</td>'+
         '<td class="nums" style="font-weight:700;color:var(--success)">'+r.cartons+'</td>'+
         '<td style="font-size:12px;color:var(--text-mut)">'+(r.added_by_email||'-').split('@')[0]+'</td>'+
         '<td style="font-size:12px;color:var(--text-mut)">'+(r.notes||'-')+'</td>'+
-        '<td style="text-align:right"><button class="btn btn-sm btn-danger" onclick="deleteReplenEntry('+r.id+')">حذف</button></td></tr>';
+        '<td style="text-align:right"><button class="btn btn-sm btn-danger" onclick="deleteReplenEntry('+r.id+')">Delete</button></td></tr>';
     });
   }
   document.getElementById('tblReplenLog').innerHTML=h;
@@ -3121,19 +3121,19 @@ function renderReplenLog(){
 
 async function deleteReplenEntry(id){
   if(!canEdit()){denyAccess('delete');return}
-  if(!confirm('Delete Sent Rep?'))return;
-  showSync('Deleteing...');
+  if(!confirm('Delete this delivery entry?'))return;
+  showSync('Deleting...');
   try{
     await supabaseClient.from('replenishment_entries').delete().eq('id',id);
-    toast('Deleted!');
+    toast('Deleted');
     await loadReplenLog();
     renderReplenLog();
-  }catch(e){toast('فشل','error')}
+  }catch(e){toast('Failed','error')}
   hideSync();
 }
 
 function exportReplenLogCSV(){
-  if(!replenLogCache.length){toast('مفيش بيانات','error');return}
+  if(!replenLogCache.length){toast('No data','error');return}
   const wsName=activeWorkspace?.name||'workspace';
   let csv='Date,Store,Material,Cartons,Added By,Notes\n';
   replenLogCache.forEach(r=>{
@@ -3142,7 +3142,7 @@ function exportReplenLogCSV(){
   const b=new Blob([csv],{type:'text/csv;charset=utf-8;'});
   const a=document.createElement('a');a.href=URL.createObjectURL(b);
   a.download='replen_log_'+wsName+'_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
-  toast('Sent Replenishment Done!');
+  toast('Exported');
 }
   
   
