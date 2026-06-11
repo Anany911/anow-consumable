@@ -578,7 +578,7 @@ tr:last-child td{border-bottom:none}
       <button class="tab" data-tab="overview" data-view="dashboard" style="display:none">Overview</button>
       <button class="tab" data-tab="doc" data-view="dashboard" style="display:none">DOC Analysis</button>
       <button class="tab" data-tab="replen" data-view="dashboard" style="display:none">Replenishment <span class="badge" id="repBadge">0</span></button>
-      <button class="tab" data-tab="replenlog" data-view="dashboard" style="display:none">Replen Log</button>
+      <button class="tab" data-tab="replenlog" data-view="dashboard" style="display:none">Replenishment Log</button>
       <button class="tab" data-tab="stores" data-view="dashboard" style="display:none">Stores</button>
       <button class="tab" data-tab="stock" data-view="dashboard" style="display:none">Stock Count</button>
       <button class="tab" data-tab="forecast" data-view="dashboard" style="display:none">Forecast</button>
@@ -754,19 +754,19 @@ tr:last-child td{border-bottom:none}
   <div class="card"><div class="tbl-wrap"><div class="tbl-scroll"><table id="tblRep"></table></div></div></div>
 </section>
 
-  <section class="pane" id="replenlog">
+<section class="pane" id="replenlog">
   <div class="breadcrumb"><a onclick="goToHub()">Operations</a><span class="sep">/</span><a onclick="enterView('dashboard')">Dashboard</a><span class="sep">/</span><span>Replenishment Log</span></div>
   <div class="page-head">
-    <div><h1>سجل التوريدات</h1><p>سجّل كل عملية توريد فعلية لكل ماتيريال في كل استور</p></div>
+    <div><h1>Replenishment Log</h1><p>Record every actual delivery of material to each store</p></div>
     <div class="page-actions">
-      <button class="btn btn-action" onclick="openReplenEntry()">+ إضافة توريد</button>
+      <button class="btn btn-action" onclick="openReplenEntry()">+ Add Delivery</button>
       <button class="btn btn-cta" onclick="exportReplenLogCSV()">Export CSV</button>
     </div>
   </div>
   <div class="card">
     <div class="filters">
-      <select class="select" id="rlStoreFilter" onchange="renderReplenLog()"><option value="">كل الاستورات</option></select>
-      <select class="select" id="rlMatFilter" onchange="renderReplenLog()"><option value="">كل الماتيريال</option></select>
+      <select class="select" id="rlStoreFilter" onchange="renderReplenLog()"><option value="">All Stores</option></select>
+      <select class="select" id="rlMatFilter" onchange="renderReplenLog()"><option value="">All Materials</option></select>
       <input class="input" type="date" id="rlFromDate" onchange="renderReplenLog()" style="min-width:150px">
       <input class="input" type="date" id="rlToDate" onchange="renderReplenLog()" style="min-width:150px">
       <div style="margin-left:auto;color:var(--text-mut);font-size:12px" id="rlCount"></div>
@@ -1274,24 +1274,24 @@ tr:last-child td{border-bottom:none}
 
 <div class="modal" id="mdReplenEntry">
   <div class="modal-box">
-    <div class="modal-head"><h3>إضافة عملية توريد</h3><button class="modal-close" onclick="closeReplenEntry()">X</button></div>
+    <div class="modal-head"><h3>Add Delivery</h3><button class="modal-close" onclick="closeReplenEntry()">X</button></div>
     <div class="modal-body">
       <div class="form-grid">
         <div class="field-row">
-          <div class="field"><label>الاستور <span class="req">*</span></label><select id="reStore"></select></div>
-          <div class="field"><label>تاريخ التوريد <span class="req">*</span></label><input type="date" id="reDate"></div>
+          <div class="field"><label>Store <span class="req">*</span></label><select id="reStore"></select></div>
+          <div class="field"><label>Delivery Date <span class="req">*</span></label><input type="date" id="reDate"></div>
         </div>
-        <div class="field"><label>الماتيريال <span class="req">*</span></label><select id="reMaterial"></select></div>
-        <div class="field"><label>عدد الكراتين <span class="req">*</span></label><input type="number" id="reCartons" min="1" placeholder="مثال: 25"></div>
-        <div class="field"><label>ملاحظات (اختياري)</label><textarea id="reNotes" rows="2" placeholder="مثال: توريد طارئ" style="resize:vertical"></textarea></div>
+        <div class="field"><label>Material <span class="req">*</span></label><select id="reMaterial"></select></div>
+        <div class="field"><label>Cartons <span class="req">*</span></label><input type="number" id="reCartons" min="1" placeholder="e.g. 25"></div>
+        <div class="field"><label>Notes (Optional)</label><textarea id="reNotes" rows="2" placeholder="e.g. Emergency delivery" style="resize:vertical"></textarea></div>
       </div>
     </div>
     <div class="modal-actions">
-      <button class="btn" onclick="closeReplenEntry()">إلغاء</button>
-      <button class="btn btn-cta" onclick="saveReplenEntry()">حفظ التوريد</button>
+      <button class="btn" onclick="closeReplenEntry()">Cancel</button>
+      <button class="btn btn-cta" onclick="saveReplenEntry()">Save Delivery</button>
     </div>
   </div>
-</div>  
+</div> 
 
   
 <div class="modal" id="mdAddMat">
