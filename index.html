@@ -793,6 +793,14 @@ tr:last-child td{border-bottom:none}
       </div>
     </div>
   </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title"><span class="icon">WH</span>Warehouse Inventory <span class="card-sub">Available = Added − Sent to stores</span></div>
+      <button class="btn btn-action btn-sm" onclick="openWarehouseAdd()">+ Add to Inventory</button>
+    </div>
+    <div class="tbl-wrap"><div class="tbl-scroll"><table id="tblWarehouse"></table></div></div>
+  </div>
 </section>
 
 <section class="pane" id="config">
@@ -1292,6 +1300,29 @@ tr:last-child td{border-bottom:none}
 </div>
 
 
+
+<div class="modal" id="mdWarehouseAdd">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Add to Inventory</h3><button class="modal-close" onclick="closeWarehouseAdd()">X</button></div>
+    <div class="modal-body">
+      <div class="matcap-intro">Add stock you received into the warehouse. Choose the material and quantity. You can add any material even if you won't distribute it now.</div>
+      <div class="form-grid">
+        <div class="field"><label>Material <span class="req">*</span></label><select id="whMaterial"></select></div>
+        <div class="field-row">
+          <div class="field"><label>Cartons <span class="req">*</span></label><input type="number" id="whCartons" min="1" placeholder="e.g. 500"></div>
+          <div class="field"><label>Date <span class="req">*</span></label><input type="date" id="whDate"></div>
+        </div>
+        <div class="field"><label>Notes (Optional)</label><textarea id="whNotes" rows="2" placeholder="e.g. New shipment from supplier" style="resize:vertical"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeWarehouseAdd()">Cancel</button>
+      <button class="btn btn-cta" onclick="saveWarehouseAdd()">Add to Inventory</button>
+    </div>
+  </div>
+</div>
+  
+  
 <div class="modal" id="mdReplenEntry">
   <div class="modal-box" style="max-width:640px">
     <div class="modal-head"><h3 id="reTitle">Add Delivery</h3><button class="modal-close" onclick="closeReplenEntry()">X</button></div>
@@ -2062,6 +2093,7 @@ async function selectWorkspace(wsId){
   await loadFromCloud();
   await loadLastStockUpdate();
   await loadReplenLog();
+  await loadWarehouse();
   hideSync();
   render();
   
@@ -3216,6 +3248,7 @@ async function saveReplenEntry(){
     editingReplenGroup=null;
     await loadReplenLog();
     renderReplenLog();
+    renderWarehouse();
   }catch(e){toast('Failed: '+e.message,'error')}
   hideSync();
 }
@@ -3361,6 +3394,7 @@ async function deleteReplenGroup(date,store){
     toast('Deleted');
     await loadReplenLog();
     renderReplenLog();
+    renderWarehouse();
   }catch(e){toast('Failed','error')}
   hideSync();
 }
@@ -3389,6 +3423,106 @@ function exportReplenLogCSV(){
   toast('Exported');
 }
   
+
+
+
+
+// ============================================
+// WAREHOUSE INVENTORY
+// ============================================
+let warehouseInboundCache = [];
+
+async function loadWarehouse(){
+  if(!activeWorkspace){warehouseInboundCache=[];return}
+  try{
+    const {data}=await supabaseClient.from('warehouse_inbound')
+      .select('*').eq('workspace_id',activeWorkspace.id)
+      .order('added_date',{ascending:false}).limit(5000);
+    warehouseInboundCache=data||[];
+  }catch(e){warehouseInboundCache=[];console.error(e)}
+}
+
+function openWarehouseAdd(){
+  if(!canEdit()){denyAccess('add to inventory');return}
+  const matSel=document.getElementById('whMaterial');
+  matSel.innerHTML=matKeys().map(m=>'<option value="'+m+'">'+m+'</option>').join('');
+  document.getElementById('whCartons').value='';
+  document.getElementById('whDate').value=state.stkDate||new Date().toISOString().slice(0,10);
+  document.getElementById('whNotes').value='';
+  document.getElementById('mdWarehouseAdd').classList.add('show');
+}
+function closeWarehouseAdd(){document.getElementById('mdWarehouseAdd').classList.remove('show')}
+
+async function saveWarehouseAdd(){
+  if(!canEdit()){denyAccess('add to inventory');return}
+  const material=document.getElementById('whMaterial').value;
+  const cartons=+document.getElementById('whCartons').value;
+  const date=document.getElementById('whDate').value;
+  const notes=document.getElementById('whNotes').value.trim();
+  if(!material||!cartons||cartons<=0||!date){toast('Fill all required fields','error');return}
+  showSync('Saving...');
+  try{
+    const {error}=await supabaseClient.from('warehouse_inbound').insert({
+      workspace_id:activeWorkspace.id,
+      material_name:material,
+      material_key:stockKey(material),
+      cartons:cartons,
+      added_date:date,
+      added_by_email:currentUser.email,
+      notes:notes||null
+    });
+    if(error)throw error;
+    await logActivity('create','warehouse',material,null,null,cartons,{material,cartons,date});
+    closeWarehouseAdd();
+    toast('Added '+cartons+' cartons to inventory');
+    await loadWarehouse();
+    renderWarehouse();
+  }catch(e){toast('Failed: '+e.message,'error')}
+  hideSync();
+}
+
+// Calculate available inventory per material
+function calcWarehouseStock(){
+  const added={}; // material_key -> total added
+  warehouseInboundCache.forEach(r=>{
+    const k=r.material_key;
+    added[k]=(added[k]||0)+(+r.cartons||0);
+  });
+  const sent={}; // material_key -> total sent to stores
+  replenLogCache.forEach(r=>{
+    const k=r.material_key;
+    sent[k]=(sent[k]||0)+(+r.cartons||0);
+  });
+  return {added,sent};
+}
+
+function renderWarehouse(){
+  const {added,sent}=calcWarehouseStock();
+  const keys=matKeys();
+  let h='<tr><th>Material</th><th class="nums">Total Added</th><th class="nums">Sent to Stores</th><th class="nums">Available</th><th>Status</th></tr>';
+  let anyData=false;
+  keys.forEach(m=>{
+    const k=stockKey(m);
+    const tAdded=added[k]||0;
+    const tSent=sent[k]||0;
+    const avail=tAdded-tSent;
+    if(tAdded===0&&tSent===0)return; // skip untouched materials
+    anyData=true;
+    let statusPill;
+    if(avail<=0)statusPill='<span class="pill pill-crit">Empty</span>';
+    else if(avail<tSent*0.2)statusPill='<span class="pill pill-low">Low</span>';
+    else statusPill='<span class="pill pill-ok">OK</span>';
+    h+='<tr><td><b>'+m+'</b><div class="cell-sub">'+matIcon(m)+'</div></td>'+
+      '<td class="nums">'+n(tAdded)+'</td>'+
+      '<td class="nums" style="color:var(--danger)">'+n(tSent)+'</td>'+
+      '<td class="nums" style="font-weight:700;color:'+(avail<=0?'var(--danger)':'var(--success)')+';font-size:15px">'+n(avail)+'</td>'+
+      '<td>'+statusPill+'</td></tr>';
+  });
+  if(!anyData){
+    h+='<tr><td colspan="5" style="padding:40px;text-align:center;color:var(--text-mut)">No inventory yet. Click "+ Add to Inventory" to start.</td></tr>';
+  }
+  document.getElementById('tblWarehouse').innerHTML=h;
+}  
   
 function render(){renderOverview();renderStores();renderStock();renderForecast();renderDOC();renderReplen();renderCfg()}
 
@@ -4890,7 +5024,7 @@ document.querySelectorAll('.tab').forEach(el=>{
     if(tabId==='activity')renderActivity();
     if(tabId==='stock')renderStockUpdateInfo();
     if(tabId==='historical')initHistoricalView();
-    if(tabId==='replenlog')renderReplenLog();
+    if(tabId==='replenlog'){renderReplenLog();renderWarehouse();}
   };
 });
 
