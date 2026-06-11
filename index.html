@@ -448,6 +448,7 @@ tr:last-child td{border-bottom:none}
 .cap-full{background:var(--danger-bg);color:var(--danger)}
 .replen-legend{display:flex;gap:16px;font-size:11px;color:var(--text-mut);padding:10px 20px;flex-wrap:wrap;align-items:center;background:var(--surface-alt);border-bottom:1px solid var(--border-light)}
 .replen-legend-item{display:flex;align-items:center;gap:6px}
+.re-store-item:hover{background:var(--surface-hover)}
 .matcap-cell{display:flex;align-items:center;gap:4px;justify-content:flex-end}
 .matcap-pill{font-size:10px;padding:1px 6px;border-radius:8px;font-weight:700;cursor:pointer;border:1px solid var(--border)}
 .matcap-pill:hover{border-color:var(--amz-orange);background:#FFF4E0}
@@ -1298,8 +1299,11 @@ tr:last-child td{border-bottom:none}
       <div class="form-grid">
         <div class="field-row">
           <div class="field"><label>Store <span class="req">*</span></label>
-            <input class="input" type="text" id="reStoreSearch" placeholder="Type to search..." oninput="filterReStore()" style="width:100%;margin-bottom:6px;min-width:0">
-            <select id="reStore" size="5" style="width:100%;min-width:0"></select>
+            <div style="position:relative">
+              <input class="input" type="text" id="reStoreSearch" placeholder="Type to search..." autocomplete="off" oninput="filterReStore()" onfocus="filterReStore()" style="width:100%;min-width:0">
+              <div id="reStoreList" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:6px;box-shadow:var(--shadow-lg);max-height:220px;overflow-y:auto;z-index:50;margin-top:2px"></div>
+            </div>
+            <input type="hidden" id="reStore">
           </div>
           <div class="field"><label>Delivery Date <span class="req">*</span></label><input type="date" id="reDate"></div>
         </div>
@@ -3067,8 +3071,10 @@ function openReplenEntry(){
   if(!canEdit()){denyAccess('add replenishment');return}
   editingReplenGroup=null;
   document.getElementById('reTitle').textContent='Add Delivery';
-  document.getElementById('reStore').disabled=false;
   document.getElementById('reStoreSearch').disabled=false;
+  document.getElementById('reStore').value='';
+  document.getElementById('reStoreList').style.display='none';
+  
   // build a field per material
   let g='';
   matKeys().forEach(m=>{
@@ -3083,23 +3089,42 @@ function openReplenEntry(){
 
 
   
+
 function buildReStoreOptions(filter){
-  const storeSel=document.getElementById('reStore');
-  const f=(filter||'').toLowerCase();
+  const listEl=document.getElementById('reStoreList');
+  const f=(filter||'').trim().toLowerCase();
+  // hide list if nothing typed
+  if(!f){listEl.style.display='none';listEl.innerHTML='';return}
   // Live stores first, then Not Live
   const sorted=[...state.stores].sort((a,b)=>{
     if(a.status==='Live'&&b.status!=='Live')return -1;
     if(a.status!=='Live'&&b.status==='Live')return 1;
     return a.code.localeCompare(b.code);
   });
-  const filtered=sorted.filter(s=>!f||s.code.toLowerCase().includes(f)||(s.area||'').toLowerCase().includes(f));
-  storeSel.innerHTML=filtered
-    .map(s=>'<option value="'+s.code+'">'+s.code+' - '+(s.area||'')+(s.status!=='Live'?' (Not Live)':'')+'</option>').join('');
-  // auto-select first match for convenience
-  if(filtered.length)storeSel.value=filtered[0].code;
+  const filtered=sorted.filter(s=>s.code.toLowerCase().includes(f)||(s.area||'').toLowerCase().includes(f));
+  if(!filtered.length){
+    listEl.innerHTML='<div style="padding:10px 14px;color:var(--text-mut);font-size:13px">No stores found</div>';
+    listEl.style.display='block';
+    return;
+  }
+  listEl.innerHTML=filtered.map(s=>{
+    const label=s.code+' - '+(s.area||'')+(s.status!=='Live'?' (Not Live)':'');
+    return '<div class="re-store-item" onclick="selectReStore(\''+s.code+'\')" style="padding:9px 14px;cursor:pointer;border-bottom:1px solid var(--border-light);font-size:13px">'+
+      '<b>'+s.code+'</b> <span style="color:var(--text-mut)">'+(s.area||'')+'</span>'+(s.status!=='Live'?' <span class="pill pill-nl" style="font-size:9px">Not Live</span>':'')+'</div>';
+  }).join('');
+  listEl.style.display='block';
+}
+
+function selectReStore(code){
+  document.getElementById('reStore').value=code;
+  const store=state.stores.find(s=>s.code===code);
+  document.getElementById('reStoreSearch').value=code+(store?.area?' - '+store.area:'');
+  document.getElementById('reStoreList').style.display='none';
 }
 
 function filterReStore(){
+  // clear hidden selection when user types again
+  document.getElementById('reStore').value='';
   const f=document.getElementById('reStoreSearch').value;
   buildReStoreOptions(f);
 }
@@ -3110,14 +3135,12 @@ function openEditReplen(date,store){
   if(!canEdit()){denyAccess('edit');return}
   editingReplenGroup={date,store};
   document.getElementById('reTitle').textContent='Edit Delivery';
-  // build store options then lock the store (can't change store/date when editing)
-  buildReStoreOptions('');
-  const storeSel=document.getElementById('reStore');
-  storeSel.value=store;
-  document.getElementById('reStoreSearch').value=store;
-  storeSel.disabled=true;
+  // lock the store (can't change store/date when editing)
+  const storeObj=state.stores.find(s=>s.code===store);
+  document.getElementById('reStore').value=store;
+  document.getElementById('reStoreSearch').value=store+(storeObj?.area?' - '+storeObj.area:'');
   document.getElementById('reStoreSearch').disabled=true;
-  document.getElementById('reDate').value=date;
+  document.getElementById('reStoreList').style.display='none';
   // gather existing entries for this group
   const existing=replenLogCache.filter(r=>r.delivery_date===date&&r.store_code===store);
   const notesVal=existing.find(r=>r.notes)?.notes||'';
@@ -4892,6 +4915,12 @@ document.addEventListener('click',e=>{
   if(sw&&!sw.contains(e.target)){
     const m=document.getElementById('wsMenu');
     if(m)m.classList.remove('show');
+  }
+  // close store autocomplete if clicking outside
+  const searchInput=document.getElementById('reStoreSearch');
+  const listEl=document.getElementById('reStoreList');
+  if(searchInput&&listEl&&e.target!==searchInput&&!listEl.contains(e.target)){
+    listEl.style.display='none';
   }
 });
 
