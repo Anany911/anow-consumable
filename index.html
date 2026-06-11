@@ -773,6 +773,25 @@ tr:last-child td{border-bottom:none}
     </div>
     <div class="tbl-wrap"><div class="tbl-scroll"><table id="tblReplenLog"></table></div></div>
   </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title"><span class="icon">SUM</span>Summary <span class="card-sub" id="rlSummaryPeriod"></span></div>
+    </div>
+    <div class="card-body">
+      <div class="kpi-grid" id="rlSummaryKpis"></div>
+      <div class="grid-2">
+        <div class="card" style="margin:0">
+          <div class="card-head"><div class="card-title" style="font-size:14px">Top Stores</div></div>
+          <div id="rlTopStores"></div>
+        </div>
+        <div class="card" style="margin:0">
+          <div class="card-head"><div class="card-title" style="font-size:14px">Top Materials</div></div>
+          <div id="rlTopMaterials"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </section>
 
 <section class="pane" id="config">
@@ -3241,8 +3260,72 @@ function renderReplenLog(){
     });
   }
   document.getElementById('tblReplenLog').innerHTML=h;
+  renderReplenSummary(rows);
 }
 
+
+
+function renderReplenSummary(rows){
+  const period=[];
+  const from=document.getElementById('rlFromDate')?.value||'';
+  const to=document.getElementById('rlToDate')?.value||'';
+  if(from)period.push('from '+from);
+  if(to)period.push('to '+to);
+  document.getElementById('rlSummaryPeriod').textContent=period.length?'('+period.join(' ')+')':'(all time)';
+
+  if(!rows||!rows.length){
+    document.getElementById('rlSummaryKpis').innerHTML='<div class="kpi navy"><div class="kpi-head"><div class="kpi-icon">CT</div></div><div class="kpi-label">Total Cartons</div><div class="kpi-value">0</div></div>';
+    document.getElementById('rlTopStores').innerHTML='<div class="empty"><div class="ic">No Data</div></div>';
+    document.getElementById('rlTopMaterials').innerHTML='<div class="empty"><div class="ic">No Data</div></div>';
+    return;
+  }
+
+  // totals
+  let totalCartons=0;
+  const byStore={};
+  const byMaterial={};
+  const deliveryKeys=new Set();
+  rows.forEach(r=>{
+    const ct=+r.cartons||0;
+    totalCartons+=ct;
+    byStore[r.store_code]=(byStore[r.store_code]||0)+ct;
+    byMaterial[r.material_name]=(byMaterial[r.material_name]||0)+ct;
+    deliveryKeys.add(r.delivery_date+'|'+r.store_code);
+  });
+  const deliveryCount=deliveryKeys.size;
+  const storeCount=Object.keys(byStore).length;
+  const matCount=Object.keys(byMaterial).length;
+  const avgPerDelivery=deliveryCount?Math.round(totalCartons/deliveryCount):0;
+
+  // KPI cards
+  document.getElementById('rlSummaryKpis').innerHTML=
+    '<div class="kpi navy"><div class="kpi-head"><div class="kpi-icon">CT</div></div><div class="kpi-label">Total Cartons</div><div class="kpi-value">'+n(totalCartons)+'</div></div>'+
+    '<div class="kpi orange"><div class="kpi-head"><div class="kpi-icon">DL</div></div><div class="kpi-label">Deliveries</div><div class="kpi-value">'+deliveryCount+'</div></div>'+
+    '<div class="kpi blue"><div class="kpi-head"><div class="kpi-icon">ST</div></div><div class="kpi-label">Stores Served</div><div class="kpi-value">'+storeCount+'</div></div>'+
+    '<div class="kpi green"><div class="kpi-head"><div class="kpi-icon">AVG</div></div><div class="kpi-label">Avg / Delivery</div><div class="kpi-value">'+n(avgPerDelivery)+'</div></div>';
+
+  // Top stores
+  const topStores=Object.entries(byStore).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  const maxStore=topStores.length?topStores[0][1]:1;
+  let sh='';
+  topStores.forEach(([code,ct])=>{
+    const pct=Math.round(ct/maxStore*100);
+    sh+='<div style="padding:10px 14px;border-bottom:1px solid var(--border-light)"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><b>'+code+'</b><span class="mono" style="font-weight:700">'+n(ct)+' ct</span></div><div class="bar success"><span style="width:'+pct+'%"></span></div></div>';
+  });
+  document.getElementById('rlTopStores').innerHTML=sh;
+
+  // Top materials
+  const topMats=Object.entries(byMaterial).sort((a,b)=>b[1]-a[1]).slice(0,7);
+  const maxMat=topMats.length?topMats[0][1]:1;
+  let mh='';
+  topMats.forEach(([name,ct])=>{
+    const pct=Math.round(ct/maxMat*100);
+    mh+='<div style="padding:10px 14px;border-bottom:1px solid var(--border-light)"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><b>'+name+'</b><span class="mono" style="font-weight:700">'+n(ct)+' ct</span></div><div class="bar warn"><span style="width:'+pct+'%"></span></div></div>';
+  });
+  document.getElementById('rlTopMaterials').innerHTML=mh;
+}
+  
+  
 async function deleteReplenGroup(date,store){
   if(!canEdit()){denyAccess('delete');return}
   if(!confirm('Delete all materials for '+store+' on '+date+'?'))return;
