@@ -1273,7 +1273,7 @@ tr:last-child td{border-bottom:none}
 
 
 <div class="modal" id="mdReplenEntry">
-  <div class="modal-box">
+  <div class="modal-box" style="max-width:640px">
     <div class="modal-head"><h3>Add Delivery</h3><button class="modal-close" onclick="closeReplenEntry()">X</button></div>
     <div class="modal-body">
       <div class="form-grid">
@@ -1281,9 +1281,15 @@ tr:last-child td{border-bottom:none}
           <div class="field"><label>Store <span class="req">*</span></label><select id="reStore"></select></div>
           <div class="field"><label>Delivery Date <span class="req">*</span></label><input type="date" id="reDate"></div>
         </div>
-        <div class="field"><label>Material <span class="req">*</span></label><select id="reMaterial"></select></div>
-        <div class="field"><label>Cartons <span class="req">*</span></label><input type="number" id="reCartons" min="1" placeholder="e.g. 25"></div>
-        <div class="field"><label>Notes (Optional)</label><textarea id="reNotes" rows="2" placeholder="e.g. Emergency delivery" style="resize:vertical"></textarea></div>
+        <div class="field"><label>Notes (Optional)</label><textarea id="reNotes" rows="2" placeholder="e.g. Weekly delivery" style="resize:vertical"></textarea></div>
+        <div>
+          <label style="display:block;font-size:12px;font-weight:700;margin-bottom:8px">Cartons per Material (leave 0 if none)</label>
+          <div class="matcap-grid" id="reMatGrid"></div>
+        </div>
+        <div class="matcap-total-row">
+          <span class="label">Total Cartons</span>
+          <span class="value" id="reTotalDisp">0</span>
+        </div>
       </div>
     </div>
     <div class="modal-actions">
@@ -1291,7 +1297,7 @@ tr:last-child td{border-bottom:none}
       <button class="btn btn-cta" onclick="saveReplenEntry()">Save Delivery</button>
     </div>
   </div>
-</div> 
+</div>
 
   
 <div class="modal" id="mdAddMat">
@@ -3038,39 +3044,64 @@ function openReplenEntry(){
   const storeSel=document.getElementById('reStore');
   storeSel.innerHTML=state.stores.filter(s=>s.status==='Live')
     .map(s=>'<option value="'+s.code+'">'+s.code+' - '+(s.area||'')+'</option>').join('');
-  const matSel=document.getElementById('reMaterial');
-  matSel.innerHTML=matKeys().map(m=>'<option value="'+m+'">'+m+'</option>').join('');
   document.getElementById('reDate').value=state.stkDate||new Date().toISOString().slice(0,10);
-  document.getElementById('reCartons').value='';
   document.getElementById('reNotes').value='';
+  // build a field per material
+  let g='';
+  matKeys().forEach(m=>{
+    const key=stockKey(m);
+    g+='<div class="matcap-field"><label>'+m+'</label><div class="sub">'+matIcon(m)+'</div>'+
+       '<input type="number" min="0" id="re_'+key+'" value="" placeholder="0" oninput="updateReplenTotal()"></div>';
+  });
+  document.getElementById('reMatGrid').innerHTML=g;
+  updateReplenTotal();
   document.getElementById('mdReplenEntry').classList.add('show');
 }
+
 function closeReplenEntry(){document.getElementById('mdReplenEntry').classList.remove('show')}
+
+function updateReplenTotal(){
+  let sum=0;
+  matKeys().forEach(m=>{
+    const el=document.getElementById('re_'+stockKey(m));
+    if(el)sum+=+el.value||0;
+  });
+  const disp=document.getElementById('reTotalDisp');
+  if(disp)disp.textContent=sum;
+}
 
 async function saveReplenEntry(){
   if(!canEdit()){denyAccess('add replenishment');return}
   const store=document.getElementById('reStore').value;
-  const material=document.getElementById('reMaterial').value;
-  const cartons=+document.getElementById('reCartons').value;
   const date=document.getElementById('reDate').value;
   const notes=document.getElementById('reNotes').value.trim();
-  if(!store||!material||!cartons||cartons<=0||!date){toast('Fill all required fields','error');return}
+  if(!store||!date){toast('Select store and date','error');return}
+  // collect materials with values > 0
+  const entries=[];
+  matKeys().forEach(m=>{
+    const el=document.getElementById('re_'+stockKey(m));
+    const v=+el?.value||0;
+    if(v>0)entries.push({material:m,cartons:v});
+  });
+  if(entries.length===0){toast('Enter at least one material','error');return}
   showSync('Saving...');
   try{
-    const {error}=await supabaseClient.from('replenishment_entries').insert({
+    const rows=entries.map(e=>({
       workspace_id:activeWorkspace.id,
       store_code:store,
-      material_name:material,
-      material_key:stockKey(material),
-      cartons:cartons,
+      material_name:e.material,
+      material_key:stockKey(e.material),
+      cartons:e.cartons,
       delivery_date:date,
       added_by_email:currentUser.email,
       notes:notes||null
-    });
+    }));
+    const {error}=await supabaseClient.from('replenishment_entries').insert(rows);
     if(error)throw error;
-    await logActivity('create','replenishment',store,material,null,cartons,{material,cartons,date});
+    const totalCt=entries.reduce((a,b)=>a+b.cartons,0);
+    await logActivity('create','replenishment',store,null,null,totalCt,{date,materials:entries.length,total:totalCt});
     closeReplenEntry();
-    toast('Delivery recorded ('+cartons+' cartons)');
+    toast('Delivery recorded ('+entries.length+' materials, '+totalCt+' cartons)');
     await loadReplenLog();
     renderReplenLog();
   }catch(e){toast('Failed: '+e.message,'error')}
@@ -3088,43 +3119,74 @@ function renderReplenLog(){
     matF.innerHTML='<option value="">All Materials</option>'+
       matKeys().map(m=>'<option value="'+m+'">'+m+'</option>').join('');
   }
-  
+
   const sf=document.getElementById('rlStoreFilter')?.value||'';
   const mf=document.getElementById('rlMatFilter')?.value||'';
   const from=document.getElementById('rlFromDate')?.value||'';
   const to=document.getElementById('rlToDate')?.value||'';
-  
+
+  // filter rows
   let rows=replenLogCache.filter(r=>
     (!sf||r.store_code===sf)&&
-    (!mf||r.material_name===mf)&&
     (!from||r.delivery_date>=from)&&
     (!to||r.delivery_date<=to)
   );
-  
-  document.getElementById('rlCount').textContent=rows.length+' deliveries - Total '+
-    rows.reduce((a,b)=>a+(+b.cartons||0),0)+' cartons';
-  
-  let h='<tr><th>Date</th><th>Store</th><th>Material</th><th class="nums">Cartons</th><th>By</th><th>Notes</th><th></th></tr>';
-  if(!rows.length){
-    h+='<tr><td colspan="7" style="padding:40px;text-align:center;color:var(--text-mut)">No deliveries recorded yet</td></tr>';
+
+  // group by date+store
+  const groups={};
+  rows.forEach(r=>{
+    const gk=r.delivery_date+'|'+r.store_code;
+    if(!groups[gk]){
+      groups[gk]={date:r.delivery_date,store:r.store_code,mats:{},total:0,ids:[],notes:r.notes||''};
+    }
+    const key=stockKey(r.material_name);
+    groups[gk].mats[key]=(groups[gk].mats[key]||0)+(+r.cartons||0);
+    groups[gk].total+=(+r.cartons||0);
+    groups[gk].ids.push(r.id);
+  });
+
+  // apply material filter (only show groups that have that material)
+  let groupList=Object.values(groups);
+  if(mf){
+    const mfKey=stockKey(mf);
+    groupList=groupList.filter(g=>(g.mats[mfKey]||0)>0);
+  }
+  // sort newest first
+  groupList.sort((a,b)=>b.date.localeCompare(a.date)||a.store.localeCompare(b.store));
+
+  const keys=matKeys();
+  document.getElementById('rlCount').textContent=groupList.length+' deliveries - Total '+
+    groupList.reduce((a,b)=>a+b.total,0)+' cartons';
+
+  let h='<tr><th>Date</th><th>Store</th>'+
+    keys.map(m=>'<th class="nums" title="'+m+'">'+matIcon(m)+'</th>').join('')+
+    '<th class="nums" style="background:var(--amz-navy);color:#fff">Total</th><th></th></tr>';
+
+  if(!groupList.length){
+    h+='<tr><td colspan="'+(keys.length+4)+'" style="padding:40px;text-align:center;color:var(--text-mut)">No deliveries recorded yet</td></tr>';
   }else{
-    rows.forEach(r=>{
-      h+='<tr><td class="mono">'+r.delivery_date+'</td><td><b>'+r.store_code+'</b></td><td>'+r.material_name+'</td>'+
-        '<td class="nums" style="font-weight:700;color:var(--success)">'+r.cartons+'</td>'+
-        '<td style="font-size:12px;color:var(--text-mut)">'+(r.added_by_email||'-').split('@')[0]+'</td>'+
-        '<td style="font-size:12px;color:var(--text-mut)">'+(r.notes||'-')+'</td>'+
-        '<td style="text-align:right"><button class="btn btn-sm btn-danger" onclick="deleteReplenEntry('+r.id+')">Delete</button></td></tr>';
+    groupList.forEach(g=>{
+      h+='<tr><td class="mono">'+g.date+'</td><td><b>'+g.store+'</b></td>';
+      keys.forEach(m=>{
+        const v=g.mats[stockKey(m)]||0;
+        h+='<td class="nums">'+(v>0?'<b style="color:var(--success)">'+v+'</b>':'-')+'</td>';
+      });
+      h+='<td class="nums" style="font-weight:700;color:var(--amz-orange-dark);background:#FFF4E0">'+g.total+'</td>';
+      h+='<td style="text-align:right"><button class="btn btn-sm btn-danger" onclick="deleteReplenGroup(\''+g.date+'\',\''+g.store+'\')">Delete</button></td></tr>';
     });
   }
   document.getElementById('tblReplenLog').innerHTML=h;
 }
 
-async function deleteReplenEntry(id){
+async function deleteReplenGroup(date,store){
   if(!canEdit()){denyAccess('delete');return}
-  if(!confirm('Delete this delivery entry?'))return;
+  if(!confirm('Delete all materials for '+store+' on '+date+'?'))return;
   showSync('Deleting...');
   try{
-    await supabaseClient.from('replenishment_entries').delete().eq('id',id);
+    await supabaseClient.from('replenishment_entries').delete()
+      .eq('workspace_id',activeWorkspace.id)
+      .eq('store_code',store)
+      .eq('delivery_date',date);
     toast('Deleted');
     await loadReplenLog();
     renderReplenLog();
@@ -3135,9 +3197,20 @@ async function deleteReplenEntry(id){
 function exportReplenLogCSV(){
   if(!replenLogCache.length){toast('No data','error');return}
   const wsName=activeWorkspace?.name||'workspace';
-  let csv='Date,Store,Material,Cartons,Added By,Notes\n';
+  const keys=matKeys();
+  // group by date+store
+  const groups={};
   replenLogCache.forEach(r=>{
-    csv+='"'+r.delivery_date+'","'+r.store_code+'","'+r.material_name+'",'+r.cartons+',"'+(r.added_by_email||'')+'","'+(r.notes||'')+'"\n';
+    const gk=r.delivery_date+'|'+r.store_code;
+    if(!groups[gk])groups[gk]={date:r.delivery_date,store:r.store_code,mats:{}};
+    groups[gk].mats[stockKey(r.material_name)]=(groups[gk].mats[stockKey(r.material_name)]||0)+(+r.cartons||0);
+  });
+  const list=Object.values(groups).sort((a,b)=>b.date.localeCompare(a.date)||a.store.localeCompare(b.store));
+  let csv='Date,Store,'+keys.map(m=>'"'+m+'"').join(',')+',Total\n';
+  list.forEach(g=>{
+    let total=0;
+    const cells=keys.map(m=>{const v=g.mats[stockKey(m)]||0;total+=v;return v});
+    csv+='"'+g.date+'","'+g.store+'",'+cells.join(',')+','+total+'\n';
   });
   const b=new Blob([csv],{type:'text/csv;charset=utf-8;'});
   const a=document.createElement('a');a.href=URL.createObjectURL(b);
