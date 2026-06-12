@@ -34,6 +34,26 @@ a:hover{color:var(--link-hover);text-decoration:underline}
 .brand{transition:transform .2s}
 .brand:active{transform:scale(.97)}  
 
+#rlStoreFilter,#dailySearch{
+  background-image:url("data:image/svg+xml,...");
+  background-repeat:no-repeat;
+  background-position:left 12px center;
+  padding-left:34px !important;
+}
+
+/* Store autocomplete dropdown */
+#reStoreList{
+  animation:wsMenuIn .2s cubic-bezier(.16,1,.3,1);
+  border-radius:8px !important;
+}
+.re-store-item{
+  transition:background .12s,padding-left .12s;
+}
+.re-store-item:hover{
+  background:var(--surface-hover);
+  padding-left:18px !important;
+}
+  
   
 .topnav{background:var(--amz-navy);color:#fff;position:sticky;top:0;z-index:100;box-shadow:0 2px 5px rgba(0,0,0,.15)}
 .topnav-inner{display:flex;align-items:center;gap:20px;padding:0 24px;height:60px;max-width:1600px;margin:0 auto}
@@ -730,6 +750,136 @@ tr:last-child td{border-bottom:none}
 .skel-wrap{animation:paneIn .3s ease}
 
 
+
+
+ 
+/* ════════════════════════════════════════
+   🎯 INPUTS & DROPDOWNS — Premium Polish
+   ════════════════════════════════════════ */
+
+/* ===== كل الـ Inputs و Selects (شكل موحّد فخم) ===== */
+.input,.select,
+.field input,.field select,.field textarea,
+.cfg-field input,
+.matcap-field input,
+.hist-filter-group select,.hist-filter-group input,
+.daily-date-group input,.daily-date-group select,
+.login-field input{
+  border:1px solid #D5D9D9;
+  border-radius:8px;                    /* زوايا أنعم بدل 3px */
+  transition:border-color .2s,box-shadow .2s,background .2s;
+  background:#fff;
+}
+
+/* Hover خفيف قبل ما يدوس */
+.input:hover,.select:hover,
+.field input:hover,.field select:hover,
+.hist-filter-group select:hover,.hist-filter-group input:hover,
+.daily-date-group input:hover,.daily-date-group select:hover{
+  border-color:#9DA3A6;
+}
+
+/* Focus راقي (بدل الإطار البرتقالي العريض) */
+.input:focus,.select:focus,
+.field input:focus,.field select:focus,.field textarea:focus,
+.cfg-field input:focus,.matcap-field input:focus,
+.hist-filter-group select:focus,.hist-filter-group input:focus,
+.daily-date-group input:focus,.daily-date-group select:focus{
+  outline:none;
+  border-color:var(--amz-orange);
+  box-shadow:0 0 0 3px rgba(255,153,0,.15);   /* halo ناعم */
+  background:#FFFDF9;                          /* لمسة دفء خفيفة */
+}
+
+/* ===== سهم مخصص للـ Dropdowns (بدل السهم البايخ) ===== */
+.select,
+.field select,
+.hist-filter-group select,
+.daily-date-group select{
+  -webkit-appearance:none;
+  -moz-appearance:none;
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%23565959' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 12px center;
+  padding-right:34px !important;       /* مساحة للسهم */
+  cursor:pointer;
+}
+
+/* السهم يبقى برتقالي وقت الـ focus */
+.select:focus,
+.field select:focus,
+.hist-filter-group select:focus,
+.daily-date-group select:focus{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%23FF9900' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+/* ===== Search box مع أيقونة عدسة ===== */
+.search{position:relative}
+.search::before{
+  content:'';
+  position:absolute;left:12px;top:50%;
+  width:15px;height:15px;
+  transform:translateY(-50%);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 15 15'%3E%3Ccircle cx='6.5' cy='6.5' r='5' stroke='%23848A8C' stroke-width='1.5' fill='none'/%3E%3Cpath d='M10.5 10.5l3 3' stroke='%23848A8C' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  pointer-events:none;
+  transition:opacity .2s;
+  z-index:2;
+}
+.search .input{
+  padding-left:34px !important;        /* مساحة للعدسة */
+}
+/* العدسة تختفي لما يبدأ يكتب (اختياري وأنيق) */
+.search .input:focus + .search-icon{opacity:0}
+
+/* ===== Placeholder أنعم ===== */
+.input::placeholder,
+.field input::placeholder,
+.field textarea::placeholder,
+.cfg-field input::placeholder,
+.matcap-field input::placeholder{
+  color:#9DA3A6;
+  font-weight:400;
+}
+
+/* ===== Cell inputs (الجداول) ===== */
+.cell-input{
+  border:1px solid #D5D9D9;
+  border-radius:6px;
+  transition:border-color .15s,box-shadow .15s,background .15s;
+}
+.cell-input:hover{border-color:#9DA3A6}
+.cell-input:focus{
+  outline:none;
+  border-color:var(--amz-orange);
+  box-shadow:0 0 0 2px rgba(255,153,0,.15);
+  background:#FFFDF9;
+}
+
+/* ===== Date inputs (أيقونة التقويم برتقالي) ===== */
+input[type="date"]::-webkit-calendar-picker-indicator{
+  cursor:pointer;
+  opacity:.5;
+  transition:opacity .2s;
+}
+input[type="date"]:hover::-webkit-calendar-picker-indicator{opacity:.8}
+input[type="date"]:focus::-webkit-calendar-picker-indicator{opacity:1}
+
+/* ===== Workspace switcher dropdown (لمسة) ===== */
+.ws-current{transition:background .2s,border-color .2s,transform .15s}
+.ws-current:active{transform:scale(.97)}
+.ws-current .ws-arrow{transition:transform .25s}
+.ws-switcher .ws-menu.show ~ .ws-current .ws-arrow,
+.ws-current:hover .ws-arrow{transform:translateY(1px)}
+
+/* قائمة الـ workspace تدخل بنعومة */
+.ws-menu.show{animation:wsMenuIn .2s cubic-bezier(.16,1,.3,1)}
+@keyframes wsMenuIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.ws-item{transition:background .15s,padding-left .15s}
+.ws-item:hover{padding-left:18px}   
+  
+  
   
 </style>
 </head>
