@@ -579,7 +579,7 @@ tr:last-child td{border-bottom:none}
       <button class="tab" data-tab="overview" data-view="dashboard" style="display:none">Overview</button>
       <button class="tab" data-tab="doc" data-view="dashboard" style="display:none">DOC Analysis</button>
       <button class="tab" data-tab="replen" data-view="dashboard" style="display:none">Replenishment <span class="badge" id="repBadge">0</span></button>
-      <button class="tab" data-tab="replenlog" data-view="dashboard" style="display:none">Replenishment Log</button>
+      <button class="tab" data-tab="replenlog" data-view="dashboard" style="display:none">Inventory</button>
       <button class="tab" data-tab="stores" data-view="dashboard" style="display:none">Stores</button>
       <button class="tab" data-tab="stock" data-view="dashboard" style="display:none">Stock Count</button>
       <button class="tab" data-tab="forecast" data-view="dashboard" style="display:none">Forecast</button>
@@ -641,6 +641,33 @@ tr:last-child td{border-bottom:none}
     </div>
   </div>
   <div class="kpi-grid" id="kpiBox"></div>
+  
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title"><span class="icon">WH</span>Warehouse Inventory <span class="card-sub">Available = Added − Sent to stores</span></div>
+      <button class="btn-link" onclick="document.querySelector('[data-tab=replenlog]').click()">Manage Inventory</button>
+    </div>
+    <div class="tbl-wrap"><div class="tbl-scroll"><table id="tblWarehouseOv"></table></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title"><span class="icon">SUM</span>Replenishment Summary <span class="card-sub" id="rlSummaryPeriodOv"></span></div>
+    </div>
+    <div class="card-body">
+      <div class="kpi-grid" id="rlSummaryKpisOv"></div>
+      <div class="grid-2">
+        <div class="card" style="margin:0">
+          <div class="card-head"><div class="card-title" style="font-size:14px">Top Stores</div></div>
+          <div id="rlTopStoresOv"></div>
+        </div>
+        <div class="card" style="margin:0">
+          <div class="card-head"><div class="card-title" style="font-size:14px">Top Materials</div></div>
+          <div id="rlTopMaterialsOv"></div>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="grid-2">
     <div class="card">
       <div class="card-head">
@@ -756,11 +783,12 @@ tr:last-child td{border-bottom:none}
 </section>
 
 <section class="pane" id="replenlog">
-  <div class="breadcrumb"><a onclick="goToHub()">Operations</a><span class="sep">/</span><a onclick="enterView('dashboard')">Dashboard</a><span class="sep">/</span><span>Replenishment Log</span></div>
+  <div class="breadcrumb"><a onclick="goToHub()">Operations</a><span class="sep">/</span><a onclick="enterView('dashboard')">Dashboard</a><span class="sep">/</span><span>Inventory</span></div>
   <div class="page-head">
-    <div><h1>Replenishment Log</h1><p>Record every actual delivery of material to each store</p></div>
+    <div><h1>Inventory</h1><p>Track deliveries to stores and warehouse stock additions</p></div>
     <div class="page-actions">
       <button class="btn btn-action" onclick="openReplenEntry()">+ Add Delivery</button>
+      <button class="btn btn-action" onclick="openWarehouseAdd()">+ Add to Inventory</button>
       <button class="btn btn-cta" onclick="exportReplenLogCSV()">Export CSV</button>
     </div>
   </div>
@@ -775,32 +803,6 @@ tr:last-child td{border-bottom:none}
     <div class="tbl-wrap"><div class="tbl-scroll"><table id="tblReplenLog"></table></div></div>
   </div>
 
-  <div class="card">
-    <div class="card-head">
-      <div class="card-title"><span class="icon">SUM</span>Summary <span class="card-sub" id="rlSummaryPeriod"></span></div>
-    </div>
-    <div class="card-body">
-      <div class="kpi-grid" id="rlSummaryKpis"></div>
-      <div class="grid-2">
-        <div class="card" style="margin:0">
-          <div class="card-head"><div class="card-title" style="font-size:14px">Top Stores</div></div>
-          <div id="rlTopStores"></div>
-        </div>
-        <div class="card" style="margin:0">
-          <div class="card-head"><div class="card-title" style="font-size:14px">Top Materials</div></div>
-          <div id="rlTopMaterials"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-head">
-      <div class="card-title"><span class="icon">WH</span>Warehouse Inventory <span class="card-sub">Available = Added − Sent to stores</span></div>
-      <button class="btn btn-action btn-sm" onclick="openWarehouseAdd()">+ Add to Inventory</button>
-    </div>
-    <div class="tbl-wrap"><div class="tbl-scroll"><table id="tblWarehouse"></table></div></div>
-  </div>
 
   <div class="card">
     <div class="card-head">
@@ -1497,8 +1499,8 @@ let memberWsId = null;
 let _originalPermissions = null;
 let currentPermissions = {role:'none',canView:false,canEdit:false,canManageSettings:false,canManageMembers:false,canDeleteWorkspace:false};
   
-// let extraMaterials = []; // array of extra material names like ['SealTape(Blue)','SPOOLabel(L)']
-// let pendingNewMaterials = []; // for the detection modal
+let extraMaterials = [];
+let pendingNewMaterials = [];
 let dailyViewDates = []; // available snapshot dates for daily view
 
 // ============================================
@@ -1540,6 +1542,10 @@ function matKeys(){
     .sort((a,b)=>(a.order||0)-(b.order||0))
     .map(m=>m.name);
 }
+
+  Object.defineProperty(window, 'CONS_KEYS', {
+  get(){ return matKeys(); }
+});
 
 // Get only forecasted materials (have equation) - used for DOC/Heatmap/Forecast
 function forecastedKeys(){
@@ -1655,7 +1661,7 @@ function toNum(v){
   const num=parseFloat(cleaned);
   return isNaN(num)?null:num;
 }
-function isStoreCode(s){return /^Q[A-Z]{1,3}\d+[A-Z]?$/i.test(normStr(s).trim())}
+function isStoreCode(s){return /^[A-Z]{1,4}\d+[A-Z]?$/i.test(normStr(s).trim())}
 function normalizeStatus(raw){const s=normKey(raw);if(!s)return'Live';if(['live','launched','active','open','running'].includes(s))return'Live';return'Not Live'}
 
 function resolveConsKey(header){
@@ -2490,6 +2496,8 @@ function renderOverview(){
   }else{h+='<tr><td colspan="'+(fcKeys.length+1)+'" style="padding:30px;text-align:center;color:var(--text-mut)">No live stores</td></tr>'}
   h+='</table>';
   document.getElementById('heatmap').innerHTML=h;
+  renderWarehouse();
+  renderReplenLog();
 }
 
 function openStore(code){editStore=code;const s=code?state.stores.find(x=>x.code===code):{code:'',area:'',status:'Live',launch:'',cap:100};document.getElementById('mdTitle').textContent=code?'Edit '+code:'Add Store';mCode.value=s.code;mArea.value=s.area;mStat.value=s.status;mLaunch.value=s.launch||'';mCap.value=s.cap;mCode.disabled=!!code;document.getElementById('mdStore').classList.add('show')}
@@ -3338,16 +3346,22 @@ function renderReplenSummary(rows){
   const to=document.getElementById('rlToDate')?.value||'';
   if(from)period.push('from '+from);
   if(to)period.push('to '+to);
-  document.getElementById('rlSummaryPeriod').textContent=period.length?'('+period.join(' ')+')':'(all time)';
+  const periodTxt=period.length?'('+period.join(' ')+')':'(all time)';
+  const setHTML=(id,html)=>{const el=document.getElementById(id);if(el)el.innerHTML=html};
+  const setTXT=(id,txt)=>{const el=document.getElementById(id);if(el)el.textContent=txt};
+
+  setTXT('rlSummaryPeriod',periodTxt);
+  setTXT('rlSummaryPeriodOv',periodTxt);
 
   if(!rows||!rows.length){
-    document.getElementById('rlSummaryKpis').innerHTML='<div class="kpi navy"><div class="kpi-head"><div class="kpi-icon">CT</div></div><div class="kpi-label">Total Cartons</div><div class="kpi-value">0</div></div>';
-    document.getElementById('rlTopStores').innerHTML='<div class="empty"><div class="ic">No Data</div></div>';
-    document.getElementById('rlTopMaterials').innerHTML='<div class="empty"><div class="ic">No Data</div></div>';
+    const emptyKpi='<div class="kpi navy"><div class="kpi-head"><div class="kpi-icon">CT</div></div><div class="kpi-label">Total Cartons</div><div class="kpi-value">0</div></div>';
+    const emptyBox='<div class="empty"><div class="ic">No Data</div></div>';
+    setHTML('rlSummaryKpis',emptyKpi);setHTML('rlSummaryKpisOv',emptyKpi);
+    setHTML('rlTopStores',emptyBox);setHTML('rlTopStoresOv',emptyBox);
+    setHTML('rlTopMaterials',emptyBox);setHTML('rlTopMaterialsOv',emptyBox);
     return;
   }
 
-  // totals
   let totalCartons=0;
   const byStore={};
   const byMaterial={};
@@ -3361,17 +3375,15 @@ function renderReplenSummary(rows){
   });
   const deliveryCount=deliveryKeys.size;
   const storeCount=Object.keys(byStore).length;
-  const matCount=Object.keys(byMaterial).length;
   const avgPerDelivery=deliveryCount?Math.round(totalCartons/deliveryCount):0;
 
-  // KPI cards
-  document.getElementById('rlSummaryKpis').innerHTML=
+  const kpiHTML=
     '<div class="kpi navy"><div class="kpi-head"><div class="kpi-icon">CT</div></div><div class="kpi-label">Total Cartons</div><div class="kpi-value">'+n(totalCartons)+'</div></div>'+
     '<div class="kpi orange"><div class="kpi-head"><div class="kpi-icon">DL</div></div><div class="kpi-label">Deliveries</div><div class="kpi-value">'+deliveryCount+'</div></div>'+
     '<div class="kpi blue"><div class="kpi-head"><div class="kpi-icon">ST</div></div><div class="kpi-label">Stores Served</div><div class="kpi-value">'+storeCount+'</div></div>'+
     '<div class="kpi green"><div class="kpi-head"><div class="kpi-icon">AVG</div></div><div class="kpi-label">Avg / Delivery</div><div class="kpi-value">'+n(avgPerDelivery)+'</div></div>';
+  setHTML('rlSummaryKpis',kpiHTML);setHTML('rlSummaryKpisOv',kpiHTML);
 
-  // Top stores
   const topStores=Object.entries(byStore).sort((a,b)=>b[1]-a[1]).slice(0,7);
   const maxStore=topStores.length?topStores[0][1]:1;
   let sh='';
@@ -3379,9 +3391,8 @@ function renderReplenSummary(rows){
     const pct=Math.round(ct/maxStore*100);
     sh+='<div style="padding:10px 14px;border-bottom:1px solid var(--border-light)"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><b>'+code+'</b><span class="mono" style="font-weight:700">'+n(ct)+' ct</span></div><div class="bar success"><span style="width:'+pct+'%"></span></div></div>';
   });
-  document.getElementById('rlTopStores').innerHTML=sh;
+  setHTML('rlTopStores',sh);setHTML('rlTopStoresOv',sh);
 
-  // Top materials
   const topMats=Object.entries(byMaterial).sort((a,b)=>b[1]-a[1]).slice(0,7);
   const maxMat=topMats.length?topMats[0][1]:1;
   let mh='';
@@ -3389,9 +3400,8 @@ function renderReplenSummary(rows){
     const pct=Math.round(ct/maxMat*100);
     mh+='<div style="padding:10px 14px;border-bottom:1px solid var(--border-light)"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><b>'+name+'</b><span class="mono" style="font-weight:700">'+n(ct)+' ct</span></div><div class="bar warn"><span style="width:'+pct+'%"></span></div></div>';
   });
-  document.getElementById('rlTopMaterials').innerHTML=mh;
-}
-  
+  setHTML('rlTopMaterials',mh);setHTML('rlTopMaterialsOv',mh);
+}  
   
 async function deleteReplenGroup(date,store){
   if(!canEdit()){denyAccess('delete');return}
@@ -3570,7 +3580,10 @@ function renderWarehouse(){
   if(!anyData){
     h+='<tr><td colspan="5" style="padding:40px;text-align:center;color:var(--text-mut)">No inventory yet. Click "+ Add to Inventory" to start.</td></tr>';
   }
-  document.getElementById('tblWarehouse').innerHTML=h;
+  const elMain=document.getElementById('tblWarehouse');
+  if(elMain)elMain.innerHTML=h;
+  const elOv=document.getElementById('tblWarehouseOv');
+  if(elOv)elOv.innerHTML=h;
 }  
 
 function renderWarehouseLog(){
@@ -4391,7 +4404,7 @@ function aggregateByDate(snapshots,consKey,asUnits){
   snapshots.forEach(s=>{
     const cartons=getStockFromSnapshot(s.data,consKey);
     if(!byDate[s.snapshot_date])byDate[s.snapshot_date]=0;
-    if(asUnits){const upb=state.cons[consKey]?.units||0;byDate[s.snapshot_date]+=cartons*upb}
+    if(asUnits){const upb=matUnits(consKey)||0;byDate[s.snapshot_date]+=cartons*upb}
     else byDate[s.snapshot_date]+=cartons;
   });
   return Object.entries(byDate).map(([date,val])=>({date,val})).sort((a,b)=>a.date.localeCompare(b.date));
