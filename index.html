@@ -880,6 +880,315 @@ input[type="date"]:focus::-webkit-calendar-picker-indicator{opacity:1}
 .ws-item:hover{padding-left:18px}   
   
   
+
+/* ════════════════════════════════════════
+   🌙 DARK MODE — Enterprise Grade
+   ════════════════════════════════════════ */
+:root[data-theme="dark"]{
+  --amz-navy:#0B0E11;
+  --amz-navy-2:#161B22;
+  --amz-orange:#FF9900;
+  --amz-orange-dark:#E88B00;
+  --amz-orange-light:#FFAC31;
+  --amz-blue:#3B9CE8;
+
+  --bg:#0D1117;
+  --surface:#161B22;
+  --surface-alt:#1C2128;
+  --surface-hover:#21262D;
+  --border:#30363D;
+  --border-light:#21262D;
+
+  --text:#E6EDF3;
+  --text-mut:#9DA7B0;
+  --text-dim:#6E7681;
+
+  --link:#58A6FF;
+  --link-hover:#79B8FF;
+
+  --success:#3FB950; --success-bg:#0F2B1A;
+  --warn:#D29922;     --warn-bg:#2D2410;
+  --danger:#F85149;   --danger-bg:#2D1517;
+  --info:#58A6FF;     --info-bg:#0D2438;
+
+  --shadow-xs:0 1px 2px rgba(0,0,0,.4);
+  --shadow-sm:0 2px 5px rgba(0,0,0,.5);
+  --shadow:0 4px 12px rgba(0,0,0,.5);
+  --shadow-lg:0 8px 24px rgba(0,0,0,.6);
+}
+
+/* ===== Smooth theme transition ===== */
+html{transition:background .3s}
+[data-theme="dark"] body,
+[data-theme="dark"] .card,
+[data-theme="dark"] .kpi,
+[data-theme="dark"] .topnav,
+[data-theme="dark"] .subnav,
+[data-theme="dark"] table,
+[data-theme="dark"] .input,
+[data-theme="dark"] .select{
+  transition:background-color .3s ease, border-color .3s ease, color .3s ease;
+}
+
+/* ===== Scrollbars ===== */
+[data-theme="dark"] ::-webkit-scrollbar-track{background:#161B22}
+[data-theme="dark"] ::-webkit-scrollbar-thumb{background:#30363D;border:2px solid #161B22}
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover{background:#484F58}
+
+/* ===== TopNav / SubNav ===== */
+[data-theme="dark"] .topnav{box-shadow:0 1px 0 #30363D, 0 2px 8px rgba(0,0,0,.4)}
+[data-theme="dark"] .nav-divider{background:#30363D}
+[data-theme="dark"] .subnav{border-top:1px solid #21262D}
+[data-theme="dark"] .tab.admin-only{background:rgba(255,153,0,.08);border-left:1px solid #30363D}
+
+/* ===== Buttons (لازم نعيد تعريفها لأنها gradients ثابتة) ===== */
+[data-theme="dark"] .btn{
+  background:linear-gradient(to bottom,#21262D,#161B22);
+  border-color:#30363D;
+  color:var(--text);
+}
+[data-theme="dark"] .btn:hover{
+  background:linear-gradient(to bottom,#2D333B,#21262D);
+  border-color:#484F58;
+}
+[data-theme="dark"] .btn-cta{
+  background:linear-gradient(to bottom,#FFB000,#E89200);
+  border-color:#B57A00;
+  color:#0D1117;
+}
+[data-theme="dark"] .btn-cta:hover{
+  background:linear-gradient(to bottom,#FFBC20,#F09E00);
+}
+[data-theme="dark"] .btn-action{
+  background:linear-gradient(to bottom,#FF9F1A,#E88500);
+  border-color:#B56A00;
+  color:#0D1117;
+}
+[data-theme="dark"] .btn-action:hover{
+  background:linear-gradient(to bottom,#FFA92E,#F08F00);
+}
+[data-theme="dark"] .btn-danger{color:var(--danger)}
+[data-theme="dark"] .btn-danger:hover{background:var(--danger-bg);border-color:var(--danger)}
+[data-theme="dark"] .btn-link{background:transparent;border:none}
+
+/* ===== Inputs / Selects / Textareas ===== */
+[data-theme="dark"] .input,
+[data-theme="dark"] .select,
+[data-theme="dark"] .field input,
+[data-theme="dark"] .field select,
+[data-theme="dark"] .field textarea,
+[data-theme="dark"] .cfg-field input,
+[data-theme="dark"] .matcap-field input,
+[data-theme="dark"] .hist-filter-group select,
+[data-theme="dark"] .hist-filter-group input,
+[data-theme="dark"] .daily-date-group input,
+[data-theme="dark"] .daily-date-group select,
+[data-theme="dark"] .cell-input,
+[data-theme="dark"] .login-field input,
+[data-theme="dark"] textarea{
+  background:#0D1117;
+  border-color:#30363D;
+  color:var(--text);
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.3);
+}
+[data-theme="dark"] .input:hover,
+[data-theme="dark"] .select:hover,
+[data-theme="dark"] .field input:hover,
+[data-theme="dark"] .cell-input:hover{border-color:#484F58}
+[data-theme="dark"] .input:focus,
+[data-theme="dark"] .select:focus,
+[data-theme="dark"] .field input:focus,
+[data-theme="dark"] .field select:focus,
+[data-theme="dark"] .field textarea:focus,
+[data-theme="dark"] .cell-input:focus{
+  border-color:var(--amz-orange);
+  box-shadow:0 0 0 3px rgba(255,153,0,.18);
+  background:#13171D;
+}
+[data-theme="dark"] .input::placeholder,
+[data-theme="dark"] .field input::placeholder,
+[data-theme="dark"] textarea::placeholder{color:#6E7681}
+
+/* سهم الـ select الأبيض في الدارك */
+[data-theme="dark"] .select,
+[data-theme="dark"] .field select,
+[data-theme="dark"] .hist-filter-group select,
+[data-theme="dark"] .daily-date-group select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%239DA7B0' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.8)}
+
+/* أيقونة البحث */
+[data-theme="dark"] .search::before{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 15 15'%3E%3Ccircle cx='6.5' cy='6.5' r='5' stroke='%236E7681' stroke-width='1.5' fill='none'/%3E%3Cpath d='M10.5 10.5l3 3' stroke='%236E7681' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+}
+
+/* ===== Tables ===== */
+[data-theme="dark"] th{background:var(--surface-alt);border-bottom-color:var(--border);color:var(--text)}
+[data-theme="dark"] td{border-bottom-color:var(--border-light)}
+[data-theme="dark"] tr:hover td{background:var(--surface-hover)}
+[data-theme="dark"] .daily-tbl td.store-cell{background:var(--surface)}
+[data-theme="dark"] .daily-tbl tr:hover td.store-cell{background:var(--surface-hover)}
+[data-theme="dark"] .daily-tbl th.store-col{background:var(--surface-alt)}
+
+/* ===== KPI Cards ===== */
+[data-theme="dark"] .kpi:hover{box-shadow:var(--shadow-sm)}
+[data-theme="dark"] .kpi.navy .kpi-icon{background:#21262D;color:var(--amz-orange)}
+[data-theme="dark"] .kpi.orange .kpi-icon{background:#2D2410;color:var(--amz-orange-light)}
+[data-theme="dark"] .kpi.blue .kpi-icon{background:#0D2438;color:var(--amz-blue)}
+[data-theme="dark"] .kpi.green .kpi-icon{background:var(--success-bg);color:var(--success)}
+[data-theme="dark"] .kpi.red .kpi-icon{background:var(--danger-bg);color:var(--danger)}
+[data-theme="dark"] .kpi.yellow .kpi-icon{background:var(--warn-bg);color:var(--warn)}
+
+/* ===== Pills ===== */
+[data-theme="dark"] .pill-live,[data-theme="dark"] .pill-ok{background:var(--success-bg);color:#56D364;border-color:#1F4D2A}
+[data-theme="dark"] .pill-nl,[data-theme="dark"] .pill-low{background:var(--warn-bg);color:#E3B341;border-color:#4D3E12}
+[data-theme="dark"] .pill-crit{background:var(--danger-bg);color:#FF6B61;border-color:#4D1F1F}
+[data-theme="dark"] .pill-hi{background:var(--info-bg);color:#79B8FF;border-color:#1F3D5C}
+[data-theme="dark"] .pill-admin{background:#2D2410;color:var(--amz-orange-light);border-color:#4D3E12}
+[data-theme="dark"] .pill-owner{background:var(--danger-bg);color:#FF6B61;border-color:#4D1F1F}
+
+/* ===== Bars ===== */
+[data-theme="dark"] .bar{background:#21262D}
+
+/* ===== Modals ===== */
+[data-theme="dark"] .modal{background:rgba(0,0,0,.75)}
+[data-theme="dark"] .modal-box{background:var(--surface);box-shadow:var(--shadow-lg)}
+[data-theme="dark"] .modal-close{background:var(--surface-alt);border-color:var(--border);color:var(--text)}
+[data-theme="dark"] .modal-close:hover{background:var(--surface-hover)}
+
+/* ===== Login / WS Select ===== */
+[data-theme="dark"] .login-overlay,
+[data-theme="dark"] .ws-select-overlay{
+  background:linear-gradient(135deg,#0B0E11 0%,#161B22 50%,#0D1419 100%);
+  background-size:200% 200%;
+}
+[data-theme="dark"] .login-box,
+[data-theme="dark"] .ws-select-box{background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.7)}
+[data-theme="dark"] .login-logo .l1{color:var(--text)}
+[data-theme="dark"] .ws-card{background:var(--surface-alt);border-color:var(--border)}
+[data-theme="dark"] .ws-card:hover{background:#1F2530;border-color:var(--amz-orange)}
+[data-theme="dark"] .login-btn{
+  background:linear-gradient(to bottom,#FFB000,#E89200);
+  border-color:#B57A00;color:#0D1117;
+}
+
+/* ===== Workspace Menu ===== */
+[data-theme="dark"] .ws-menu{background:var(--surface);border-color:var(--border)}
+[data-theme="dark"] .ws-menu-header{background:var(--surface-alt);border-bottom-color:var(--border)}
+[data-theme="dark"] .ws-item{border-bottom-color:var(--border-light)}
+[data-theme="dark"] .ws-item:hover{background:var(--surface-hover)}
+[data-theme="dark"] .ws-item.active{background:rgba(255,153,0,.12);color:var(--amz-orange-light)}
+[data-theme="dark"] .ws-divider{background:var(--border)}
+
+/* ===== Hub Cards ===== */
+[data-theme="dark"] .hub-card{background:var(--surface);border-color:var(--border)}
+[data-theme="dark"] .hub-card:hover{border-color:var(--amz-orange)}
+[data-theme="dark"] .hub-card.dashboard .hub-card-icon{background:linear-gradient(135deg,#161B22,#21262D)}
+
+/* ===== Toast / Sync ===== */
+[data-theme="dark"] .toast{background:var(--surface);border-color:var(--border)}
+[data-theme="dark"] .sync-indicator{background:var(--surface);border-color:var(--border)}
+
+/* ===== Heatmap ===== */
+[data-theme="dark"] .heatmap td.code{background:var(--surface-alt)}
+
+/* ===== Config / Cfg cards ===== */
+[data-theme="dark"] .cfg-card{background:var(--surface-alt);border-color:var(--border)}
+[data-theme="dark"] .type-tag{background:var(--info-bg);color:var(--info)}
+[data-theme="dark"] .mat-kind-countonly{background:var(--surface);color:var(--text-mut);border-color:var(--border)}
+
+/* ===== Alerts / Logs ===== */
+[data-theme="dark"] .alert-item:hover,[data-theme="dark"] .log-entry:hover{background:var(--surface-hover)}
+[data-theme="dark"] .alert-icon{background:var(--surface-alt)}
+[data-theme="dark"] .log-icon{background:var(--surface-alt)}
+[data-theme="dark"] .log-change{background:var(--surface-alt)}
+
+/* ===== Filters / Hist ===== */
+[data-theme="dark"] .filters{background:var(--surface-alt);border-bottom-color:var(--border-light)}
+[data-theme="dark"] .hist-filters{background:var(--surface-alt);border-color:var(--border)}
+[data-theme="dark"] .chart-container{background:var(--surface);border-color:var(--border)}
+[data-theme="dark"] .replen-legend{background:var(--surface-alt)}
+
+/* ===== Calendar ===== */
+[data-theme="dark"] .calendar-day{background:var(--surface-alt);border-color:var(--border-light)}
+[data-theme="dark"] .calendar-day.has-snapshot{background:var(--success-bg);border-color:#1F4D2A;color:#56D364}
+
+/* ===== Summary / Stock cards ===== */
+[data-theme="dark"] .summary-card{background:var(--surface);border-color:var(--border)}
+[data-theme="dark"] .stock-meta{background:var(--surface-alt)}
+[data-theme="dark"] .stock-issues{background:#2D2410;border-color:#4D3E12}
+[data-theme="dark"] .update-info{background:linear-gradient(135deg,#1F1A0E,#2D2410);border-color:#4D3E12}
+[data-theme="dark"] .snapshot-banner{background:linear-gradient(135deg,#0D2438,#0F2B1A);border-color:#1F3D5C}
+[data-theme="dark"] .snapshot-banner.warning{background:linear-gradient(135deg,#1F1A0E,#2D2410);border-color:#4D3E12}
+
+/* ===== Member rows ===== */
+[data-theme="dark"] .member-row{border-bottom-color:var(--border-light)}
+
+/* ===== Skeletons ===== */
+[data-theme="dark"] .skel{background:linear-gradient(90deg,#1C2128 25%,#262C35 50%,#1C2128 75%);background-size:200% 100%}
+[data-theme="dark"] .skel-kpi{background:var(--surface);border-color:var(--border)}
+
+/* ===== Import report ===== */
+[data-theme="dark"] .import-report{background:var(--surface-alt);border-color:var(--border)}
+
+/* ===== Material capacity ===== */
+[data-theme="dark"] .matcap-intro{background:var(--surface-alt);border-color:var(--border)}
+[data-theme="dark"] .matcap-field{background:var(--surface-alt);border-color:var(--border)}
+[data-theme="dark"] .matcap-pill{background:var(--surface-alt);border-color:var(--border);color:var(--text)}
+[data-theme="dark"] .matcap-pill:hover{background:#2D2410;border-color:var(--amz-orange)}
+[data-theme="dark"] .matcap-sum-bar{background:#21262D}
+
+/* ===== New material / Add material ===== */
+[data-theme="dark"] .newmat-list{border-color:var(--border)}
+[data-theme="dark"] .newmat-item{border-bottom-color:var(--border-light)}
+[data-theme="dark"] .newmat-item:hover{background:var(--surface-hover)}
+[data-theme="dark"] .newmat-item.selected{background:rgba(255,153,0,.1)}
+[data-theme="dark"] .newmat-checkbox{background:#0D1117;border-color:#484F58}
+[data-theme="dark"] .kind-option{border-color:var(--border)}
+[data-theme="dark"] .kind-option:hover{background:rgba(255,153,0,.08)}
+[data-theme="dark"] .kind-option.selected{background:rgba(255,153,0,.12);border-color:var(--amz-orange)}
+[data-theme="dark"] .addmat-type-info{background:var(--surface-alt)}
+
+/* ===== Toggle switch ===== */
+[data-theme="dark"] .toggle-slider{background:#484F58}
+
+/* ===== Daily view extra ===== */
+[data-theme="dark"] .daily-tbl .extra-col{background:rgba(255,153,0,.08)}
+[data-theme="dark"] .daily-tbl th.extra-col{background:#2D2410;color:var(--amz-orange-light)}
+
+/* ════════════════════════════════════════
+   🌗 THEME TOGGLE BUTTON
+   ════════════════════════════════════════ */
+.theme-toggle{
+  position:relative;
+  width:52px;height:28px;
+  border-radius:20px;
+  border:1px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.1);
+  cursor:pointer;
+  display:flex;align-items:center;
+  padding:0 3px;
+  flex-shrink:0;
+  transition:background .3s,border-color .3s;
+}
+.theme-toggle:hover{border-color:var(--amz-orange)}
+.theme-toggle .tt-thumb{
+  width:22px;height:22px;border-radius:50%;
+  background:var(--amz-orange);
+  display:grid;place-items:center;
+  font-size:12px;line-height:1;
+  transition:transform .3s cubic-bezier(.16,1,.3,1),background .3s;
+  box-shadow:0 1px 3px rgba(0,0,0,.4);
+}
+[data-theme="dark"] .theme-toggle{background:rgba(255,153,0,.15)}
+[data-theme="dark"] .theme-toggle .tt-thumb{transform:translateX(24px)}
+.theme-toggle .tt-icon-sun,.theme-toggle .tt-icon-moon{
+  position:absolute;font-size:11px;opacity:.6;pointer-events:none;
+}
+.theme-toggle .tt-icon-sun{left:8px}
+.theme-toggle .tt-icon-moon{right:8px}
+
   
 </style>
 </head>
@@ -962,6 +1271,12 @@ input[type="date"]:focus::-webkit-calendar-picker-indicator{opacity:1}
         <input type="file" id="xlsFile" accept=".xlsx,.xls" style="display:none" onchange="importExcel(event)">
         <button class="nav-btn" onclick="exportAll()">
           <span class="nav-btn-icon">⬇</span><span class="nav-btn-text">Export</span>
+        </button>
+
+        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle Dark Mode">
+          <span class="tt-icon-sun">☀</span>
+          <span class="tt-icon-moon">🌙</span>
+          <span class="tt-thumb" id="ttThumb">☀</span>
         </button>
         <button class="nav-btn" onclick="logout()" title="Logout">
           <span class="nav-btn-icon">⏻</span><span class="nav-btn-text">Logout</span>
@@ -2135,6 +2450,16 @@ function formatLogTime(dateStr){
 
 function destroyChart(instance){if(instance){try{instance.destroy()}catch(e){}}return null}
 
+
+function chartTheme(){
+  const dark=document.documentElement.getAttribute('data-theme')==='dark';
+  return {
+    grid:dark?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.05)',   
+    ticks:dark?'#9DA7B0':'#565959',                            
+    tooltipBg:dark?'#21262D':'#131A22'                         
+  };
+}
+  
 // ============================================
 // PERMISSIONS SYSTEM
 // ============================================
@@ -5075,26 +5400,26 @@ function renderTrendChart(){
         pointBorderWidth:2
       }]
     },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      interaction:{intersect:false,mode:'index'},
-      plugins:{
-        legend:{display:true,position:'top'},
-        tooltip:{
-          backgroundColor:'#131A22',
-          titleColor:'#FF9900',
-          bodyColor:'#fff',
-          padding:10,
-          cornerRadius:6,
-          callbacks:{label:function(ctx){return item+': '+n(ctx.parsed.y,0)+' '+unit}}
+        options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        interaction:{intersect:false,mode:'index'},
+        plugins:{
+          legend:{display:true,position:'top',labels:{color:chartTheme().ticks}},
+          tooltip:{
+            backgroundColor:chartTheme().tooltipBg,
+            titleColor:'#FF9900',
+            bodyColor:'#fff',
+            padding:10,
+            cornerRadius:6,
+            callbacks:{label:function(ctx){return item+': '+n(ctx.parsed.y,0)+' '+unit}}
+          }
+        },
+        scales:{
+          x:{grid:{display:false},ticks:{color:chartTheme().ticks}},
+          y:{beginAtZero:true,grid:{color:chartTheme().grid},ticks:{color:chartTheme().ticks,callback:function(v){return n(v,0)}}}
         }
-      },
-      scales:{
-        x:{grid:{display:false}},
-        y:{beginAtZero:true,grid:{color:'rgba(0,0,0,0.05)'},ticks:{callback:function(v){return n(v,0)}}}
       }
-    }
   });
 }
 
@@ -5461,19 +5786,19 @@ function renderConsumptionChart(rows,groupBy){
   consumptionChartInstance=new Chart(ctx,{
     type:'bar',
     data:{labels,datasets:[{label:'Consumed (CT)',data:values,backgroundColor:'rgba(255,153,0,0.7)',borderColor:'#E88B00',borderWidth:1}]},
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      indexAxis:'y',
-      plugins:{
-        legend:{display:false},
-        tooltip:{backgroundColor:'#131A22',titleColor:'#FF9900',bodyColor:'#fff',padding:10,cornerRadius:6}
-      },
-      scales:{
-        x:{beginAtZero:true,ticks:{callback:function(v){return n(v,0)}}},
-        y:{grid:{display:false}}
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        indexAxis:'y',
+        plugins:{
+          legend:{display:false},
+          tooltip:{backgroundColor:chartTheme().tooltipBg,titleColor:'#FF9900',bodyColor:'#fff',padding:10,cornerRadius:6}
+        },
+        scales:{
+          x:{beginAtZero:true,ticks:{color:chartTheme().ticks,callback:function(v){return n(v,0)}},grid:{color:chartTheme().grid}},
+          y:{grid:{display:false},ticks:{color:chartTheme().ticks}}
+        }
       }
-    }
   });
 }
 
@@ -5711,6 +6036,48 @@ document.addEventListener('click',e=>{
   }
 });
 
+
+// ════════════════════════════════════════
+// 🌙 DARK MODE TOGGLE
+// ════════════════════════════════════════
+function applyTheme(theme){
+  const root=document.documentElement;
+  if(theme==='dark'){
+    root.setAttribute('data-theme','dark');
+    const thumb=document.getElementById('ttThumb');
+    if(thumb)thumb.textContent='🌙';
+  }else{
+    root.removeAttribute('data-theme');
+    const thumb=document.getElementById('ttThumb');
+    if(thumb)thumb.textContent='☀';
+  }
+  refreshChartsTheme();
+}
+
+function toggleTheme(){
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  const newTheme=isDark?'light':'dark';
+  localStorage.setItem('anow_theme',newTheme);
+  applyTheme(newTheme);
+}
+
+function refreshChartsTheme(){
+  if(currentView==='history'){
+    const sub=document.querySelector('.subtab.active')?.dataset.subtab;
+    setTimeout(()=>{
+      if(sub==='trend')renderTrendChart();
+      else if(sub==='consumption')renderConsumption();
+    },50);
+  }
+}
+
+(function initTheme(){
+  const saved=localStorage.getItem('anow_theme');
+  const prefersDark=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const theme=saved||(prefersDark?'dark':'light');
+  applyTheme(theme);
+})();
+  
 // ============================================
 // START THE APP
 // ============================================
