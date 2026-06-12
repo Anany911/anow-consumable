@@ -802,7 +802,7 @@ tr:last-child td{border-bottom:none}
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%23565959' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat:no-repeat;
   background-position:right 12px center;
-  padding-right:34px !important;       /* مساحة للسهم */
+  padding-right:34px !important;       
   cursor:pointer;
 }
 
@@ -811,7 +811,10 @@ tr:last-child td{border-bottom:none}
 .field select:focus,
 .hist-filter-group select:focus,
 .daily-date-group select:focus{
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%23FF9900' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%23FFE9C7' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;          
+  background-position:right 12px center; 
+  background-size:12px 12px;             
 }
 
 /* ===== Search box مع أيقونة عدسة ===== */
@@ -1014,7 +1017,11 @@ html{transition:background .3s}
 [data-theme="dark"] .field select,
 [data-theme="dark"] .hist-filter-group select,
 [data-theme="dark"] .daily-date-group select{
+  background-color:#0D1117;                             
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%239DA7B0' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;                           
+  background-position:right 12px center;                 
+  background-size:12px 12px;                              
 }
 [data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.8)}
 
