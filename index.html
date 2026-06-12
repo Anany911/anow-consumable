@@ -5312,24 +5312,70 @@ function renderConsumption(){
     return;
   }
   
-  const byStoreFirst={},byStoreLast={};
-  snaps.forEach(s=>{
-    if(!byStoreFirst[s.store_code]||s.snapshot_date<byStoreFirst[s.store_code].snapshot_date)byStoreFirst[s.store_code]=s;
-    if(!byStoreLast[s.store_code]||s.snapshot_date>byStoreLast[s.store_code].snapshot_date)byStoreLast[s.store_code]=s;
+
+// Build delivery map: store -> material_key -> date -> cartons
+const deliveryMap={};
+if(typeof replenLogCache!=='undefined'){
+  replenLogCache.forEach(r=>{
+    if(r.delivery_date<fromStr||r.delivery_date>toStr)return;
+    if(storeFilter&&r.store_code!==storeFilter)return;
+    const code=r.store_code, key=r.material_key, d=r.delivery_date;
+    if(!deliveryMap[code])deliveryMap[code]={};
+    if(!deliveryMap[code][key])deliveryMap[code][key]={};
+    deliveryMap[code][key][d]=(deliveryMap[code][key][d]||0)+(+r.cartons||0);
   });
-  
-  const records=[];
-  Object.keys(byStoreFirst).forEach(code=>{
-    const first=byStoreFirst[code];const last=byStoreLast[code];
-    if(first.snapshot_date===last.snapshot_date)return;
-    const store=state.stores.find(s=>s.code===code);
-    forecastedKeys().forEach(item=>{
-      if(itemFilter&&item!==itemFilter)return;
-      const v1=getStockFromSnapshot(first.data,item);
-      const v2=getStockFromSnapshot(last.data,item);
-      records.push({store:code,area:store?.area||'',item,startStock:v1,endStock:v2,consumed:v1-v2});
+}
+
+// Group snapshots by store, sorted by date
+const byStore={};
+snaps.forEach(s=>{
+  if(!byStore[s.store_code])byStore[s.store_code]=[];
+  byStore[s.store_code].push(s);
+});
+Object.values(byStore).forEach(arr=>arr.sort((a,b)=>a.snapshot_date.localeCompare(b.snapshot_date)));
+
+const records=[];
+Object.keys(byStore).forEach(code=>{
+  const series=byStore[code];
+  if(series.length<2)return;
+  const store=state.stores.find(s=>s.code===code);
+  const itemsToCalc=itemFilter?[itemFilter]:forecastedKeys();
+
+  itemsToCalc.forEach(item=>{
+    const key=stockKey(item);
+    let totalConsumed=0, totalDeliveries=0;
+    const startStock=getStockFromSnapshot(series[0].data,item);
+    const endStock=getStockFromSnapshot(series[series.length-1].data,item);
+
+    // Walk day by day
+    for(let i=1;i<series.length;i++){
+      const prevDate=series[i-1].snapshot_date;
+      const curDate=series[i].snapshot_date;
+      const prevStock=getStockFromSnapshot(series[i-1].data,item);
+      const curStock=getStockFromSnapshot(series[i].data,item);
+
+      // Sum deliveries that arrived AFTER prevDate and ON/BEFORE curDate
+      let delivered=0;
+      const dMap=deliveryMap[code]?.[key]||{};
+      Object.keys(dMap).forEach(dDate=>{
+        if(dDate>prevDate&&dDate<=curDate)delivered+=dMap[dDate];
+      });
+
+      // Real consumption = (prev + delivered) - cur
+      const periodConsumed=(prevStock+delivered)-curStock;
+      if(periodConsumed>0)totalConsumed+=periodConsumed;
+      totalDeliveries+=delivered;
+    }
+
+    if(startStock===0&&endStock===0&&totalConsumed===0&&totalDeliveries===0)return;
+    records.push({
+      store:code, area:store?.area||'', item,
+      startStock, endStock,
+      deliveries:totalDeliveries,
+      consumed:totalConsumed   
     });
   });
+});
   
   consumptionRows=[];
   if(groupBy==='store'){
@@ -5372,7 +5418,7 @@ function renderConsumption(){
   
   let h='';
   if(groupBy==='store'){
-    h='<tr><th>Store</th><th class="nums">Start</th><th class="nums">End</th><th class="nums">Consumed</th><th class="nums">Daily</th></tr>';
+      h='<tr><th>Store</th><th class="nums">Start</th><th class="nums">Deliveries</th><th class="nums">End</th><th class="nums">Consumed</th><th class="nums">Daily</th></tr>';
     consumptionRows.forEach(r=>{
       const dailyR=r.positiveCon/period;
       h+='<tr><td><b>'+r.store+'</b><div class="cell-sub">'+r.area+'</div></td><td class="nums">'+n(r.startStock)+'</td><td class="nums">'+n(r.endStock)+'</td><td class="nums '+(r.consumed>0?'diff-negative':'diff-positive')+'">'+(r.consumed>0?'-':'+')+n(Math.abs(r.consumed))+'</td><td class="nums">'+n(dailyR,1)+'</td></tr>';
