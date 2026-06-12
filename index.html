@@ -5291,6 +5291,7 @@ function exportMonthlyCSV(){
 // CHARTS - 4. CONSUMPTION REPORT
 // ============================================
 
+
 function renderConsumption(){
   const period=parseInt(document.getElementById('conPeriod')?.value||'30');
   const storeFilter=document.getElementById('conStore')?.value||'';
@@ -5304,139 +5305,147 @@ function renderConsumption(){
   const fromStr=fromDate.toISOString().slice(0,10);
   const toStr=today.toISOString().slice(0,10);
   let snaps=getSnapshotsByDateRange(fromStr,toStr,storeFilter);
-  
+
   if(snaps.length<2){
     if(summaryEl)summaryEl.innerHTML='<div class="summary-card neutral"><div class="summary-card-label">Insufficient Data</div><div class="summary-card-value">-</div><div class="summary-card-sub">Need 2+ snapshots</div></div>';
     if(tblEl)tblEl.innerHTML='<tr><td style="padding:30px;text-align:center">Need at least 2 snapshots</td></tr>';
     consumptionChartInstance=destroyChart(consumptionChartInstance);
     return;
   }
-  
 
-// Build delivery map: store -> material_key -> date -> cartons
-const deliveryMap={};
-if(typeof replenLogCache!=='undefined'){
-  replenLogCache.forEach(r=>{
-    if(r.delivery_date<fromStr||r.delivery_date>toStr)return;
-    if(storeFilter&&r.store_code!==storeFilter)return;
-    const code=r.store_code, key=r.material_key, d=r.delivery_date;
-    if(!deliveryMap[code])deliveryMap[code]={};
-    if(!deliveryMap[code][key])deliveryMap[code][key]={};
-    deliveryMap[code][key][d]=(deliveryMap[code][key][d]||0)+(+r.cartons||0);
+  // Build delivery map: store -> material_key -> date -> cartons
+  const deliveryMap={};
+  if(typeof replenLogCache!=='undefined'){
+    replenLogCache.forEach(r=>{
+      if(r.delivery_date<fromStr||r.delivery_date>toStr)return;
+      if(storeFilter&&r.store_code!==storeFilter)return;
+      const code=r.store_code,key=r.material_key,d=r.delivery_date;
+      if(!deliveryMap[code])deliveryMap[code]={};
+      if(!deliveryMap[code][key])deliveryMap[code][key]={};
+      deliveryMap[code][key][d]=(deliveryMap[code][key][d]||0)+(+r.cartons||0);
+    });
+  }
+
+  // Group snapshots by store, sorted by date ascending
+  const byStore={};
+  snaps.forEach(s=>{
+    if(!byStore[s.store_code])byStore[s.store_code]=[];
+    byStore[s.store_code].push(s);
   });
-}
+  Object.values(byStore).forEach(arr=>arr.sort((a,b)=>a.snapshot_date.localeCompare(b.snapshot_date)));
 
-// Group snapshots by store, sorted by date
-const byStore={};
-snaps.forEach(s=>{
-  if(!byStore[s.store_code])byStore[s.store_code]=[];
-  byStore[s.store_code].push(s);
-});
-Object.values(byStore).forEach(arr=>arr.sort((a,b)=>a.snapshot_date.localeCompare(b.snapshot_date)));
+  const storeCount=Object.keys(byStore).length;
 
-const records=[];
-Object.keys(byStore).forEach(code=>{
-  const series=byStore[code];
-  if(series.length<2)return;
-  const store=state.stores.find(s=>s.code===code);
-  const itemsToCalc=itemFilter?[itemFilter]:forecastedKeys();
+  // Build per store+item consumption (day by day, including deliveries)
+  const records=[];
+  Object.keys(byStore).forEach(code=>{
+    const series=byStore[code];
+    if(series.length<2)return;
+    const store=state.stores.find(s=>s.code===code);
+    const itemsToCalc=itemFilter?[itemFilter]:forecastedKeys();
 
-  itemsToCalc.forEach(item=>{
-    const key=stockKey(item);
-    let totalConsumed=0, totalDeliveries=0;
-    const startStock=getStockFromSnapshot(series[0].data,item);
-    const endStock=getStockFromSnapshot(series[series.length-1].data,item);
+    itemsToCalc.forEach(item=>{
+      const key=stockKey(item);
+      let totalConsumed=0,totalDeliveries=0;
+      const startStock=getStockFromSnapshot(series[0].data,item);
+      const endStock=getStockFromSnapshot(series[series.length-1].data,item);
 
-    // Walk day by day
-    for(let i=1;i<series.length;i++){
-      const prevDate=series[i-1].snapshot_date;
-      const curDate=series[i].snapshot_date;
-      const prevStock=getStockFromSnapshot(series[i-1].data,item);
-      const curStock=getStockFromSnapshot(series[i].data,item);
+      for(let i=1;i<series.length;i++){
+        const prevDate=series[i-1].snapshot_date;
+        const curDate=series[i].snapshot_date;
+        const prevStock=getStockFromSnapshot(series[i-1].data,item);
+        const curStock=getStockFromSnapshot(series[i].data,item);
 
-      // Sum deliveries that arrived AFTER prevDate and ON/BEFORE curDate
-      let delivered=0;
-      const dMap=deliveryMap[code]?.[key]||{};
-      Object.keys(dMap).forEach(dDate=>{
-        if(dDate>prevDate&&dDate<=curDate)delivered+=dMap[dDate];
+        let delivered=0;
+        const dMap=deliveryMap[code]?.[key]||{};
+        Object.keys(dMap).forEach(dDate=>{
+          if(dDate>prevDate&&dDate<=curDate)delivered+=dMap[dDate];
+        });
+
+        const periodConsumed=(prevStock+delivered)-curStock;
+        if(periodConsumed>0)totalConsumed+=periodConsumed;
+        totalDeliveries+=delivered;
+      }
+
+      if(startStock===0&&endStock===0&&totalConsumed===0&&totalDeliveries===0)return;
+      records.push({
+        store:code,area:store?.area||'',item,
+        startStock,endStock,
+        deliveries:totalDeliveries,
+        consumed:totalConsumed
       });
-
-      // Real consumption = (prev + delivered) - cur
-      const periodConsumed=(prevStock+delivered)-curStock;
-      if(periodConsumed>0)totalConsumed+=periodConsumed;
-      totalDeliveries+=delivered;
-    }
-
-    if(startStock===0&&endStock===0&&totalConsumed===0&&totalDeliveries===0)return;
-    records.push({
-      store:code, area:store?.area||'', item,
-      startStock, endStock,
-      deliveries:totalDeliveries,
-      consumed:totalConsumed   
     });
   });
-});
-  
+
+  // Aggregate by groupBy
   consumptionRows=[];
   if(groupBy==='store'){
     const grp={};
     records.forEach(r=>{
-      if(!grp[r.store])grp[r.store]={store:r.store,area:r.area,startStock:0,endStock:0,consumed:0,positiveCon:0};
+      if(!grp[r.store])grp[r.store]={store:r.store,area:r.area,startStock:0,endStock:0,deliveries:0,consumed:0,positiveCon:0};
       grp[r.store].startStock+=r.startStock;
       grp[r.store].endStock+=r.endStock;
+      grp[r.store].deliveries+=r.deliveries;
       grp[r.store].consumed+=r.consumed;
-      if(r.consumed>0)grp[r.store].positiveCon+=r.consumed;
+      grp[r.store].positiveCon+=r.consumed;
     });
     consumptionRows=Object.values(grp).sort((a,b)=>b.consumed-a.consumed);
   } else if(groupBy==='item'){
     const grp={};
     records.forEach(r=>{
-      if(!grp[r.item])grp[r.item]={item:r.item,startStock:0,endStock:0,consumed:0,positiveCon:0,storeCount:new Set()};
+      if(!grp[r.item])grp[r.item]={item:r.item,startStock:0,endStock:0,deliveries:0,consumed:0,positiveCon:0,storeCount:new Set()};
       grp[r.item].startStock+=r.startStock;
       grp[r.item].endStock+=r.endStock;
+      grp[r.item].deliveries+=r.deliveries;
       grp[r.item].consumed+=r.consumed;
-      if(r.consumed>0)grp[r.item].positiveCon+=r.consumed;
+      grp[r.item].positiveCon+=r.consumed;
       grp[r.item].storeCount.add(r.store);
     });
     consumptionRows=Object.values(grp).map(r=>({...r,storeCount:r.storeCount.size})).sort((a,b)=>b.consumed-a.consumed);
   } else {
     consumptionRows=records.sort((a,b)=>b.consumed-a.consumed);
   }
-  
-  let totalConsumed=0,positiveConsumed=0,negativeChange=0;
-  records.forEach(r=>{totalConsumed+=r.consumed;if(r.consumed>0)positiveConsumed+=r.consumed;else if(r.consumed<0)negativeChange+=Math.abs(r.consumed)});
-  const dailyAvg=positiveConsumed/period;
-  
+
+  // Totals for summary
+  let totalConsumed=0,totalDeliveries=0;
+  records.forEach(r=>{totalConsumed+=r.consumed;totalDeliveries+=r.deliveries});
+  const dailyAvg=totalConsumed/period;
+
+  // Data coverage
+  const uniqueDates=new Set(snaps.map(s=>s.snapshot_date)).size;
+  const coverage=Math.round((uniqueDates/period)*100);
+
   if(summaryEl){
-    summaryEl.innerHTML='<div class="summary-card down"><div class="summary-card-label">Consumed</div><div class="summary-card-value">'+n(positiveConsumed,0)+'</div><div class="summary-card-sub">CT in '+period+'d</div></div><div class="summary-card neutral"><div class="summary-card-label">Daily Avg</div><div class="summary-card-value">'+n(dailyAvg,1)+'</div></div><div class="summary-card up"><div class="summary-card-label">Restocked</div><div class="summary-card-value">'+n(negativeChange,0)+'</div></div><div class="summary-card neutral"><div class="summary-card-label">Net</div><div class="summary-card-value">'+(totalConsumed>0?'-':'+')+n(Math.abs(totalConsumed),0)+'</div></div><div class="summary-card neutral"><div class="summary-card-label">Stores</div><div class="summary-card-value">'+Object.keys(byStoreFirst).length+'</div></div>';
+    summaryEl.innerHTML='<div class="summary-card down"><div class="summary-card-label">Consumed</div><div class="summary-card-value">'+n(totalConsumed,0)+'</div><div class="summary-card-sub">CT in '+period+'d</div></div><div class="summary-card neutral"><div class="summary-card-label">Daily Avg</div><div class="summary-card-value">'+n(dailyAvg,1)+'</div></div><div class="summary-card up"><div class="summary-card-label">Deliveries</div><div class="summary-card-value">'+n(totalDeliveries,0)+'</div><div class="summary-card-sub">CT received</div></div><div class="summary-card neutral"><div class="summary-card-label">Stores</div><div class="summary-card-value">'+storeCount+'</div></div><div class="summary-card '+(coverage>=70?'up':'neutral')+'"><div class="summary-card-label">Data Coverage</div><div class="summary-card-value">'+coverage+'%</div><div class="summary-card-sub">'+uniqueDates+'/'+period+' days</div></div>';
   }
-  
+
   renderConsumptionChart(consumptionRows,groupBy);
-  
+
   if(!tblEl)return;
-  if(consumptionRows.length===0){tblEl.innerHTML='<tr><td style="padding:30px;text-align:center">No data</td></tr>';return}
-  
+  if(consumptionRows.length===0){tblEl.innerHTML='<tr><td style="padding:30px;text-align:center">No consumption data</td></tr>';return}
+
   let h='';
   if(groupBy==='store'){
-      h='<tr><th>Store</th><th class="nums">Start</th><th class="nums">Deliveries</th><th class="nums">End</th><th class="nums">Consumed</th><th class="nums">Daily</th></tr>';
+    h='<tr><th>Store</th><th class="nums">Start</th><th class="nums">Deliveries</th><th class="nums">End</th><th class="nums">Consumed</th><th class="nums">Daily</th></tr>';
     consumptionRows.forEach(r=>{
-      const dailyR=r.positiveCon/period;
-      h+='<tr><td><b>'+r.store+'</b><div class="cell-sub">'+r.area+'</div></td><td class="nums">'+n(r.startStock)+'</td><td class="nums">'+n(r.endStock)+'</td><td class="nums '+(r.consumed>0?'diff-negative':'diff-positive')+'">'+(r.consumed>0?'-':'+')+n(Math.abs(r.consumed))+'</td><td class="nums">'+n(dailyR,1)+'</td></tr>';
+      const dailyR=r.consumed/period;
+      h+='<tr><td><b>'+r.store+'</b><div class="cell-sub">'+r.area+'</div></td><td class="nums">'+n(r.startStock)+'</td><td class="nums" style="color:var(--success)">+'+n(r.deliveries)+'</td><td class="nums">'+n(r.endStock)+'</td><td class="nums diff-negative">'+n(r.consumed)+'</td><td class="nums">'+n(dailyR,1)+'</td></tr>';
     });
   } else if(groupBy==='item'){
-    h='<tr><th>Item</th><th class="nums">Stores</th><th class="nums">Start</th><th class="nums">End</th><th class="nums">Consumed</th><th class="nums">Daily</th></tr>';
+    h='<tr><th>Item</th><th class="nums">Stores</th><th class="nums">Start</th><th class="nums">Deliveries</th><th class="nums">End</th><th class="nums">Consumed</th><th class="nums">Daily</th></tr>';
     consumptionRows.forEach(r=>{
-      const dailyR=r.positiveCon/period;
-      h+='<tr><td><b>'+r.item+'</b></td><td class="nums">'+r.storeCount+'</td><td class="nums">'+n(r.startStock)+'</td><td class="nums">'+n(r.endStock)+'</td><td class="nums '+(r.consumed>0?'diff-negative':'diff-positive')+'">'+(r.consumed>0?'-':'+')+n(Math.abs(r.consumed))+'</td><td class="nums">'+n(dailyR,1)+'</td></tr>';
+      const dailyR=r.consumed/period;
+      h+='<tr><td><b>'+r.item+'</b></td><td class="nums">'+r.storeCount+'</td><td class="nums">'+n(r.startStock)+'</td><td class="nums" style="color:var(--success)">+'+n(r.deliveries)+'</td><td class="nums">'+n(r.endStock)+'</td><td class="nums diff-negative">'+n(r.consumed)+'</td><td class="nums">'+n(dailyR,1)+'</td></tr>';
     });
   } else {
-    h='<tr><th>Store</th><th>Item</th><th class="nums">Start</th><th class="nums">End</th><th class="nums">Consumed</th></tr>';
+    h='<tr><th>Store</th><th>Item</th><th class="nums">Start</th><th class="nums">Deliveries</th><th class="nums">End</th><th class="nums">Consumed</th></tr>';
     consumptionRows.forEach(r=>{
-      h+='<tr><td><b>'+r.store+'</b></td><td>'+r.item+'</td><td class="nums">'+n(r.startStock)+'</td><td class="nums">'+n(r.endStock)+'</td><td class="nums '+(r.consumed>0?'diff-negative':'diff-positive')+'">'+(r.consumed>0?'-':'+')+n(Math.abs(r.consumed))+'</td></tr>';
+      h+='<tr><td><b>'+r.store+'</b></td><td>'+r.item+'</td><td class="nums">'+n(r.startStock)+'</td><td class="nums" style="color:var(--success)">+'+n(r.deliveries)+'</td><td class="nums">'+n(r.endStock)+'</td><td class="nums diff-negative">'+n(r.consumed)+'</td></tr>';
     });
   }
   tblEl.innerHTML=h;
 }
+  
 
 function renderConsumptionChart(rows,groupBy){
   const canvasEl=document.getElementById('consumptionChart');
@@ -5620,6 +5629,7 @@ function exportDailyViewCSV(){
   toast('Exported');
 }
 
+
 function exportConsumptionCSV(){
   if(!consumptionRows.length){toast('No data','error');return}
   const period=document.getElementById('conPeriod')?.value||'30';
@@ -5627,14 +5637,14 @@ function exportConsumptionCSV(){
   const wsName=activeWorkspace?.name||'workspace';
   let csv='';
   if(groupBy==='store'){
-    csv='Store,Area,Start,End,Consumed,Daily\n';
-    consumptionRows.forEach(r=>{const d=r.positiveCon/parseInt(period);csv+='"'+r.store+'","'+r.area+'",'+r.startStock+','+r.endStock+','+r.consumed+','+d.toFixed(2)+'\n'});
+    csv='Store,Area,Start,Deliveries,End,Consumed,Daily\n';
+    consumptionRows.forEach(r=>{const d=r.consumed/parseInt(period);csv+='"'+r.store+'","'+r.area+'",'+r.startStock+','+r.deliveries+','+r.endStock+','+r.consumed+','+d.toFixed(2)+'\n'});
   } else if(groupBy==='item'){
-    csv='Item,Stores,Start,End,Consumed,Daily\n';
-    consumptionRows.forEach(r=>{const d=r.positiveCon/parseInt(period);csv+='"'+r.item+'",'+r.storeCount+','+r.startStock+','+r.endStock+','+r.consumed+','+d.toFixed(2)+'\n'});
+    csv='Item,Stores,Start,Deliveries,End,Consumed,Daily\n';
+    consumptionRows.forEach(r=>{const d=r.consumed/parseInt(period);csv+='"'+r.item+'",'+r.storeCount+','+r.startStock+','+r.deliveries+','+r.endStock+','+r.consumed+','+d.toFixed(2)+'\n'});
   } else {
-    csv='Store,Item,Start,End,Consumed\n';
-    consumptionRows.forEach(r=>{csv+='"'+r.store+'","'+r.item+'",'+r.startStock+','+r.endStock+','+r.consumed+'\n'});
+    csv='Store,Item,Start,Deliveries,End,Consumed\n';
+    consumptionRows.forEach(r=>{csv+='"'+r.store+'","'+r.item+'",'+r.startStock+','+r.deliveries+','+r.endStock+','+r.consumed+'\n'});
   }
   const b=new Blob([csv],{type:'text/csv'});
   const a=document.createElement('a');a.href=URL.createObjectURL(b);
