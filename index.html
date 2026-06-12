@@ -3212,7 +3212,7 @@ users.sort((a,b)=>{
     html+='<div class="online-user-row" style="'+(idle?'opacity:.7':'')+'"><div class="online-user-avatar"'+(idle?' style="filter:grayscale(.3)"':'')+'>'+initials+'<span class="live-dot" style="'+dotStyle+'"></span></div><div class="online-user-info"><div class="online-user-name">'+(u.email||'Unknown')+(isMe?' <span class="pill pill-ok" style="font-size:9px">You</span>':'')+' '+statusBadge+'</div><div class="online-user-meta">'+metaLine+'</div></div></div>';
   });
   body.innerHTML=html;
-  
+  }
   
 
 // ============================================
