@@ -2307,7 +2307,10 @@ let extraMaterials = [];
 let pendingNewMaterials = [];
 let dailyViewDates = []; // available snapshot dates for daily view
 let presenceChannel = null;
-let onlineUsers = {};
+let onlineUsers = {};  
+let idleTimer = null;
+let isIdle = false;
+const IDLE_TIMEOUT = 5 * 60 * 1000;
 
 // ============================================
 // HELPER FUNCTIONS
@@ -3058,20 +3061,78 @@ function startPresence(){
           email:currentUser.email,
           name:userName,
           workspace:activeWorkspace?.name||'-',
-          online_at:new Date().toISOString()
+          online_at:new Date().toISOString(),
+          status:'active',                      // 👈 يبدأ نشط
+          last_active:new Date().toISOString()
         });
         console.log('Presence started for',userName);
+        startIdleDetection();                   // 👈 نشغّل كشف الخمول
       }
     });
 }
 
 function stopPresence(){
+  stopIdleDetection();   // 👈 نوقف كشف الخمول
   if(presenceChannel){
     try{presenceChannel.untrack();supabaseClient.removeChannel(presenceChannel)}
     catch(e){}
     presenceChannel=null;
   }
 }
+
+
+// ════════════════════════════════════════
+// 💤 IDLE DETECTION
+// ════════════════════════════════════════
+
+function startIdleDetection(){
+  // الأحداث اللي بتعتبر "حركة" من المستخدم
+  const events=['mousemove','mousedown','keydown','touchstart','scroll','click'];
+  events.forEach(ev=>{
+    document.addEventListener(ev,resetIdleTimer,{passive:true});
+  });
+  resetIdleTimer(); // نبدأ العداد
+}
+
+function stopIdleDetection(){
+  const events=['mousemove','mousedown','keydown','touchstart','scroll','click'];
+  events.forEach(ev=>{
+    document.removeEventListener(ev,resetIdleTimer);
+  });
+  if(idleTimer){clearTimeout(idleTimer);idleTimer=null}
+}
+
+function resetIdleTimer(){
+  // لو كان خامل ورجع يتحرك → نرجّعه نشط
+  if(isIdle){
+    isIdle=false;
+    updatePresenceStatus();
+  }
+  // نصفّر العداد ونبدأ من جديد
+  if(idleTimer)clearTimeout(idleTimer);
+  idleTimer=setTimeout(()=>{
+    isIdle=true;
+    updatePresenceStatus();
+  },IDLE_TIMEOUT);
+}
+
+// نحدّث حالتنا في الـ Presence channel
+async function updatePresenceStatus(){
+  if(!presenceChannel||!currentUser)return;
+  try{
+    await presenceChannel.track({
+      user_id:currentUser.id,
+      email:currentUser.email,
+      name:currentUser.email.split('@')[0],
+      workspace:activeWorkspace?.name||'-',
+      online_at:new Date().toISOString(),
+      status:isIdle?'idle':'active',           // 👈 الحالة الجديدة
+      last_active:new Date().toISOString()
+    });
+  }catch(e){console.warn('Status update failed:',e.message)}
+}
+
+  
 
 function updateOnlineIndicator(){
   // 🔐 الحماية: لو مش Super Admin، نتأكد إن المؤشر مش موجود ونخرج
@@ -3092,7 +3153,9 @@ function updateOnlineIndicator(){
     el.title='Who is online now';
     navActions.insertBefore(el,navActions.firstChild);
   }
-  el.innerHTML='<span class="online-dot"></span><span class="online-count">'+count+'</span>';
+  const activeCount=Object.values(onlineUsers).filter(u=>u.status!=='idle').length;
+  const idleCount=count-activeCount;
+  el.innerHTML='<span class="online-dot"></span><span class="online-count">'+activeCount+'</span>'+(idleCount>0?'<span style="color:#D29922;font-size:11px;margin-left:2px">+'+idleCount+'💤</span>':'');
 }
 
 function showOnlineUsersModal(){
@@ -3121,15 +3184,34 @@ function renderOnlineUsersList(){
     body.innerHTML='<div class="empty"><div class="ic">Nobody Online</div></div>';
     return;
   }
+users.sort((a,b)=>{
+    const sa=a.status==='idle'?1:0;
+    const sb=b.status==='idle'?1:0;
+    return sa-sb;
+  });
+  
   let html='';
   users.forEach(u=>{
     const initials=(u.email||'??').slice(0,2).toUpperCase();
     const isMe=u.user_id===currentUser.id;
     const since=u.online_at?formatLogTime(u.online_at):'';
-    html+='<div class="online-user-row"><div class="online-user-avatar">'+initials+'<span class="live-dot"></span></div><div class="online-user-info"><div class="online-user-name">'+(u.email||'Unknown')+(isMe?' <span class="pill pill-ok" style="font-size:9px">You</span>':'')+'</div><div class="online-user-meta">Workspace: '+(u.workspace||'-')+' · Online since '+since+'</div></div></div>';
+    const idle=u.status==='idle';
+    const lastActive=u.last_active?formatLogTime(u.last_active):'';
+    
+    // النقطة: خضرا لو نشط، صفرا لو خامل
+    const dotStyle=idle?'background:#D29922':'background:#3FB950';
+    // شارة الحالة
+    const statusBadge=idle
+      ?'<span class="pill pill-low" style="font-size:9px">💤 Idle</span>'
+      :'<span class="pill pill-ok" style="font-size:9px">🟢 Active</span>';
+    // الميتا: لو خامل نعرض آخر نشاط
+    const metaLine=idle
+      ?'Workspace: '+(u.workspace||'-')+' · Idle since '+lastActive
+      :'Workspace: '+(u.workspace||'-')+' · Online since '+since;
+    
+    html+='<div class="online-user-row" style="'+(idle?'opacity:.7':'')+'"><div class="online-user-avatar"'+(idle?' style="filter:grayscale(.3)"':'')+'>'+initials+'<span class="live-dot" style="'+dotStyle+'"></span></div><div class="online-user-info"><div class="online-user-name">'+(u.email||'Unknown')+(isMe?' <span class="pill pill-ok" style="font-size:9px">You</span>':'')+' '+statusBadge+'</div><div class="online-user-meta">'+metaLine+'</div></div></div>';
   });
   body.innerHTML=html;
-}
   
   
 
