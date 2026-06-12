@@ -2932,6 +2932,7 @@ function renderOverview(){
   document.getElementById('heatmap').innerHTML=h;
   renderWarehouse();
   renderReplenLog();
+  animateCounters();
 }
 
 function openStore(code){editStore=code;const s=code?state.stores.find(x=>x.code===code):{code:'',area:'',status:'Live',launch:'',cap:100};document.getElementById('mdTitle').textContent=code?'Edit '+code:'Add Store';mCode.value=s.code;mArea.value=s.area;mStat.value=s.status;mLaunch.value=s.launch||'';mCap.value=s.cap;mCode.disabled=!!code;document.getElementById('mdStore').classList.add('show')}
@@ -5274,7 +5275,7 @@ function exportMonthlyCSV(){
   if(!monthlyRows.length){toast('No data','error');return}
   const monthVal=document.getElementById('monthSelector')?.value||'month';
   const wsName=activeWorkspace?.name||'workspace';
-  let csv='Store,Area,'+CONS_KEYS.join(',')+',Total\n';
+  let csv='Store,Area,'+forecastedKeys().join(',')+',Total\n';
   monthlyRows.forEach(r=>{
     let total=0;
     const cells=forecastedKeys().map(c=>{const avg=r.counts[c]>0?r.totals[c]/r.counts[c]:0;total+=avg;return avg.toFixed(1)});
