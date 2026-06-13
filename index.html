@@ -1323,7 +1323,36 @@ input[type="number"]{
 [data-theme="dark"] .report-tbl tr:nth-child(even) td{background:var(--surface-alt)}
 [data-theme="dark"] .report-ft{background:var(--surface-alt)}
 
-            
+
+
+.app-footer{
+  max-width:1600px;
+  margin:30px auto 0;
+  padding:18px 24px;
+  border-top:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:10px;
+  font-size:12px;
+  color:var(--text-mut);
+}
+.app-footer .ft-left{display:flex;align-items:center;gap:6px}
+.app-footer .ft-left b{color:var(--text);font-weight:700}
+.app-footer .ft-right{display:flex;align-items:center;gap:6px}
+.app-footer a{
+  color:var(--link);
+  font-weight:600;
+  text-decoration:none;
+  transition:color .2s;
+}
+.app-footer a:hover{color:var(--link-hover);text-decoration:underline}
+@media(max-width:640px){
+  .app-footer{flex-direction:column;text-align:center;padding:16px 12px}
+}
+
+ 
 </style>
 </head>
 
@@ -1988,6 +2017,15 @@ input[type="number"]{
   </div>
 </section>
 
+  <footer class="app-footer">
+    <div class="ft-left">
+      © <span id="footerYear"></span> <b>Anow Operations</b> · All rights reserved
+    </div>
+    <div class="ft-right">
+      Need support? Contact <a href="https://phonetool.amazon.com/users/ahmanany" target="_blank" rel="noopener">@ahmanany</a>
+    </div>
+  </footer>  
+  
 </div>
 
 <div class="modal" id="mdStore">
