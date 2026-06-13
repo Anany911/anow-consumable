@@ -1522,11 +1522,7 @@ input[type="number"]{
   <div class="update-info" id="stockUpdateInfo" style="display:flex">
     <div class="update-info-text" id="stockDateInfo">Loading...</div>
   </div>
-      <div class="update-info-text">Last manual update by <b id="stockLastUser">-</b></div>
-      <div class="update-info-time" id="stockLastTime">-</div>
-    </div>
-    <div id="stockLastNotes" style="font-size:12px;color:var(--text-mut);font-style:italic"></div>
-  </div>
+
   <div class="card">
     <div class="filters"><div class="search"><input class="input" type="text" id="srchStk" placeholder="Search..." oninput="renderStock()"></div></div>
     <div class="tbl-wrap"><div class="tbl-scroll"><table id="tblStock"></table></div></div>
@@ -3289,6 +3285,86 @@ async function loadLastStockUpdate(){
   }catch(e){lastStockUpdate=null}
 }
 
+let dailyStockData = {};
+let dailyStockLoaded = false;
+let dailyStockDates = [];
+
+async function loadDailyStockDates(){
+  if(!activeWorkspace){dailyStockDates=[];return}
+  try{
+    const {data,error}=await supabaseClient
+      .from('daily_stock')
+      .select('stock_date')
+      .eq('workspace_id',activeWorkspace.id)
+      .order('stock_date',{ascending:false});
+    if(error)throw error;
+    dailyStockDates=[...new Set((data||[]).map(r=>r.stock_date))];
+  }catch(e){console.error(e);dailyStockDates=[]}
+}
+
+async function loadDailyStock(date){
+  if(!activeWorkspace){dailyStockData={};dailyStockLoaded=true;return}
+  showSync('Loading stock for '+date+'...');
+  try{
+    const {data,error}=await supabaseClient
+      .from('daily_stock')
+      .select('store_code,data')
+      .eq('workspace_id',activeWorkspace.id)
+      .eq('stock_date',date);
+    if(error)throw error;
+
+    dailyStockData={};
+    if(data&&data.length>0){
+      data.forEach(r=>{dailyStockData[r.store_code]=r.data||{}});
+    } else {
+      const priorDate=dailyStockDates.filter(d=>d<date).sort().reverse()[0];
+      if(priorDate){
+        const {data:prior}=await supabaseClient
+          .from('daily_stock')
+          .select('store_code,data')
+          .eq('workspace_id',activeWorkspace.id)
+          .eq('stock_date',priorDate);
+        (prior||[]).forEach(r=>{dailyStockData[r.store_code]={...(r.data||{})}});
+        toast('Copied from '+priorDate+' - edit & it saves automatically');
+      }
+    }
+    dailyStockLoaded=true;
+  }catch(e){console.error(e);toast('Failed to load daily stock','error');dailyStockData={};dailyStockLoaded=true}
+  hideSync();
+}
+
+function readDailyStock(storeCode,matName){
+  const row=dailyStockData[storeCode];
+  if(!row)return 0;
+  return +row[stockKey(matName)]||0;
+}
+
+function writeDailyStock(storeCode,matName,val){
+  if(!dailyStockData[storeCode])dailyStockData[storeCode]={};
+  dailyStockData[storeCode][stockKey(matName)]=+val||0;
+}
+
+async function saveDailyStockCloud(storeCode){
+  if(!activeWorkspace)return;
+  const date=state.stkDate;
+  showSync();
+  try{
+    const {error}=await supabaseClient.from('daily_stock').upsert({
+      workspace_id:activeWorkspace.id,
+      stock_date:date,
+      store_code:storeCode,
+      data:dailyStockData[storeCode]||{},
+      updated_by:currentUser.id,
+      updated_by_email:currentUser.email,
+      updated_at:new Date().toISOString()
+    },{onConflict:'workspace_id,stock_date,store_code'});
+    if(error)throw error;
+    if(!dailyStockDates.includes(date)){dailyStockDates.push(date);dailyStockDates.sort().reverse()}
+  }catch(e){toast('Daily stock sync error','error')}
+  hideSync();
+}
+  
+
 async function saveStoreCloud(store){
   if(!activeWorkspace)return;
   showSync();
@@ -3701,7 +3777,7 @@ function updStk(code,c,v){
     await saveStockCloud(code);
     await logActivity('update','stock',code,c,oldVal,newVal,{consumable:c,date:state.stkDate});
   });
-}ب
+}
 
 async function saveStkDate(){
   state.stkDate=document.getElementById('stkDate').value;
