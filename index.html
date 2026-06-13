@@ -1877,7 +1877,7 @@ input[type="number"]{
     <div class="hist-filters">
       <div class="hist-filter-group">
         <label>Period</label>
-        <select id="conPeriod" onchange="renderConsumption()">
+        <select id="conPeriod" onchange="onConPeriodChange()">
           <option value="7">Last 7 Days</option>
           <option value="14">Last 14 Days</option>
           <option value="30" selected>Last 30 Days</option>
@@ -6152,15 +6152,17 @@ function onConPeriodChange(){
   const isCustom=period==='custom';
   const fromGroup=document.getElementById('conFromGroup');
   const toGroup=document.getElementById('conToGroup');
-  if(fromGroup)fromGroup.style.display=isCustom?'flex':'none';
-  if(toGroup)toGroup.style.display=isCustom?'flex':'none';
-  // Default the custom dates if empty
+  
+  // إظهار/إخفاء خانات التاريخ
+  if(fromGroup){fromGroup.style.display=isCustom?'flex':'none'}
+  if(toGroup){toGroup.style.display=isCustom?'flex':'none'}
+  
   if(isCustom){
     const fromEl=document.getElementById('conFrom');
     const toEl=document.getElementById('conTo');
-    const dates=[...new Set(stockHistoryCache.map(r=>r.snapshot_date))].sort();
-    if(fromEl&&!fromEl.value&&dates.length){
-      const today=new Date();const ago=new Date();ago.setDate(today.getDate()-30);
+    // لو فاضيين، نحط آخر 30 يوم كافتراضي
+    if(fromEl&&!fromEl.value){
+      const ago=new Date();ago.setDate(ago.getDate()-30);
       fromEl.value=ago.toISOString().slice(0,10);
     }
     if(toEl&&!toEl.value){
