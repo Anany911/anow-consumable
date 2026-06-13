@@ -1515,13 +1515,13 @@ input[type="number"]{
       <button class="btn" onclick="downloadStockTemplate()" title="Download Excel template for bulk upload">Template</button>
       <button class="btn btn-action" onclick="document.getElementById('stockBulkFile').click()" title="Upload Excel file with stock data">Bulk Upload</button>
       <input type="file" id="stockBulkFile" accept=".xlsx,.xls" style="display:none" onchange="importStockBulk(event)">
-      <button class="btn btn-cta" onclick="markStockUpdated()" title="Mark stock as manually updated">Mark as Updated</button>
       <label style="font-size:12px;color:var(--text-mut);font-weight:500;align-self:center;margin-left:10px">Date:</label>
       <input class="input" type="date" id="stkDate" style="min-width:160px" onchange="saveStkDate()">
     </div>
   </div>
-  <div class="update-info" id="stockUpdateInfo" style="display:none">
-    <div>
+  <div class="update-info" id="stockUpdateInfo" style="display:flex">
+    <div class="update-info-text" id="stockDateInfo">Loading...</div>
+  </div>
       <div class="update-info-text">Last manual update by <b id="stockLastUser">-</b></div>
       <div class="update-info-time" id="stockLastTime">-</div>
     </div>
@@ -2948,6 +2948,8 @@ async function selectWorkspace(wsId){
   showSync('Loading workspace data...');
   await loadFromCloud();
   await loadLastStockUpdate();
+  await loadDailyStockDates();          
+  await loadDailyStock(state.stkDate);   
   await loadReplenLog();
   await loadWarehouse();
   hideSync();
@@ -3663,28 +3665,53 @@ async function saveMatCap(){
   render();
 }
 
+
 function renderStock(){
   const q=(document.getElementById('srchStk')?.value||'').toLowerCase();
   document.getElementById('stkDate').value=state.stkDate;
-  renderStockUpdateInfo();
+  
+  // Show which date we're editing
+  const dateInfo=document.getElementById('stockDateInfo');
+  if(dateInfo){
+    dateInfo.innerHTML='Editing stock for <b>'+state.stkDate+'</b> - changes save automatically';
+  }
+  
+  if(!dailyStockLoaded){
+    document.getElementById('tblStock').innerHTML='<tr><td style="padding:40px;text-align:center;color:var(--text-mut)">Loading...</td></tr>';
+    return;
+  }
+  
   const keys=matKeys();
   let h='<tr><th>Store</th>'+keys.map(c=>'<th style="text-align:center" title="'+c+'">'+matIcon(c)+(isCountOnly(c)?'<div style="font-size:8px;color:var(--text-mut)">count</div>':'')+'</th>').join('')+'</tr>';
   const live=state.stores.filter(s=>s.status==='Live'&&(!q||s.code.toLowerCase().includes(q)));
   if(!live.length){h+='<tr><td colspan="'+(keys.length+1)+'" style="padding:40px;text-align:center;color:var(--text-mut)">No live stores</td></tr>'}
-  else{live.forEach(s=>{h+='<tr><td><b>'+s.code+'</b><div class="cell-sub">'+(s.area||'')+'</div></td>';keys.forEach(c=>{const v=readStock(s.code,c);const cn=c.replace(/'/g,"\\'");h+='<td style="text-align:center"><input class="cell-input" type="number" value="'+v+'" onchange="updStk(\''+s.code+'\',\''+cn+'\',this.value)"></td>'});h+='</tr>'})}
+  else{live.forEach(s=>{h+='<tr><td><b>'+s.code+'</b><div class="cell-sub">'+(s.area||'')+'</div></td>';keys.forEach(c=>{const v=readDailyStock(s.code,c);const cn=c.replace(/'/g,"\\'");h+='<td style="text-align:center"><input class="cell-input" type="number" value="'+v+'" onchange="updStk(\''+s.code+'\',\''+cn+'\',this.value)"></td>'});h+='</tr>'})}
   document.getElementById('tblStock').innerHTML=h;
 }
 
 function updStk(code,c,v){
   if(!canEdit()){denyAccess('edit');return}
-  const oldVal=readStock(code,c);const newVal=+v||0;
+  const oldVal=readDailyStock(code,c);const newVal=+v||0;
   if(oldVal===newVal)return;
+  writeDailyStock(code,c,v);
+  // Also update live state.stock so other pages (DOC, Replen) reflect latest
   writeStock(code,c,v);
-  debouncedSave('stk_'+code,async()=>{await saveStockCloud(code);await logActivity('update','stock',code,c,oldVal,newVal,{consumable:c})});
+  debouncedSave('stk_'+code,async()=>{
+    await saveDailyStockCloud(code);
+    await saveStockCloud(code);
+    await logActivity('update','stock',code,c,oldVal,newVal,{consumable:c,date:state.stkDate});
+  });
+}ب
+
+async function saveStkDate(){
+  state.stkDate=document.getElementById('stkDate').value;
+  await saveSettingCloud('stkDate',state.stkDate);
+  dailyStockLoaded=false;
+  renderStock();
+  await loadDailyStock(state.stkDate);
+  renderStock();
 }
-
-function saveStkDate(){state.stkDate=document.getElementById('stkDate').value;saveSettingCloud('stkDate',state.stkDate)}
-
+  
 function markStockUpdated(){
   if(!canEdit()){denyAccess('mark stock updated');return}
   document.getElementById('stockUpdateNotes').value='';
@@ -5492,6 +5519,22 @@ async function confirmStockBulkImport(){
       if(!state.stock[code])state.stock[code]={};
       Object.entries(data).forEach(([k,v])=>{state.stock[code][k]=v});
     });
+    const dDate=result.detectedDate||state.stkDate;
+    const dailyRows=Object.entries(byStore).map(([code,data])=>{
+      dailyStockData[code]={...(dailyStockData[code]||{}),...data};
+      return {
+        workspace_id:wsId,
+        stock_date:dDate,
+        store_code:code,
+        data:dailyStockData[code],
+        updated_by:currentUser.id,
+        updated_by_email:currentUser.email,
+        updated_at:new Date().toISOString()
+      };
+    });
+    await supabaseClient.from('daily_stock').upsert(dailyRows,{onConflict:'workspace_id,stock_date,store_code'});
+    await loadDailyStockDates();
+    
     if(result.detectedDate)state.stkDate=result.detectedDate;
     const stockRows=Object.entries(byStore).map(([code,data])=>({workspace_id:wsId,store_code:code,data:state.stock[code],updated_at:new Date().toISOString()}));
     await supabaseClient.from('stock').upsert(stockRows);
@@ -5576,17 +5619,29 @@ async function manualSnapshot(){
   if(ok){toast('Snapshot saved');await loadStockHistory();if(currentView==='history')refreshHistorical()}
 }
 
+
 async function loadStockHistory(){
   if(!activeWorkspace){stockHistoryCache=[];return}
   try{
     const cutoff=new Date();
     cutoff.setDate(cutoff.getDate()-365);
-    const {data,error}=await supabaseClient.from('stock_history').select('*').eq('workspace_id',activeWorkspace.id).gte('snapshot_date',cutoff.toISOString().slice(0,10)).order('snapshot_date',{ascending:false}).limit(10000);
+    const {data,error}=await supabaseClient
+      .from('daily_stock')
+      .select('*')
+      .eq('workspace_id',activeWorkspace.id)
+      .gte('stock_date',cutoff.toISOString().slice(0,10))
+      .order('stock_date',{ascending:false})
+      .limit(20000);
     if(error)throw error;
-    stockHistoryCache=data||[];
-    console.log('Loaded',stockHistoryCache.length,'history records');
+    // Map to the shape the rest of the historical code expects (snapshot_date)
+    stockHistoryCache=(data||[]).map(r=>({
+      ...r,
+      snapshot_date:r.stock_date
+    }));
+    console.log('Loaded',stockHistoryCache.length,'daily stock records');
   }catch(e){console.error(e);stockHistoryCache=[]}
 }
+  
 
 function getStockFromSnapshot(snapshotData,consKey){
   if(!snapshotData)return 0;
