@@ -1882,7 +1882,16 @@ input[type="number"]{
           <option value="14">Last 14 Days</option>
           <option value="30" selected>Last 30 Days</option>
           <option value="90">Last 90 Days</option>
+          <option value="custom">Custom Range</option>
         </select>
+      </div>
+      <div class="hist-filter-group" id="conFromGroup" style="display:none">
+        <label>From Date</label>
+        <input type="date" id="conFrom" onchange="renderConsumption()">
+      </div>
+      <div class="hist-filter-group" id="conToGroup" style="display:none">
+        <label>To Date</label>
+        <input type="date" id="conTo" onchange="renderConsumption()">
       </div>
       <div class="hist-filter-group">
         <label>Filter Store</label>
@@ -6137,18 +6146,63 @@ function exportMonthlyCSV(){
 // ============================================
 
 
+
+function onConPeriodChange(){
+  const period=document.getElementById('conPeriod')?.value;
+  const isCustom=period==='custom';
+  const fromGroup=document.getElementById('conFromGroup');
+  const toGroup=document.getElementById('conToGroup');
+  if(fromGroup)fromGroup.style.display=isCustom?'flex':'none';
+  if(toGroup)toGroup.style.display=isCustom?'flex':'none';
+  // Default the custom dates if empty
+  if(isCustom){
+    const fromEl=document.getElementById('conFrom');
+    const toEl=document.getElementById('conTo');
+    const dates=[...new Set(stockHistoryCache.map(r=>r.snapshot_date))].sort();
+    if(fromEl&&!fromEl.value&&dates.length){
+      const today=new Date();const ago=new Date();ago.setDate(today.getDate()-30);
+      fromEl.value=ago.toISOString().slice(0,10);
+    }
+    if(toEl&&!toEl.value){
+      toEl.value=new Date().toISOString().slice(0,10);
+    }
+  }
+  renderConsumption();
+}
+
+  
+
 function renderConsumption(){
-  const period=parseInt(document.getElementById('conPeriod')?.value||'30');
+  const periodRaw=document.getElementById('conPeriod')?.value||'30';
   const storeFilter=document.getElementById('conStore')?.value||'';
   const itemFilter=document.getElementById('conItem')?.value||'';
   const groupBy=document.getElementById('conGroup')?.value||'store';
   const summaryEl=document.getElementById('conSummary');
   const tblEl=document.getElementById('tblConsumption');
-  const today=new Date();
-  const fromDate=new Date();
-  fromDate.setDate(today.getDate()-period);
-  const fromStr=fromDate.toISOString().slice(0,10);
-  const toStr=today.toISOString().slice(0,10);
+
+  // Determine date range (preset days OR custom range)
+  let fromStr,toStr,period;
+  if(periodRaw==='custom'){
+    fromStr=document.getElementById('conFrom')?.value||'';
+    toStr=document.getElementById('conTo')?.value||'';
+    if(!fromStr||!toStr){
+      if(summaryEl)summaryEl.innerHTML='<div class="summary-card neutral"><div class="summary-card-label">Pick Dates</div><div class="summary-card-value">-</div><div class="summary-card-sub">Select From & To</div></div>';
+      if(tblEl)tblEl.innerHTML='<tr><td style="padding:30px;text-align:center">Select a custom date range</td></tr>';
+      consumptionChartInstance=destroyChart(consumptionChartInstance);
+      return;
+    }
+    if(fromStr>toStr){const tmp=fromStr;fromStr=toStr;toStr=tmp}
+    // number of days in the range (inclusive)
+    period=Math.max(1,Math.round((new Date(toStr)-new Date(fromStr))/86400000)+1);
+  } else {
+    period=parseInt(periodRaw||'30');
+    const today=new Date();
+    const fromDate=new Date();
+    fromDate.setDate(today.getDate()-period);
+    fromStr=fromDate.toISOString().slice(0,10);
+    toStr=today.toISOString().slice(0,10);
+  }
+
   let snaps=getSnapshotsByDateRange(fromStr,toStr,storeFilter);
 
   if(snaps.length<2){
@@ -6158,16 +6212,15 @@ function renderConsumption(){
     return;
   }
 
-  // Build delivery map: store -> material_key -> date -> cartons
+  // Build delivery map: store -> material_key -> total cartons in period
   const deliveryMap={};
   if(typeof replenLogCache!=='undefined'){
     replenLogCache.forEach(r=>{
       if(r.delivery_date<fromStr||r.delivery_date>toStr)return;
       if(storeFilter&&r.store_code!==storeFilter)return;
-      const code=r.store_code,key=r.material_key,d=r.delivery_date;
+      const code=r.store_code,key=r.material_key;
       if(!deliveryMap[code])deliveryMap[code]={};
-      if(!deliveryMap[code][key])deliveryMap[code][key]={};
-      deliveryMap[code][key][d]=(deliveryMap[code][key][d]||0)+(+r.cartons||0);
+      deliveryMap[code][key]=(deliveryMap[code][key]||0)+(+r.cartons||0);
     });
   }
 
@@ -6181,7 +6234,7 @@ function renderConsumption(){
 
   const storeCount=Object.keys(byStore).length;
 
-  // Build per store+item consumption (day by day, including deliveries)
+  // Build per store+item consumption: Start + Deliveries - End (simple & clear)
   const records=[];
   Object.keys(byStore).forEach(code=>{
     const series=byStore[code];
@@ -6191,33 +6244,18 @@ function renderConsumption(){
 
     itemsToCalc.forEach(item=>{
       const key=stockKey(item);
-      let totalConsumed=0,totalDeliveries=0;
       const startStock=getStockFromSnapshot(series[0].data,item);
       const endStock=getStockFromSnapshot(series[series.length-1].data,item);
+      const deliveries=deliveryMap[code]?.[key]||0;
+      // Simple formula: what came in (start + deliveries) minus what's left (end)
+      const consumed=(startStock+deliveries)-endStock;
 
-      for(let i=1;i<series.length;i++){
-        const prevDate=series[i-1].snapshot_date;
-        const curDate=series[i].snapshot_date;
-        const prevStock=getStockFromSnapshot(series[i-1].data,item);
-        const curStock=getStockFromSnapshot(series[i].data,item);
-
-        let delivered=0;
-        const dMap=deliveryMap[code]?.[key]||{};
-        Object.keys(dMap).forEach(dDate=>{
-          if(dDate>prevDate&&dDate<=curDate)delivered+=dMap[dDate];
-        });
-
-        const periodConsumed=(prevStock+delivered)-curStock;
-        if(periodConsumed>0)totalConsumed+=periodConsumed;
-        totalDeliveries+=delivered;
-      }
-
-      if(startStock===0&&endStock===0&&totalConsumed===0&&totalDeliveries===0)return;
+      if(startStock===0&&endStock===0&&consumed===0&&deliveries===0)return;
       records.push({
         store:code,area:store?.area||'',item,
         startStock,endStock,
-        deliveries:totalDeliveries,
-        consumed:totalConsumed
+        deliveries,
+        consumed
       });
     });
   });
@@ -6232,7 +6270,7 @@ function renderConsumption(){
       grp[r.store].endStock+=r.endStock;
       grp[r.store].deliveries+=r.deliveries;
       grp[r.store].consumed+=r.consumed;
-      grp[r.store].positiveCon+=r.consumed;
+      grp[r.store].positiveCon+=Math.max(0,r.consumed);
     });
     consumptionRows=Object.values(grp).sort((a,b)=>b.consumed-a.consumed);
   } else if(groupBy==='item'){
@@ -6243,7 +6281,7 @@ function renderConsumption(){
       grp[r.item].endStock+=r.endStock;
       grp[r.item].deliveries+=r.deliveries;
       grp[r.item].consumed+=r.consumed;
-      grp[r.item].positiveCon+=r.consumed;
+      grp[r.item].positiveCon+=Math.max(0,r.consumed);
       grp[r.item].storeCount.add(r.store);
     });
     consumptionRows=Object.values(grp).map(r=>({...r,storeCount:r.storeCount.size})).sort((a,b)=>b.consumed-a.consumed);
@@ -6252,8 +6290,12 @@ function renderConsumption(){
   }
 
   // Totals for summary
-  let totalConsumed=0,totalDeliveries=0;
-  records.forEach(r=>{totalConsumed+=r.consumed;totalDeliveries+=r.deliveries});
+  let totalConsumed=0,totalDeliveries=0,negativeCount=0;
+  records.forEach(r=>{
+    totalConsumed+=Math.max(0,r.consumed);
+    totalDeliveries+=r.deliveries;
+    if(r.consumed<0)negativeCount++;
+  });
   const dailyAvg=totalConsumed/period;
 
   // Data coverage
@@ -6261,7 +6303,7 @@ function renderConsumption(){
   const coverage=Math.round((uniqueDates/period)*100);
 
   if(summaryEl){
-    summaryEl.innerHTML='<div class="summary-card down"><div class="summary-card-label">Consumed</div><div class="summary-card-value">'+n(totalConsumed,0)+'</div><div class="summary-card-sub">CT in '+period+'d</div></div><div class="summary-card neutral"><div class="summary-card-label">Daily Avg</div><div class="summary-card-value">'+n(dailyAvg,1)+'</div></div><div class="summary-card up"><div class="summary-card-label">Deliveries</div><div class="summary-card-value">'+n(totalDeliveries,0)+'</div><div class="summary-card-sub">CT received</div></div><div class="summary-card neutral"><div class="summary-card-label">Stores</div><div class="summary-card-value">'+storeCount+'</div></div><div class="summary-card '+(coverage>=70?'up':'neutral')+'"><div class="summary-card-label">Data Coverage</div><div class="summary-card-value">'+coverage+'%</div><div class="summary-card-sub">'+uniqueDates+'/'+period+' days</div></div>';
+    summaryEl.innerHTML='<div class="summary-card down"><div class="summary-card-label">Consumed</div><div class="summary-card-value">'+n(totalConsumed,0)+'</div><div class="summary-card-sub">CT in '+period+'d</div></div><div class="summary-card neutral"><div class="summary-card-label">Daily Avg</div><div class="summary-card-value">'+n(dailyAvg,1)+'</div></div><div class="summary-card up"><div class="summary-card-label">Deliveries</div><div class="summary-card-value">'+n(totalDeliveries,0)+'</div><div class="summary-card-sub">CT received</div></div><div class="summary-card neutral"><div class="summary-card-label">Stores</div><div class="summary-card-value">'+storeCount+'</div></div><div class="summary-card '+(coverage>=70?'up':'neutral')+'"><div class="summary-card-label">Data Coverage</div><div class="summary-card-value">'+coverage+'%</div><div class="summary-card-sub">'+uniqueDates+'/'+period+' days</div></div>'+(negativeCount>0?'<div class="summary-card down"><div class="summary-card-label">Missing Deliveries?</div><div class="summary-card-value">'+negativeCount+'</div><div class="summary-card-sub">negative rows</div></div>':'');
   }
 
   renderConsumptionChart(consumptionRows,groupBy);
@@ -6269,23 +6311,34 @@ function renderConsumption(){
   if(!tblEl)return;
   if(consumptionRows.length===0){tblEl.innerHTML='<tr><td style="padding:30px;text-align:center">No consumption data</td></tr>';return}
 
+  // Helper to render the Consumed cell with warning for negatives
+  const conCell=(val)=>{
+    if(val<0){
+      return '<td class="nums" style="color:var(--warn);font-weight:700" title="Negative = possible missing delivery">'+n(val)+' <span class="cap-warn" style="margin-left:2px">CHK</span></td>';
+    }
+    if(val===0){
+      return '<td class="nums diff-neutral">0</td>';
+    }
+    return '<td class="nums diff-negative">'+n(val)+'</td>';
+  };
+
   let h='';
   if(groupBy==='store'){
     h='<tr><th>Store</th><th class="nums">Start</th><th class="nums">Deliveries</th><th class="nums">End</th><th class="nums">Consumed</th><th class="nums">Daily</th></tr>';
     consumptionRows.forEach(r=>{
-      const dailyR=r.consumed/period;
-      h+='<tr><td><b>'+r.store+'</b><div class="cell-sub">'+r.area+'</div></td><td class="nums">'+n(r.startStock)+'</td><td class="nums" style="color:var(--success)">+'+n(r.deliveries)+'</td><td class="nums">'+n(r.endStock)+'</td><td class="nums diff-negative">'+n(r.consumed)+'</td><td class="nums">'+n(dailyR,1)+'</td></tr>';
+      const dailyR=Math.max(0,r.consumed)/period;
+      h+='<tr><td><b>'+r.store+'</b><div class="cell-sub">'+r.area+'</div></td><td class="nums">'+n(r.startStock)+'</td><td class="nums" style="color:var(--success)">+'+n(r.deliveries)+'</td><td class="nums">'+n(r.endStock)+'</td>'+conCell(r.consumed)+'<td class="nums">'+n(dailyR,1)+'</td></tr>';
     });
   } else if(groupBy==='item'){
     h='<tr><th>Item</th><th class="nums">Stores</th><th class="nums">Start</th><th class="nums">Deliveries</th><th class="nums">End</th><th class="nums">Consumed</th><th class="nums">Daily</th></tr>';
     consumptionRows.forEach(r=>{
-      const dailyR=r.consumed/period;
-      h+='<tr><td><b>'+r.item+'</b></td><td class="nums">'+r.storeCount+'</td><td class="nums">'+n(r.startStock)+'</td><td class="nums" style="color:var(--success)">+'+n(r.deliveries)+'</td><td class="nums">'+n(r.endStock)+'</td><td class="nums diff-negative">'+n(r.consumed)+'</td><td class="nums">'+n(dailyR,1)+'</td></tr>';
+      const dailyR=Math.max(0,r.consumed)/period;
+      h+='<tr><td><b>'+r.item+'</b></td><td class="nums">'+r.storeCount+'</td><td class="nums">'+n(r.startStock)+'</td><td class="nums" style="color:var(--success)">+'+n(r.deliveries)+'</td><td class="nums">'+n(r.endStock)+'</td>'+conCell(r.consumed)+'<td class="nums">'+n(dailyR,1)+'</td></tr>';
     });
   } else {
     h='<tr><th>Store</th><th>Item</th><th class="nums">Start</th><th class="nums">Deliveries</th><th class="nums">End</th><th class="nums">Consumed</th></tr>';
     consumptionRows.forEach(r=>{
-      h+='<tr><td><b>'+r.store+'</b></td><td>'+r.item+'</td><td class="nums">'+n(r.startStock)+'</td><td class="nums" style="color:var(--success)">+'+n(r.deliveries)+'</td><td class="nums">'+n(r.endStock)+'</td><td class="nums diff-negative">'+n(r.consumed)+'</td></tr>';
+      h+='<tr><td><b>'+r.store+'</b></td><td>'+r.item+'</td><td class="nums">'+n(r.startStock)+'</td><td class="nums" style="color:var(--success)">+'+n(r.deliveries)+'</td><td class="nums">'+n(r.endStock)+'</td>'+conCell(r.consumed)+'</tr>';
     });
   }
   tblEl.innerHTML=h;
