@@ -1243,7 +1243,15 @@ html{transition:background .3s}
 .online-user-info{flex:1;min-width:0}
 .online-user-name{font-weight:600;font-size:13px}
 .online-user-meta{font-size:11px;color:var(--text-mut)}
-  
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button{
+  -webkit-appearance:none;
+  margin:0;
+}
+input[type="number"]{
+  -moz-appearance:textfield;
+  appearance:textfield;
+} 
   
   
 </style>
@@ -3832,30 +3840,31 @@ function expReplenCSV(){
 }
   
 
+
 function renderCfg(){
   const fcKeys=forecastedKeys();
   const coKeys=countOnlyKeys();
   
-  // Forecasted materials
   let hF='';
   fcKeys.forEach(k=>{
     const c=state.materials[k];
     const inReplen=c.includeInReplen!==false;
-    hF+='<div class="cfg-card"><h4><span>'+k+'</span><div class="cfg-card-actions"><span class="type-tag">'+c.type+'</span><button class="btn btn-sm btn-danger" style="padding:2px 8px" onclick="deleteMaterial(\''+k.replace(/'/g,"\\'")+'\')" title="Delete">X</button></div></h4>'+
+    const kEsc=k.replace(/'/g,"\\'");
+    hF+='<div class="cfg-card"><h4><span>'+k+'</span><div class="cfg-card-actions"><span class="type-tag">'+c.type+'</span><button class="btn btn-sm" style="padding:2px 8px" onclick="renameMaterial(\''+kEsc+'\')" title="Rename">Rename</button><button class="btn btn-sm btn-danger" style="padding:2px 8px" onclick="deleteMaterial(\''+kEsc+'\')" title="Delete">X</button></div></h4>'+
       '<div class="cfg-field"><label>Icon</label><input type="text" id="ic_'+stockKey(k)+'" value="'+(c.icon||'')+'"></div>'+
       '<div class="cfg-field"><label>Trend</label><input type="number" step="0.0001" id="tr_'+stockKey(k)+'" value="'+c.trend+'"></div>'+
       '<div class="cfg-field"><label>Units/Carton</label><input type="number" id="un_'+stockKey(k)+'" value="'+c.units+'"></div>'+
       '<div class="cfg-field"><label>Boxes/Pallet</label><input type="number" id="bx_'+stockKey(k)+'" value="'+(c.box||20)+'"></div>'+
-      '<div class="cfg-toggle-row"><span class="cfg-toggle-label">Include in Replenishment</span><label class="toggle-switch"><input type="checkbox" '+(inReplen?'checked':'')+' onchange="toggleReplen(\''+k.replace(/'/g,"\\'")+'\',this.checked)"><span class="toggle-slider"></span></label></div>'+
+      '<div class="cfg-toggle-row"><span class="cfg-toggle-label">Include in Replenishment</span><label class="toggle-switch"><input type="checkbox" '+(inReplen?'checked':'')+' onchange="toggleReplen(\''+kEsc+'\',this.checked)"><span class="toggle-slider"></span></label></div>'+
       '</div>';
   });
   document.getElementById('cfgBoxForecasted').innerHTML=hF||'<div style="padding:20px;color:var(--text-mut);font-size:13px">No forecasted materials.</div>';
   
-  // Count-only materials
   let hC='';
   coKeys.forEach(k=>{
     const c=state.materials[k];
-    hC+='<div class="cfg-card"><h4><span>'+k+'</span><div class="cfg-card-actions"><span class="mat-kind-badge mat-kind-countonly">Count</span><button class="btn btn-sm btn-danger" style="padding:2px 8px" onclick="deleteMaterial(\''+k.replace(/'/g,"\\'")+'\')" title="Delete">X</button></div></h4>'+
+    const kEsc=k.replace(/'/g,"\\'");
+    hC+='<div class="cfg-card"><h4><span>'+k+'</span><div class="cfg-card-actions"><span class="mat-kind-badge mat-kind-countonly">Count</span><button class="btn btn-sm" style="padding:2px 8px" onclick="renameMaterial(\''+kEsc+'\')" title="Rename">Rename</button><button class="btn btn-sm btn-danger" style="padding:2px 8px" onclick="deleteMaterial(\''+kEsc+'\')" title="Delete">X</button></div></h4>'+
       '<div class="cfg-field"><label>Icon</label><input type="text" id="ic_'+stockKey(k)+'" value="'+(c.icon||'')+'"></div>'+
       '<div class="cfg-field"><label>Units/Carton</label><input type="number" id="un_'+stockKey(k)+'" value="'+(c.units||1)+'"></div>'+
       '<div class="cfg-field"><label>Boxes/Pallet</label><input type="number" id="bx_'+stockKey(k)+'" value="'+(c.box||20)+'"></div>'+
@@ -3922,6 +3931,58 @@ async function deleteMaterial(name){
   toast('Material deleted');
   render();
 }
+
+
+async function renameMaterial(oldName){
+  if(!canManageSettings()){denyAccess('manage settings');return}
+  const m=state.materials[oldName];
+  if(!m)return;
+  const newName=prompt('Rename material "'+oldName+'"\n\nخلي الاسم نفس اسم العمود في ملف الـ Stock Excel:',oldName);
+  if(newName===null)return;
+  const trimmed=newName.trim();
+  if(!trimmed){toast('Name cannot be empty','error');return}
+  if(trimmed===oldName)return;
+  if(state.materials[trimmed]){toast('A material with this name already exists','error');return}
+
+  const oldKey=stockKey(oldName);
+  const newKey=stockKey(trimmed);
+
+  if(oldKey!==newKey){
+    const collision=matKeys().find(k=>k!==oldName&&stockKey(k)===newKey);
+    if(collision){toast('Name conflicts with "'+collision+'" (same key)','error');return}
+  }
+
+  showSync('Renaming material...');
+  try{
+    const def={...m,name:trimmed};
+    delete state.materials[oldName];
+    state.materials[trimmed]=def;
+
+    if(oldKey!==newKey){
+      const storesToUpdate=[];
+      Object.keys(state.stock).forEach(code=>{
+        const row=state.stock[code];
+        if(row&&row[oldKey]!==undefined){
+          row[newKey]=row[oldKey];
+          delete row[oldKey];
+          storesToUpdate.push(code);
+        }
+      });
+      for(const code of storesToUpdate){
+        await saveStockCloud(code);
+      }
+    }
+
+    await saveMaterialsCloud();
+    await logActivity('update','material',oldName,'name',oldName,trimmed,{renamedTo:trimmed});
+
+    toast('Renamed to "'+trimmed+'"');
+    render();
+  }catch(e){
+    toast('Rename failed: '+e.message,'error');
+  }
+  hideSync();
+}  
 
 let addMatKind='forecasted';
 
