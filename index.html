@@ -1325,6 +1325,9 @@ input[type="number"]{
 
 
 
+/* ════════════════════════════════════════
+   FOOTER
+   ════════════════════════════════════════ */
 .app-footer{
   max-width:1600px;
   margin:30px auto 0;
@@ -1338,9 +1341,9 @@ input[type="number"]{
   font-size:12px;
   color:var(--text-mut);
 }
-.app-footer .ft-left{display:flex;align-items:center;gap:6px}
+.app-footer .ft-left{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 .app-footer .ft-left b{color:var(--text);font-weight:700}
-.app-footer .ft-right{display:flex;align-items:center;gap:6px}
+.app-footer .ft-right{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 .app-footer a{
   color:var(--link);
   font-weight:600;
@@ -1349,10 +1352,27 @@ input[type="number"]{
 }
 .app-footer a:hover{color:var(--link-hover);text-decoration:underline}
 @media(max-width:640px){
-  .app-footer{flex-direction:column;text-align:center;padding:16px 12px}
+  .app-footer{flex-direction:column;text-align:center;padding:16px 12px;gap:8px}
 }
 
- 
+/* Login footer */
+.login-footer{
+  margin-top:20px;
+  padding-top:16px;
+  border-top:1px solid var(--border-light);
+  text-align:center;
+  font-size:11px;
+  color:var(--text-mut);
+  line-height:1.6;
+}
+.login-footer a{
+  color:var(--link);
+  font-weight:600;
+  text-decoration:none;
+}
+.login-footer a:hover{color:var(--link-hover);text-decoration:underline}
+
+  
 </style>
 </head>
 
@@ -1385,8 +1405,12 @@ input[type="number"]{
     <div class="login-toggle" id="toggleSection">
       <span id="toggleText">Don't have an account?</span>
       <a id="toggleLink" onclick="setAuthMode(authMode==='signin'?'signup':'signin')">Sign Up</a>
-    </div>
+    </div>  
     <a class="login-link" id="backToLogin" style="display:none" onclick="setAuthMode('signin')">Back to Sign In</a>
+    <div class="login-footer">
+      © <span class="footerYear"></span> Anow Operations · Support:
+      <a href="https://phonetool.amazon.com/users/ahmanany" target="_blank" rel="noopener">@ahmanany</a>
+    </div>
   </div>
 </div>
 
@@ -7067,6 +7091,12 @@ function exportReportExcel(){
 }
 
 
+  
+// Set footer year automatically (all footers)
+(function(){
+  const yr=new Date().getFullYear();
+  document.querySelectorAll('.footerYear, #footerYear').forEach(el=>{el.textContent=yr});
+})();
   
 // ============================================
 // START THE APP
