@@ -15,7 +15,7 @@
   --amz-orange-light:#FFAC31; --amz-blue:#146EB4; --bg:#EAEDED; --surface:#FFFFFF;
   --surface-alt:#F7F8F8; --surface-hover:#F0F2F2; --border:#D5D9D9; --border-light:#E7E9EC;
   --text:#0F1111; --text-mut:#565959; --text-dim:#848A8C; --link:#007185; --link-hover:#C7511F;
-  --success:#067D62; --success-bg:#D5F5E3; --warn:#B66A00; --warn-bg:#FFF3CD;
+  --success:#067D62; --success-bg:#D5F5E3; --warn:#B66A00; --warn-bg:#FFF3CD;</style
   --danger:#B12704; --danger-bg:#FCE4E4; --info:#146EB4; --info-bg:#D9EDF7;
   --shadow-xs:0 1px 2px rgba(0,0,0,.08); --shadow-sm:0 2px 5px rgba(15,17,17,.15);
   --shadow:0 4px 12px rgba(15,17,17,.1); --shadow-lg:0 8px 24px rgba(15,17,17,.15);
@@ -1264,6 +1264,65 @@ input[type="number"]{
 [data-theme="dark"] .cfg-card.drag-over{border-color:var(--amz-orange)}
 
 
+
+
+/* ════════════════════════════════════════
+   📊 WEEKLY REPORT
+   ════════════════════════════════════════ */
+.report-overlay{position:fixed;inset:0;background:rgba(15,17,17,.6);z-index:3000;display:none;overflow-y:auto;padding:20px}
+.report-overlay.show{display:block}
+.report-toolbar{max-width:900px;margin:0 auto 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;box-shadow:var(--shadow-lg)}
+.report-toolbar .rt-title{font-weight:700;font-size:15px;margin-right:auto}
+.report-page{max-width:900px;margin:0 auto;background:#fff;border-radius:8px;box-shadow:var(--shadow-lg);overflow:hidden}
+.report-hd{background:linear-gradient(135deg,#131A22,#232F3E);color:#fff;padding:28px 32px;position:relative;overflow:hidden}
+.report-hd::after{content:'';position:absolute;right:-50px;top:-50px;width:220px;height:220px;background:radial-gradient(circle,rgba(255,153,0,.18),transparent 70%)}
+.report-hd .rh-logo{font-size:24px;font-weight:700;letter-spacing:-.5px}
+.report-hd .rh-logo span{color:var(--amz-orange)}
+.report-hd .rh-title{font-size:22px;font-weight:700;margin-top:10px;position:relative;z-index:1}
+.report-hd .rh-meta{font-size:13px;color:#cbd5e0;margin-top:6px;position:relative;z-index:1}
+.report-body{padding:24px 32px}
+.report-section{margin-bottom:28px}
+.report-section h3{font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--amz-navy);border-bottom:2px solid var(--amz-orange);padding-bottom:6px;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.report-section h3 .rs-num{width:22px;height:22px;border-radius:50%;background:var(--amz-orange);color:#fff;display:grid;place-items:center;font-size:11px}
+.rep-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.rep-kpi{border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;background:var(--surface-alt)}
+.rep-kpi .rk-val{font-size:22px;font-weight:700;line-height:1.1}
+.rep-kpi .rk-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-mut);font-weight:700;margin-top:4px}
+.rep-kpi.crit .rk-val{color:var(--danger)}
+.rep-kpi.warn .rk-val{color:var(--warn)}
+.rep-kpi.ok .rk-val{color:var(--success)}
+.rep-kpi.info .rk-val{color:var(--info)}
+.report-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.report-tbl th{background:var(--surface-alt);padding:8px 10px;text-align:left;font-weight:700;border-bottom:2px solid var(--border);font-size:11px;position:static}
+.report-tbl td{padding:7px 10px;border-bottom:1px solid var(--border-light)}
+.report-tbl .nums{text-align:right;font-variant-numeric:tabular-nums}
+.report-tbl tr:nth-child(even) td{background:var(--surface-alt)}
+.report-empty-row{text-align:center;color:var(--text-mut);padding:16px;font-style:italic}
+.report-ft{padding:18px 32px;border-top:1px solid var(--border);background:var(--surface-alt);font-size:11px;color:var(--text-mut);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.report-opts{display:flex;gap:14px;flex-wrap:wrap;align-items:center;padding:8px 0}
+.report-opt{display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;user-select:none}
+.report-date-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;width:100%;margin-top:6px}
+.report-date-row .field{flex:0 0 auto}
+.report-date-row label{font-size:11px;font-weight:700;display:block;margin-bottom:3px;color:var(--text-mut)}
+.report-date-row input,.report-date-row select{padding:6px 10px;border:1px solid #888C8C;border-radius:6px;font-size:13px}
+.rep-badge{display:inline-block;padding:1px 7px;border-radius:8px;font-size:10px;font-weight:700}
+.rep-badge.crit{background:var(--danger-bg);color:var(--danger)}
+.rep-badge.low{background:var(--warn-bg);color:var(--warn)}
+
+@media print{
+  body *{visibility:hidden}
+  .report-overlay,.report-overlay *{visibility:visible}
+  .report-overlay{position:absolute;inset:0;padding:0;background:#fff;overflow:visible}
+  .report-toolbar{display:none!important}
+  .report-page{box-shadow:none;max-width:100%;border-radius:0}
+  .report-section{page-break-inside:avoid}
+}
+[data-theme="dark"] .report-page{background:var(--surface)}
+[data-theme="dark"] .report-section h3{color:var(--text)}
+[data-theme="dark"] .rep-kpi,[data-theme="dark"] .report-tbl th{background:var(--surface-alt)}
+[data-theme="dark"] .report-tbl tr:nth-child(even) td{background:var(--surface-alt)}
+[data-theme="dark"] .report-ft{background:var(--surface-alt)}
+
             
 </style>
 </head>
@@ -1725,6 +1784,7 @@ input[type="number"]{
     </div>
     <div class="page-actions">
       <button class="btn" onclick="refreshHistorical()">Refresh</button>
+      <button class="btn btn-action" onclick="openWeeklyReport()">📊 Weekly Report</button>
       <button class="btn btn-cta" onclick="manualSnapshot()">Save Snapshot Now</button>
     </div>
   </div>
@@ -2078,6 +2138,29 @@ input[type="number"]{
   </div>
 </div>
 
+<div class="report-overlay" id="reportOverlay">
+  <div class="report-toolbar">
+    <span class="rt-title">📊 Weekly Operations Report</span>
+    <div class="field" style="margin:0">
+      <select id="repRange" onchange="onRepRangeChange()" style="padding:6px 10px;border:1px solid #888C8C;border-radius:6px;font-size:13px">
+        <option value="7" selected>Last 7 Days</option>
+        <option value="14">Last 14 Days</option>
+        <option value="30">Last 30 Days</option>
+        <option value="custom">Custom Range</option>
+      </select>
+    </div>
+    <div id="repCustomDates" style="display:none;gap:8px" class="report-date-row">
+      <div class="field"><label>From</label><input type="date" id="repFrom" onchange="buildWeeklyReport()"></div>
+      <div class="field"><label>To</label><input type="date" id="repTo" onchange="buildWeeklyReport()"></div>
+    </div>
+    <button class="btn btn-sm" onclick="window.print()">🖨 Print / PDF</button>
+    <button class="btn btn-sm btn-action" onclick="exportReportExcel()">⬇ Excel</button>
+    <button class="btn btn-sm" onclick="closeWeeklyReport()">✕ Close</button>
+  </div>
+  <div class="report-page" id="reportPage"></div>
+</div>
+
+  
 <div class="toast" id="toast"><span class="toast-ic">OK</span><div class="toast-body">Saved</div></div>
 
 <div class="sync-indicator" id="syncIndicator">
@@ -6655,6 +6738,298 @@ function refreshChartsTheme(){
 
 
 window.addEventListener('beforeunload',()=>{stopPresence()}); 
+
+
+
+// ════════════════════════════════════════
+// 📊 WEEKLY OPERATIONS REPORT
+// ════════════════════════════════════════
+let reportData=null;
+
+function openWeeklyReport(){
+  // default custom dates
+  const today=new Date().toISOString().slice(0,10);
+  const ago=new Date();ago.setDate(ago.getDate()-7);
+  const repFrom=document.getElementById('repFrom');
+  const repTo=document.getElementById('repTo');
+  if(repFrom&&!repFrom.value)repFrom.value=ago.toISOString().slice(0,10);
+  if(repTo&&!repTo.value)repTo.value=today;
+  document.getElementById('reportOverlay').classList.add('show');
+  buildWeeklyReport();
+}
+
+function closeWeeklyReport(){
+  document.getElementById('reportOverlay').classList.remove('show');
+}
+
+function onRepRangeChange(){
+  const v=document.getElementById('repRange').value;
+  const cd=document.getElementById('repCustomDates');
+  if(cd)cd.style.display=v==='custom'?'flex':'none';
+  buildWeeklyReport();
+}
+
+function getReportRange(){
+  const v=document.getElementById('repRange')?.value||'7';
+  let fromStr,toStr,days;
+  if(v==='custom'){
+    fromStr=document.getElementById('repFrom')?.value||'';
+    toStr=document.getElementById('repTo')?.value||'';
+    if(fromStr&&toStr&&fromStr>toStr){const t=fromStr;fromStr=toStr;toStr=t}
+    days=fromStr&&toStr?Math.max(1,Math.round((new Date(toStr)-new Date(fromStr))/86400000)+1):7;
+  } else {
+    days=parseInt(v);
+    const today=new Date();const ago=new Date();ago.setDate(today.getDate()-days);
+    fromStr=ago.toISOString().slice(0,10);
+    toStr=today.toISOString().slice(0,10);
+  }
+  return {fromStr,toStr,days};
+}
+
+function computeReportData(){
+  const {fromStr,toStr,days}=getReportRange();
+  const live=state.stores.filter(s=>s.status==='Live');
+  const fcKeys=forecastedKeys();
+
+  // --- 1. Network summary + DOC alerts ---
+  let crit=0,low=0,ok=0,hi=0,totalRep=0;
+  const stockAlerts=[];
+  live.forEach(s=>{
+    if(!state.fc[s.code])return;
+    const sr=calcStoreReplen(s.code);
+    totalRep+=sr.totalReplen;
+    fcKeys.forEach(c=>{
+      const d=calcDOC(s.code,c);
+      if(d<=0)return;
+      if(d<1)crit++;else if(d<3)low++;else if(d<7)ok++;else hi++;
+      if(d<3)stockAlerts.push({store:s.code,area:s.area,item:c,doc:d,replen:calcReplen(s.code,c).ct});
+    });
+  });
+  stockAlerts.sort((a,b)=>a.doc-b.doc);
+
+  // --- 2. Consumption (Start + Deliveries - End) ---
+  const snaps=getSnapshotsByDateRange(fromStr,toStr,'');
+  const deliveryMap={};
+  let weekDeliveries=0;
+  const deliveriesByStore={},deliveriesByMat={};
+  replenLogCache.forEach(r=>{
+    if(r.delivery_date<fromStr||r.delivery_date>toStr)return;
+    const code=r.store_code,key=r.material_key,ct=+r.cartons||0;
+    if(!deliveryMap[code])deliveryMap[code]={};
+    deliveryMap[code][key]=(deliveryMap[code][key]||0)+ct;
+    weekDeliveries+=ct;
+    deliveriesByStore[code]=(deliveriesByStore[code]||0)+ct;
+    deliveriesByMat[r.material_name]=(deliveriesByMat[r.material_name]||0)+ct;
+  });
+
+  const byStore={};
+  snaps.forEach(s=>{(byStore[s.store_code]=byStore[s.store_code]||[]).push(s)});
+  Object.values(byStore).forEach(a=>a.sort((x,y)=>x.snapshot_date.localeCompare(y.snapshot_date)));
+
+  const conByStore={},conByMat={};
+  Object.keys(byStore).forEach(code=>{
+    const ser=byStore[code];
+    if(ser.length<2)return;
+    fcKeys.forEach(item=>{
+      const key=stockKey(item);
+      const startS=getStockFromSnapshot(ser[0].data,item);
+      const endS=getStockFromSnapshot(ser[ser.length-1].data,item);
+      const deliv=deliveryMap[code]?.[key]||0;
+      const consumed=Math.max(0,(startS+deliv)-endS);
+      if(consumed>0){
+        conByStore[code]=(conByStore[code]||0)+consumed;
+        conByMat[item]=(conByMat[item]||0)+consumed;
+      }
+    });
+  });
+
+  const topStores=Object.entries(conByStore).sort((a,b)=>b[1]-a[1]).slice(0,10)
+    .map(([code,v])=>({code,area:state.stores.find(s=>s.code===code)?.area||'',consumed:v}));
+  const topMats=Object.entries(conByMat).sort((a,b)=>b[1]-a[1])
+    .map(([item,v])=>({item,consumed:v}));
+  const totalConsumed=Object.values(conByStore).reduce((a,b)=>a+b,0);
+
+  // --- 3. Warehouse status ---
+  const {added,sent}=calcWarehouseStock();
+  const warehouse=matKeys().map(m=>{
+    const k=stockKey(m);const a=added[k]||0;const st=sent[k]||0;
+    return {mat:m,added:a,sent:st,avail:a-st};
+  }).filter(w=>w.added>0||w.sent>0);
+
+  // --- 4. Replenishment plan ---
+  const replenPlan=[];
+  const repKeys=replenKeys();
+  live.filter(s=>state.fc[s.code]).forEach(s=>{
+    const sr=calcStoreReplen(s.code);
+    if(sr.totalReplen>0)replenPlan.push({store:s.code,area:s.area,total:sr.totalReplen,items:sr.items});
+  });
+  replenPlan.sort((a,b)=>b.total-a.total);
+
+  return {
+    fromStr,toStr,days,
+    summary:{liveStores:live.length,totalStores:state.stores.length,crit,low,ok,hi,totalRep,weekDeliveries,totalConsumed},
+    stockAlerts,topStores,topMats,warehouse,replenPlan,repKeys,
+    deliveriesByStore,deliveriesByMat
+  };
+}
+
+function buildWeeklyReport(){
+  reportData=computeReportData();
+  const d=reportData;
+  const ws=activeWorkspace?.name||'Workspace';
+  const genTime=new Date().toLocaleString();
+
+  let h='<div class="report-hd"><div class="rh-logo">Anow<span>.</span></div>'+
+    '<div class="rh-title">Weekly Operations Report</div>'+
+    '<div class="rh-meta">'+ws+' &nbsp;·&nbsp; '+d.fromStr+' → '+d.toStr+' ('+d.days+' days) &nbsp;·&nbsp; Generated '+genTime+'</div></div>';
+
+  h+='<div class="report-body">';
+
+  // SECTION 1: Executive Summary
+  h+='<div class="report-section"><h3><span class="rs-num">1</span>Executive Summary</h3><div class="rep-kpis">'+
+    '<div class="rep-kpi ok"><div class="rk-val">'+d.summary.liveStores+'</div><div class="rk-lbl">Live Stores</div></div>'+
+    '<div class="rep-kpi info"><div class="rk-val">'+d.summary.totalStores+'</div><div class="rk-lbl">Total Stores</div></div>'+
+    '<div class="rep-kpi crit"><div class="rk-val">'+d.summary.crit+'</div><div class="rk-lbl">Critical</div></div>'+
+    '<div class="rep-kpi warn"><div class="rk-val">'+d.summary.low+'</div><div class="rk-lbl">Low Stock</div></div>'+
+    '<div class="rep-kpi ok"><div class="rk-val">'+(d.summary.ok+d.summary.hi)+'</div><div class="rk-lbl">Healthy</div></div>'+
+    '<div class="rep-kpi"><div class="rk-val">'+n(d.summary.totalConsumed)+'</div><div class="rk-lbl">Consumed (CT)</div></div>'+
+    '<div class="rep-kpi"><div class="rk-val">'+n(d.summary.weekDeliveries)+'</div><div class="rk-lbl">Delivered (CT)</div></div>'+
+    '<div class="rep-kpi warn"><div class="rk-val">'+n(d.summary.totalRep)+'</div><div class="rk-lbl">Replen Needed</div></div>'+
+    '</div></div>';
+
+  // SECTION 2: Top Consuming Stores
+  h+='<div class="report-section"><h3><span class="rs-num">2</span>Top Consuming Stores</h3>';
+  if(d.topStores.length){
+    h+='<table class="report-tbl"><tr><th>#</th><th>Store</th><th>Location</th><th class="nums">Consumed (CT)</th><th class="nums">Daily Avg</th></tr>';
+    d.topStores.forEach((s,i)=>{h+='<tr><td>'+(i+1)+'</td><td><b>'+s.code+'</b></td><td>'+s.area+'</td><td class="nums">'+n(s.consumed)+'</td><td class="nums">'+n(s.consumed/d.days,1)+'</td></tr>'});
+    h+='</table>';
+  } else h+='<div class="report-empty-row">No consumption data for this period</div>';
+  h+='</div>';
+
+  // SECTION 3: Top Materials
+  h+='<div class="report-section"><h3><span class="rs-num">3</span>Top Consumed Materials</h3>';
+  if(d.topMats.length){
+    h+='<table class="report-tbl"><tr><th>Material</th><th class="nums">Consumed (CT)</th><th class="nums">Daily Avg</th><th class="nums">Delivered (CT)</th></tr>';
+    d.topMats.forEach(m=>{h+='<tr><td><b>'+m.item+'</b></td><td class="nums">'+n(m.consumed)+'</td><td class="nums">'+n(m.consumed/d.days,1)+'</td><td class="nums">'+n(d.deliveriesByMat[m.item]||0)+'</td></tr>'});
+    h+='</table>';
+  } else h+='<div class="report-empty-row">No consumption data</div>';
+  h+='</div>';
+
+  // SECTION 4: Critical Stock Alerts
+  h+='<div class="report-section"><h3><span class="rs-num">4</span>Critical Stock Alerts (DOC &lt; 3 days)</h3>';
+  if(d.stockAlerts.length){
+    h+='<table class="report-tbl"><tr><th>Store</th><th>Location</th><th>Material</th><th class="nums">DOC</th><th class="nums">Replen (CT)</th></tr>';
+    d.stockAlerts.slice(0,30).forEach(a=>{
+      const badge=a.doc<1?'<span class="rep-badge crit">'+a.doc.toFixed(1)+'d</span>':'<span class="rep-badge low">'+a.doc.toFixed(1)+'d</span>';
+      h+='<tr><td><b>'+a.store+'</b></td><td>'+a.area+'</td><td>'+a.item+'</td><td class="nums">'+badge+'</td><td class="nums">'+a.replen+'</td></tr>';
+    });
+    h+='</table>';
+    if(d.stockAlerts.length>30)h+='<div style="font-size:11px;color:var(--text-mut);margin-top:6px">+ '+(d.stockAlerts.length-30)+' more alerts</div>';
+  } else h+='<div class="report-empty-row">✓ No critical alerts — all stock levels healthy</div>';
+  h+='</div>';
+
+  // SECTION 5: Deliveries This Week
+  h+='<div class="report-section"><h3><span class="rs-num">5</span>Deliveries This Period</h3>';
+  const delStores=Object.entries(d.deliveriesByStore).sort((a,b)=>b[1]-a[1]);
+  if(delStores.length){
+    h+='<table class="report-tbl"><tr><th>Store</th><th>Location</th><th class="nums">Delivered (CT)</th></tr>';
+    delStores.forEach(([code,ct])=>{h+='<tr><td><b>'+code+'</b></td><td>'+(state.stores.find(s=>s.code===code)?.area||'')+'</td><td class="nums">'+n(ct)+'</td></tr>'});
+    h+='<tr style="font-weight:700;background:#FFF4E0"><td colspan="2">TOTAL</td><td class="nums">'+n(d.summary.weekDeliveries)+'</td></tr>';
+    h+='</table>';
+  } else h+='<div class="report-empty-row">No deliveries recorded this period</div>';
+  h+='</div>';
+
+  // SECTION 6: Warehouse Status
+  h+='<div class="report-section"><h3><span class="rs-num">6</span>Warehouse Inventory Status</h3>';
+  if(d.warehouse.length){
+    h+='<table class="report-tbl"><tr><th>Material</th><th class="nums">Total Added</th><th class="nums">Sent</th><th class="nums">Available</th><th>Status</th></tr>';
+    d.warehouse.forEach(w=>{
+      const st=w.avail<=0?'<span class="rep-badge crit">Empty</span>':w.avail<w.sent*0.2?'<span class="rep-badge low">Low</span>':'<span class="rep-badge" style="background:var(--success-bg);color:var(--success)">OK</span>';
+      h+='<tr><td><b>'+w.mat+'</b></td><td class="nums">'+n(w.added)+'</td><td class="nums">'+n(w.sent)+'</td><td class="nums"><b>'+n(w.avail)+'</b></td><td>'+st+'</td></tr>';
+    });
+    h+='</table>';
+  } else h+='<div class="report-empty-row">No warehouse inventory recorded</div>';
+  h+='</div>';
+
+  // SECTION 7: Replenishment Plan
+  h+='<div class="report-section"><h3><span class="rs-num">7</span>Replenishment Plan Required</h3>';
+  if(d.replenPlan.length){
+    h+='<table class="report-tbl"><tr><th>Store</th><th>Location</th>'+d.repKeys.map(k=>'<th class="nums">'+matIcon(k)+'</th>').join('')+'<th class="nums">Total</th></tr>';
+    d.replenPlan.slice(0,40).forEach(p=>{
+      h+='<tr><td><b>'+p.store+'</b></td><td>'+p.area+'</td>';
+      d.repKeys.forEach(k=>{const ct=p.items[k]?.ct||0;h+='<td class="nums">'+(ct||'-')+'</td>'});
+      h+='<td class="nums"><b>'+p.total+'</b></td></tr>';
+    });
+    h+='</table>';
+    if(d.replenPlan.length>40)h+='<div style="font-size:11px;color:var(--text-mut);margin-top:6px">+ '+(d.replenPlan.length-40)+' more stores</div>';
+  } else h+='<div class="report-empty-row">No replenishment needed — all stores sufficiently stocked</div>';
+  h+='</div>';
+
+  h+='</div>'; // report-body
+
+  h+='<div class="report-ft"><span>Anow Operations · '+ws+'</span><span>Confidential — Internal Use Only</span></div>';
+
+  document.getElementById('reportPage').innerHTML=h;
+}
+
+function exportReportExcel(){
+  if(!reportData){toast('Generate report first','error');return}
+  const d=reportData;const ws=activeWorkspace?.name||'workspace';
+  const wb=XLSX.utils.book_new();
+
+  // Sheet 1: Summary
+  const sumData=[
+    ['Weekly Operations Report'],
+    ['Workspace',ws],['Period',d.fromStr+' to '+d.toStr],['Days',d.days],['Generated',new Date().toLocaleString()],
+    [],
+    ['Metric','Value'],
+    ['Live Stores',d.summary.liveStores],['Total Stores',d.summary.totalStores],
+    ['Critical',d.summary.crit],['Low Stock',d.summary.low],['Healthy',d.summary.ok+d.summary.hi],
+    ['Total Consumed (CT)',d.summary.totalConsumed],['Total Delivered (CT)',d.summary.weekDeliveries],
+    ['Replenishment Needed (CT)',d.summary.totalRep]
+  ];
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(sumData),'Summary');
+
+  // Sheet 2: Top Stores
+  const ts=[['Store','Location','Consumed (CT)','Daily Avg']];
+  d.topStores.forEach(s=>ts.push([s.code,s.area,s.consumed,+(s.consumed/d.days).toFixed(1)]));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(ts),'Top Stores');
+
+  // Sheet 3: Top Materials
+  const tm=[['Material','Consumed (CT)','Daily Avg','Delivered (CT)']];
+  d.topMats.forEach(m=>tm.push([m.item,m.consumed,+(m.consumed/d.days).toFixed(1),d.deliveriesByMat[m.item]||0]));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(tm),'Top Materials');
+
+  // Sheet 4: Stock Alerts
+  const sa=[['Store','Location','Material','DOC (days)','Replen (CT)']];
+  d.stockAlerts.forEach(a=>sa.push([a.store,a.area,a.item,+a.doc.toFixed(1),a.replen]));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(sa),'Stock Alerts');
+
+  // Sheet 5: Deliveries
+  const dl=[['Store','Location','Delivered (CT)']];
+  Object.entries(d.deliveriesByStore).sort((a,b)=>b[1]-a[1]).forEach(([c,ct])=>dl.push([c,state.stores.find(s=>s.code===c)?.area||'',ct]));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(dl),'Deliveries');
+
+  // Sheet 6: Warehouse
+  const wh=[['Material','Total Added','Sent','Available']];
+  d.warehouse.forEach(w=>wh.push([w.mat,w.added,w.sent,w.avail]));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(wh),'Warehouse');
+
+  // Sheet 7: Replenishment
+  const rp=[['Store','Location',...d.repKeys,'Total']];
+  d.replenPlan.forEach(p=>{
+    const row=[p.store,p.area];
+    d.repKeys.forEach(k=>row.push(p.items[k]?.ct||0));
+    row.push(p.total);rp.push(row);
+  });
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rp),'Replenishment');
+
+  XLSX.writeFile(wb,'weekly_report_'+ws+'_'+d.toStr+'.xlsx');
+  toast('Excel report exported');
+}
+
+
+  
 // ============================================
 // START THE APP
 // ============================================
