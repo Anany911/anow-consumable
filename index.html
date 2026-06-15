@@ -5665,7 +5665,7 @@ async function importStockBulk(e){
   r.onload=ev=>{
     try{
       const data=new Uint8Array(ev.target.result);
-      const wb=XLSX.read(data,{type:'array',cellDates:true});
+      const wb=XLSX.read(data,{type:'array',cellDates:false,raw:false});
       const result=parseStockBulkFile(wb,f.name);
       hideSync();
       showStockPreview(result,f.name);
@@ -5705,8 +5705,29 @@ function parseStockBulkFile(wb,fileName){
     let rowDate=null;
     if(dateCol>=0&&row[dateCol]){
       const d=row[dateCol];
-      if(d instanceof Date)rowDate=d.toISOString().slice(0,10);
-      else{const parsed=new Date(d);if(!isNaN(parsed.getTime()))rowDate=parsed.toISOString().slice(0,10)}
+      if(d instanceof Date){
+        // استخدم الـ local date عشان نتجنب مشكلة الـ timezone shift
+        const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');
+        rowDate=y+'-'+m+'-'+day;
+      } else {
+        // نوع نصي زي "6/15/26" - نفكّكه يدوي
+        const s=String(d).trim();
+        const parts=s.split(/[\/\-]/);
+        if(parts.length===3){
+          let mm=parseInt(parts[0]),dd=parseInt(parts[1]),yy=parseInt(parts[2]);
+          if(yy<100)yy+=2000; // 26 -> 2026
+          if(!isNaN(mm)&&!isNaN(dd)&&!isNaN(yy)){
+            rowDate=yy+'-'+String(mm).padStart(2,'0')+'-'+String(dd).padStart(2,'0');
+          }
+        }
+        if(!rowDate){
+          const parsed=new Date(s);
+          if(!isNaN(parsed.getTime())){
+            const y=parsed.getFullYear(),m=String(parsed.getMonth()+1).padStart(2,'0'),day=String(parsed.getDate()).padStart(2,'0');
+            rowDate=y+'-'+m+'-'+day;
+          }
+        }
+      }
     }
     if(rowDate&&!result.detectedDate)result.detectedDate=rowDate;
     
