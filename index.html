@@ -1624,12 +1624,14 @@ input[type="number"]{
   <div class="page-head">
     <div><h1>Stock Count Entry</h1><p>Cartons on hand per store</p></div>
     <div class="page-actions">
-      <button class="btn" onclick="downloadStockTemplate()" title="Download Excel template for bulk upload">Template</button>
-      <button class="btn btn-action" onclick="document.getElementById('stockBulkFile').click()" title="Upload Excel file with stock data">Bulk Upload</button>
-      <input type="file" id="stockBulkFile" accept=".xlsx,.xls" style="display:none" onchange="importStockBulk(event)">
-      <label style="font-size:12px;color:var(--text-mut);font-weight:500;align-self:center;margin-left:10px">Date:</label>
-      <input class="input" type="date" id="stkDate" style="min-width:160px" onchange="saveStkDate()">
-    </div>
+        <button class="btn" onclick="downloadStockTemplate()" title="Download Excel template for bulk upload">Template</button>
+        <button class="btn btn-action" onclick="document.getElementById('stockBulkFile').click()" title="Upload Excel file with stock data">Bulk Upload</button>
+        <input type="file" id="stockBulkFile" accept=".xlsx,.xls" style="display:none" onchange="importStockBulk(event)">
+        <button class="btn" id="pickFolderBtn" onclick="pickStockFolder()">📁 Connect Folder</button>
+        <button class="btn btn-cta" id="syncTodayBtn" onclick="syncTodayStock()" title="Auto-import today's stock from SharePoint">🔄 Sync Today</button>
+        <label style="font-size:12px;color:var(--text-mut);font-weight:500;align-self:center;margin-left:10px">Date:</label>
+        <input class="input" type="date" id="stkDate" style="min-width:160px" onchange="saveStkDate()">
+      </div>
   </div>
   <div class="update-info" id="stockUpdateInfo" style="display:flex">
     <div class="update-info-text" id="stockDateInfo">Loading...</div>
@@ -3108,6 +3110,7 @@ async function selectWorkspace(wsId){
   goToHub();
   setTimeout(()=>checkAndCreateAutoSnapshot(),1500);
   startPresence();
+  restoreStockFolder();
   }
 
 function toggleWsMenu(){
@@ -7097,6 +7100,208 @@ function exportReportExcel(){
   const yr=new Date().getFullYear();
   document.querySelectorAll('.footerYear, #footerYear').forEach(el=>{el.textContent=yr});
 })();
+
+
+
+// ════════════════════════════════════════
+// 📁 SHAREPOINT/ONEDRIVE STOCK SYNC
+// ════════════════════════════════════════
+
+let stockFolderHandle = null;
+const FOLDER_PREFIX = 'stock_count_';
+const FOLDER_DB_KEY = 'anow_stock_folder';
+
+function idbOpen(){
+  return new Promise((res,rej)=>{
+    const r=indexedDB.open('anow_handles',1);
+    r.onupgradeneeded=()=>r.result.createObjectStore('handles');
+    r.onsuccess=()=>res(r.result);
+    r.onerror=()=>rej(r.error);
+  });
+}
+async function idbSet(key,val){
+  const db=await idbOpen();
+  return new Promise((res,rej)=>{
+    const tx=db.transaction('handles','readwrite');
+    tx.objectStore('handles').put(val,key);
+    tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);
+  });
+}
+async function idbGet(key){
+  const db=await idbOpen();
+  return new Promise((res,rej)=>{
+    const tx=db.transaction('handles','readonly');
+    const rq=tx.objectStore('handles').get(key);
+    rq.onsuccess=()=>res(rq.result);rq.onerror=()=>rej(rq.error);
+  });
+}
+
+function supportsFolderAccess(){return 'showDirectoryPicker' in window}
+
+async function pickStockFolder(){
+  if(!canEdit()){denyAccess('sync stock');return}
+  if(!supportsFolderAccess()){
+    toast('Use Chrome or Edge browser for folder sync','error');
+    return;
+  }
+  try{
+    stockFolderHandle = await window.showDirectoryPicker({mode:'read'});
+    await idbSet(FOLDER_DB_KEY, stockFolderHandle);
+    updateFolderButtonState();
+    toast('Connected: '+stockFolderHandle.name);
+  }catch(e){
+    if(e.name!=='AbortError')toast('Folder access failed','error');
+  }
+}
+
+async function restoreStockFolder(){
+  if(!supportsFolderAccess())return;
+  try{
+    const handle=await idbGet(FOLDER_DB_KEY);
+    if(handle)stockFolderHandle=handle;
+  }catch(e){console.warn('Restore:',e.message)}
+  updateFolderButtonState();
+}
+
+function updateFolderButtonState(){
+  const btn=document.getElementById('pickFolderBtn');
+  if(!btn)return;
+  if(stockFolderHandle){
+    btn.innerHTML='📁 '+stockFolderHandle.name.slice(0,16);
+    btn.title='Connected to: '+stockFolderHandle.name+' — click to change';
+  }else{
+    btn.innerHTML='📁 Connect Folder';
+  }
+}
+
+async function findStockFile(dirHandle, expectedName, depth){
+  depth = depth || 0;
+  if(depth > 3) return null;
+  const target = expectedName.toLowerCase();
+  for await (const [name, handle] of dirHandle.entries()){
+    if(handle.kind==='file'){
+      const lower=name.toLowerCase();
+      if(lower.startsWith(target) &&
+         (lower.endsWith('.xlsx')||lower.endsWith('.xls')||lower.endsWith('.csv'))){
+        return handle;
+      }
+    }
+  }
+  for await (const [name, handle] of dirHandle.entries()){
+    if(handle.kind==='directory'){
+      const found=await findStockFile(handle, expectedName, depth+1);
+      if(found)return found;
+    }
+  }
+  return null;
+}
+
+async function syncTodayStock(){
+  if(!canEdit()){denyAccess('sync stock');return}
+  if(!supportsFolderAccess()){toast('Use Chrome/Edge','error');return}
+  if(!stockFolderHandle){
+    toast('Connect a folder first','error');
+    await pickStockFolder();
+    return;
+  }
+  try{
+    const perm=await stockFolderHandle.requestPermission({mode:'read'});
+    if(perm!=='granted'){toast('Folder permission denied','error');return}
+  }catch(e){
+    toast('Reconnect the folder (permission expired)','error');
+    return;
+  }
+  const targetDate = state.stkDate || new Date().toISOString().slice(0,10);
+  const expectedName = FOLDER_PREFIX + targetDate;
+  showSync('Searching for '+expectedName+'...');
+  let foundFile=null;
+  try{
+    foundFile = await findStockFile(stockFolderHandle, expectedName);
+  }catch(e){
+    hideSync();toast('Folder read error: '+e.message,'error');return;
+  }
+  if(!foundFile){
+    hideSync();
+    toast('File "'+expectedName+'" not found. Is OneDrive synced?','error');
+    return;
+  }
+  showSync('Reading '+foundFile.name+'...');
+  try{
+    const file=await foundFile.getFile();
+    const buf=await file.arrayBuffer();
+    let wb;
+    if(foundFile.name.toLowerCase().endsWith('.csv')){
+      const text=new TextDecoder().decode(buf);
+      wb=XLSX.read(text,{type:'string',cellDates:true});
+    }else{
+      wb=XLSX.read(new Uint8Array(buf),{type:'array',cellDates:true});
+    }
+    const result=parseFolderStockFile(wb, foundFile.name, targetDate);
+    hideSync();
+    showStockPreview(result, foundFile.name);
+  }catch(e){
+    hideSync();toast('Read failed: '+e.message,'error');
+  }
+}
+
+function parseFolderStockFile(wb, fileName, targetDate){
+  const result={fileName,detectedDate:targetDate,valid:[],skipped:[],errors:[],
+                affectedStores:new Set(),affectedItems:new Set()};
+  let target=null;
+  for(const sheetName of wb.SheetNames){
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,defval:null,raw:false});
+    if(!rows.length)continue;
+    for(let i=0;i<Math.min(rows.length,5);i++){
+      const cells=(rows[i]||[]).map(c=>normKey(c));
+      const hasStore=cells.some(c=>c==='storeid'||c==='store'||c==='storecode');
+      const hasItem=cells.some(c=>c==='item'||c==='consumable'||c==='material');
+      const hasCount=cells.some(c=>c==='count'||c==='qty'||c==='cartons');
+      if(hasStore&&hasItem&&hasCount){target={rows,headerIdx:i};break}
+    }
+    if(target)break;
+  }
+  if(!target){result.errors.push({row:0,reason:'No valid sheet (need: date, storeId, item, count)'});return result}
+  const hdr=(target.rows[target.headerIdx]||[]).map(c=>normKey(c));
+  const dateCol  = hdr.findIndex(c=>c==='date'||c==='stockdate');
+  const storeCol = hdr.findIndex(c=>c==='storeid'||c==='store'||c==='storecode');
+  const itemCol  = hdr.findIndex(c=>c==='item'||c==='consumable'||c==='material');
+  const countCol = hdr.findIndex(c=>c==='count'||c==='qty'||c==='cartons');
+  const validStoreCodes=new Set(state.stores.map(s=>s.code.toUpperCase()));
+  const agg={};
+  for(let i=target.headerIdx+1;i<target.rows.length;i++){
+    const row=target.rows[i];
+    if(!row||row.every(c=>c==null||c===''))continue;
+    const rowNum=i+1;
+    if(dateCol>=0 && row[dateCol]){
+      let rd=row[dateCol];
+      if(rd instanceof Date)rd=rd.toISOString().slice(0,10);
+      else rd=String(rd).slice(0,10);
+      if(rd && rd!==targetDate){
+        result.skipped.push({row:rowNum,reason:'Date '+rd+' ≠ '+targetDate});
+        continue;
+      }
+    }
+    const storeRaw=normStr(row[storeCol]).toUpperCase();
+    if(!storeRaw){result.skipped.push({row:rowNum,reason:'Empty store'});continue}
+    if(!validStoreCodes.has(storeRaw)){result.errors.push({row:rowNum,reason:'Store "'+storeRaw+'" not in system'});continue}
+    const itemRaw=normStr(row[itemCol]);
+    if(!itemRaw){result.skipped.push({row:rowNum,reason:'Empty item'});continue}
+    const consKey=matchMaterialColumn(itemRaw)||resolveConsKey(itemRaw);
+    if(!consKey||!state.materials[consKey]){result.skipped.push({row:rowNum,reason:'Unknown item "'+itemRaw+'"'});continue}
+    const countVal=toNum(row[countCol]);
+    if(countVal==null||countVal<0){result.errors.push({row:rowNum,reason:'Invalid count'});continue}
+    const aggKey=storeRaw+'|'+stockKey(consKey);
+    if(!agg[aggKey])agg[aggKey]={storeId:storeRaw,item:itemRaw,consKey,count:0};
+    agg[aggKey].count += Math.round(countVal);
+  }
+  Object.values(agg).forEach(v=>{
+    result.valid.push(v);
+    result.affectedStores.add(v.storeId);
+    result.affectedItems.add(v.consKey);
+  });
+  return result;
+}
+  
   
 // ============================================
 // START THE APP
