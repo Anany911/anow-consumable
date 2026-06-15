@@ -3463,15 +3463,18 @@ async function loadDailyStockDates(){
   }catch(e){console.error(e);dailyStockDates=[]}
 }
 
-
  
 // Sync daily stock into state.stock for the currently selected date.
-// Resets stores present in the daily data so stale values don't linger.
+// CRITICAL: reset ALL stores first so stores with NO data on this date
+// show as zero everywhere (DOC, Heatmap, Replen) — not stale values.
 function syncDailyToState(){
+  state.stores.forEach(s=>{
+    state.stock[s.code] = {};
+  });
   Object.keys(dailyStockData).forEach(code=>{
     state.stock[code] = {...(dailyStockData[code]||{})};
   });
-}  
+} 
   
 
 async function loadDailyStock(date){
