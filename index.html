@@ -7244,6 +7244,41 @@ async function syncTodayStock(){
   }
 }
 
+
+  
+// ---- Smart date parser: handles 6/15/26, 15/06/2026, 2026-06-15, Excel dates ----
+function parseAnyDate(val){
+  if(val==null||val==='')return null;
+  if(val instanceof Date){
+    if(isNaN(val.getTime()))return null;
+    return val.toISOString().slice(0,10);
+  }
+  if(typeof val==='number' && val>30000 && val<60000){
+    const d=new Date(Math.round((val-25569)*86400*1000));
+    if(!isNaN(d.getTime()))return d.toISOString().slice(0,10);
+  }
+  const s=String(val).trim();
+  if(!s)return null;
+  let m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if(m){
+    const y=m[1], mo=String(+m[2]).padStart(2,'0'), d=String(+m[3]).padStart(2,'0');
+    return y+'-'+mo+'-'+d;
+  }
+  m=s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{2,4})/);
+  if(m){
+    let a=+m[1], b=+m[2], y=+m[3];
+    if(y<100)y+=2000;
+    let mo, d;
+    if(a>12){ d=a; mo=b; }
+    else if(b>12){ mo=a; d=b; }
+    else { mo=a; d=b; }
+    return y+'-'+String(mo).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+  }
+  const d=new Date(s);
+  if(!isNaN(d.getTime()))return d.toISOString().slice(0,10);
+  return null;
+}
+
 function parseFolderStockFile(wb, fileName, targetDate){
   const result={fileName,detectedDate:targetDate,valid:[],skipped:[],errors:[],
                 affectedStores:new Set(),affectedItems:new Set()};
@@ -7272,15 +7307,16 @@ function parseFolderStockFile(wb, fileName, targetDate){
     const row=target.rows[i];
     if(!row||row.every(c=>c==null||c===''))continue;
     const rowNum=i+1;
+
+    // ✅ FIXED: smart date parsing
     if(dateCol>=0 && row[dateCol]){
-      let rd=row[dateCol];
-      if(rd instanceof Date)rd=rd.toISOString().slice(0,10);
-      else rd=String(rd).slice(0,10);
+      const rd=parseAnyDate(row[dateCol]);
       if(rd && rd!==targetDate){
         result.skipped.push({row:rowNum,reason:'Date '+rd+' ≠ '+targetDate});
         continue;
       }
     }
+
     const storeRaw=normStr(row[storeCol]).toUpperCase();
     if(!storeRaw){result.skipped.push({row:rowNum,reason:'Empty store'});continue}
     if(!validStoreCodes.has(storeRaw)){result.errors.push({row:rowNum,reason:'Store "'+storeRaw+'" not in system'});continue}
