@@ -2625,6 +2625,10 @@ function toast(msg,type){
 }
 
 function n(x,d){d=d||0;return x==null||isNaN(x)?'-':Number(x).toLocaleString(undefined,{maximumFractionDigits:d,minimumFractionDigits:d})}
+  function stockDateLabel(){
+  const d=state.stkDate||'-';
+  return '<span class="pill pill-hi" style="font-weight:700" title="Stock data is from this date">Stock Date: '+d+'</span>';
+}
 function debouncedSave(key,fn,delay){delay=delay||500;if(saveTimers[key])clearTimeout(saveTimers[key]);saveTimers[key]=setTimeout(fn,delay)}
 
 function normStr(s){return String(s==null?'':s).trim()}
@@ -3461,17 +3465,13 @@ async function loadDailyStockDates(){
 
 
  
-// Sync daily stock into state.stock WITHOUT wiping existing keys.
-// Daily values take priority; materials not in the daily file keep their value.
+// Sync daily stock into state.stock for the currently selected date.
+// Resets stores present in the daily data so stale values don't linger.
 function syncDailyToState(){
   Object.keys(dailyStockData).forEach(code=>{
-    if(!state.stock[code]) state.stock[code] = {};
-    const daily = dailyStockData[code] || {};
-    Object.keys(daily).forEach(key=>{
-      state.stock[code][key] = daily[key];
-    });
+    state.stock[code] = {...(dailyStockData[code]||{})};
   });
-}   
+}  
   
 
 async function loadDailyStock(date){
@@ -3752,6 +3752,8 @@ function renderOverview(){
   });
   const avgDoc=docCount?docSum/docCount:0;
   document.getElementById('bannerNum').textContent=docCount?avgDoc.toFixed(1)+'d':'-';
+  const ovBanner=document.querySelector('#overview .banner-text p');
+  if(ovBanner)ovBanner.innerHTML='Real-time inventory intelligence · '+stockDateLabel();
   const totalOrders=Object.values(state.fc).reduce((a,b)=>a+b,0);
   document.getElementById('repBadge').textContent=crit+low;
   document.getElementById('kpiBox').innerHTML='<div class="kpi navy"><div class="kpi-head"><div class="kpi-icon">ST</div><span class="kpi-trend up">'+live.length+'/'+state.stores.length+'</span></div><div class="kpi-label">Live Stores</div><div class="kpi-value">'+live.length+'</div><div class="kpi-sub">'+(state.stores.length-live.length)+' not live</div></div><div class="kpi red"><div class="kpi-head"><div class="kpi-icon">!</div><span class="kpi-trend down">URGENT</span></div><div class="kpi-label">Critical</div><div class="kpi-value">'+crit+'</div><div class="kpi-sub">Below 1 day</div></div><div class="kpi yellow"><div class="kpi-head"><div class="kpi-icon">LO</div><span class="kpi-trend neutral">WATCH</span></div><div class="kpi-label">Low Stock</div><div class="kpi-value">'+low+'</div><div class="kpi-sub">1-3 days</div></div><div class="kpi green"><div class="kpi-head"><div class="kpi-icon">OK</div><span class="kpi-trend up">HEALTHY</span></div><div class="kpi-label">Healthy</div><div class="kpi-value">'+(ok+hi)+'</div><div class="kpi-sub">Above 3 days</div></div><div class="kpi orange"><div class="kpi-head"><div class="kpi-icon">CT</div></div><div class="kpi-label">Replen Cartons</div><div class="kpi-value">'+totalRep+'</div><div class="kpi-sub">Next 3 days</div></div><div class="kpi blue"><div class="kpi-head"><div class="kpi-icon">OR</div></div><div class="kpi-label">Monthly Orders</div><div class="kpi-value">'+n(totalOrders)+'</div><div class="kpi-sub">Network</div></div>';
@@ -4052,6 +4054,8 @@ function renderDOC(){
   else if(keys.length)sel.value=keys[0];
   docSelected=sel.value;
   const c=sel.value;
+  const docHead=document.querySelector('#doc .page-head p');
+  if(docHead)docHead.innerHTML='Per-SKU breakdown · '+stockDateLabel();
   if(!c){document.getElementById('tblDoc').innerHTML='<tr><td style="padding:30px;text-align:center;color:var(--text-mut)">No forecasted materials</td></tr>';return}
   const q=(document.getElementById('srchDoc')?.value||'').toLowerCase();
   let h='<tr><th>Store</th><th class="nums">Cap</th><th class="nums">SOH ct</th><th class="nums">SOH ea</th><th class="nums">Need/Mo</th><th class="nums">Need/Wk</th><th class="nums">Need/Day</th><th class="nums">Replen</th><th>DOC</th></tr>';
@@ -4063,6 +4067,8 @@ function renderDOC(){
 
 function renderReplen(){
   const tblEl=document.getElementById('tblRep');
+  const repHead=document.querySelector('#replen .page-head p');
+  if(repHead)repHead.innerHTML='Cartons needed = Forecast − SOH, capped by Material Capacity · '+stockDateLabel();
   const card=tblEl.closest('.card');
   let legendEl=card.querySelector('.replen-legend');
   if(!legendEl){
