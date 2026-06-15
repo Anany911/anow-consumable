@@ -3459,6 +3459,21 @@ async function loadDailyStockDates(){
   }catch(e){console.error(e);dailyStockDates=[]}
 }
 
+
+ 
+// Sync daily stock into state.stock WITHOUT wiping existing keys.
+// Daily values take priority; materials not in the daily file keep their value.
+function syncDailyToState(){
+  Object.keys(dailyStockData).forEach(code=>{
+    if(!state.stock[code]) state.stock[code] = {};
+    const daily = dailyStockData[code] || {};
+    Object.keys(daily).forEach(key=>{
+      state.stock[code][key] = daily[key];
+    });
+  });
+}   
+  
+
 async function loadDailyStock(date){
   if(!activeWorkspace){dailyStockData={};dailyStockLoaded=true;return}
   showSync('Loading stock for '+date+'...');
@@ -3485,10 +3500,11 @@ async function loadDailyStock(date){
         toast('Copied from '+priorDate+' - edit & it saves automatically');
       }
     }
-    dailyStockLoaded=true;
-  }catch(e){console.error(e);toast('Failed to load daily stock','error');dailyStockData={};dailyStockLoaded=true}
-  hideSync();
-}
+      dailyStockLoaded=true;
+    }catch(e){console.error(e);toast('Failed to load daily stock','error');dailyStockData={};dailyStockLoaded=true}
+    syncDailyToState();
+    hideSync();
+  }
 
 function readDailyStock(storeCode,matName){
   const row=dailyStockData[storeCode];
@@ -3933,6 +3949,9 @@ function updStk(code,c,v){
     await saveDailyStockCloud(code);
     await saveStockCloud(code);
     await logActivity('update','stock',code,c,oldVal,newVal,{consumable:c,date:state.stkDate});
+    renderOverview();
+    renderDOC();
+    renderReplen();
   });
 }
 
@@ -3942,7 +3961,7 @@ async function saveStkDate(){
   dailyStockLoaded=false;
   renderStock();
   await loadDailyStock(state.stkDate);
-  renderStock();
+  render();
 }
   
 function markStockUpdated(){
