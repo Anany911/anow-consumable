@@ -4563,12 +4563,17 @@ function openReplenEntry(){
   document.getElementById('reStore').value='';
   document.getElementById('reStoreList').style.display='none';
   
-  // build a field per material
+
+  // build a field per material (with per-material source)
   let g='';
   matKeys().forEach(m=>{
     const key=stockKey(m);
     g+='<div class="matcap-field"><label>'+m+'</label><div class="sub">'+matIcon(m)+'</div>'+
-       '<input type="number" min="0" id="re_'+key+'" value="" placeholder="0" oninput="updateReplenTotal()"></div>';
+       '<input type="number" min="0" id="re_'+key+'" value="" placeholder="0" oninput="updateReplenTotal()">'+
+       '<select id="resrc_'+key+'" style="width:100%;margin-top:6px;padding:5px 8px;border:1px solid #D5D9D9;border-radius:6px;font-size:11px">'+
+       '<option value="inventory">From Inventory</option>'+
+       '<option value="vendor">Direct from Vendor</option>'+
+       '</select></div>';
   });
   document.getElementById('reMatGrid').innerHTML=g;
   updateReplenTotal();
@@ -4633,14 +4638,19 @@ function openEditReplen(date,store){
   const existing=replenLogCache.filter(r=>r.delivery_date===date&&r.store_code===store);
   const notesVal=existing.find(r=>r.notes)?.notes||'';
   document.getElementById('reNotes').value=notesVal;
-  // build material fields pre-filled
+  // build material fields pre-filled (with per-material source)
   let g='';
   matKeys().forEach(m=>{
     const key=stockKey(m);
     const found=existing.find(r=>stockKey(r.material_name)===key);
     const val=found?(+found.cartons||0):'';
+    const src=found?(found.source||'inventory'):'inventory';
     g+='<div class="matcap-field"><label>'+m+'</label><div class="sub">'+matIcon(m)+'</div>'+
-       '<input type="number" min="0" id="re_'+key+'" value="'+val+'" placeholder="0" oninput="updateReplenTotal()"></div>';
+       '<input type="number" min="0" id="re_'+key+'" value="'+val+'" placeholder="0" oninput="updateReplenTotal()">'+
+       '<select id="resrc_'+key+'" style="width:100%;margin-top:6px;padding:5px 8px;border:1px solid #D5D9D9;border-radius:6px;font-size:11px">'+
+       '<option value="inventory"'+(src==='inventory'?' selected':'')+'>From Inventory</option>'+
+       '<option value="vendor"'+(src==='vendor'?' selected':'')+'>Direct from Vendor</option>'+
+       '</select></div>';
   });
   document.getElementById('reMatGrid').innerHTML=g;
   updateReplenTotal();
@@ -4671,8 +4681,9 @@ async function saveReplenEntry(){
   const entries=[];
   matKeys().forEach(m=>{
     const el=document.getElementById('re_'+stockKey(m));
+    const srcEl=document.getElementById('resrc_'+stockKey(m));
     const v=+el?.value||0;
-    if(v>0)entries.push({material:m,cartons:v});
+    if(v>0)entries.push({material:m,cartons:v,source:srcEl?.value||'inventory'});
   });
   if(entries.length===0){toast('Enter at least one material','error');return}
   showSync('Saving...');
@@ -4692,7 +4703,8 @@ async function saveReplenEntry(){
       cartons:e.cartons,
       delivery_date:date,
       added_by_email:currentUser.email,
-      notes:notes||null
+      notes:notes||null,
+      source:e.source||'inventory'
     }));
     const {error}=await supabaseClient.from('replenishment_entries').insert(rows);
     if(error)throw error;
@@ -4979,30 +4991,37 @@ async function saveWarehouseAdd(){
 
 // Calculate available inventory per material
 function calcWarehouseStock(){
-  const added={}; // material_key -> total added
+  const added={}; // material_key -> total added to warehouse
   warehouseInboundCache.forEach(r=>{
     const k=r.material_key;
     added[k]=(added[k]||0)+(+r.cartons||0);
   });
-  const sent={}; // material_key -> total sent to stores
+  const sent={};   // material_key -> sent FROM inventory
+  const vendor={}; // material_key -> sent DIRECT from vendor (informational)
   replenLogCache.forEach(r=>{
     const k=r.material_key;
-    sent[k]=(sent[k]||0)+(+r.cartons||0);
+    const src=r.source||'inventory';
+    if(src==='vendor'){
+      vendor[k]=(vendor[k]||0)+(+r.cartons||0);
+    } else {
+      sent[k]=(sent[k]||0)+(+r.cartons||0);
+    }
   });
-  return {added,sent};
+  return {added,sent,vendor};
 }
 
 function renderWarehouse(){
-  const {added,sent}=calcWarehouseStock();
+  const {added,sent,vendor}=calcWarehouseStock();
   const keys=matKeys();
-  let h='<tr><th>Material</th><th class="nums">Total Added</th><th class="nums">Sent to Stores</th><th class="nums">Available</th><th>Status</th></tr>';
+  let h='<tr><th>Material</th><th class="nums">Total Added</th><th class="nums">Sent (Inventory)</th><th class="nums">Vendor Direct</th><th class="nums">Available</th><th>Status</th></tr>';
   let anyData=false;
   keys.forEach(m=>{
     const k=stockKey(m);
     const tAdded=added[k]||0;
     const tSent=sent[k]||0;
-    const avail=tAdded-tSent;
-    if(tAdded===0&&tSent===0)return; // skip untouched materials
+    const tVendor=vendor[k]||0;
+    const avail=tAdded-tSent;   // vendor-direct does NOT reduce warehouse
+    if(tAdded===0&&tSent===0&&tVendor===0)return; // skip untouched materials
     anyData=true;
     let statusPill;
     if(avail<=0)statusPill='<span class="pill pill-crit">Empty</span>';
@@ -5011,11 +5030,12 @@ function renderWarehouse(){
     h+='<tr><td><b>'+m+'</b><div class="cell-sub">'+matIcon(m)+'</div></td>'+
       '<td class="nums">'+n(tAdded)+'</td>'+
       '<td class="nums" style="color:var(--danger)">'+n(tSent)+'</td>'+
+      '<td class="nums" style="color:var(--info)">'+(tVendor>0?n(tVendor):'-')+'</td>'+
       '<td class="nums" style="font-weight:700;color:'+(avail<=0?'var(--danger)':'var(--success)')+';font-size:15px">'+n(avail)+'</td>'+
       '<td>'+statusPill+'</td></tr>';
   });
   if(!anyData){
-    h+='<tr><td colspan="5" style="padding:40px;text-align:center;color:var(--text-mut)">No inventory yet. Click "+ Add to Inventory" to start.</td></tr>';
+    h+='<tr><td colspan="6" style="padding:40px;text-align:center;color:var(--text-mut)">No inventory yet. Click "+ Add to Inventory" to start.</td></tr>';
   }
   const elMain=document.getElementById('tblWarehouse');
   if(elMain)elMain.innerHTML=h;
