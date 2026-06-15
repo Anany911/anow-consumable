@@ -1627,12 +1627,19 @@ input[type="number"]{
       <button class="btn" onclick="downloadStockTemplate()" title="Download Excel template for bulk upload">Template</button>
       <button class="btn btn-action" onclick="document.getElementById('stockBulkFile').click()" title="Upload Excel file with stock data">Bulk Upload</button>
       <input type="file" id="stockBulkFile" accept=".xlsx,.xls" style="display:none" onchange="importStockBulk(event)">
+      <button class="btn btn-cta" onclick="markStockUpdated()">Mark as Updated</button>
       <label style="font-size:12px;color:var(--text-mut);font-weight:500;align-self:center;margin-left:10px">Date:</label>
       <input class="input" type="date" id="stkDate" style="min-width:160px" onchange="saveStkDate()">
     </div>
   </div>
-  <div class="update-info" id="stockUpdateInfo" style="display:flex">
+
+<div class="update-info" id="stockUpdateInfo" style="display:flex">
     <div class="update-info-text" id="stockDateInfo">Loading...</div>
+    <div>
+      <div class="update-info-text">Last by: <b id="stockLastUser">-</b></div>
+      <div class="update-info-time" id="stockLastTime"></div>
+      <div class="update-info-time" id="stockLastNotes"></div>
+    </div>
   </div>
 
   <div class="card">
