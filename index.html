@@ -5685,7 +5685,7 @@ function parseStockBulkFile(wb,fileName){
   }
   if(!targetSheet){result.errors.push({row:0,reason:'No valid sheet'});return result}
   const hdr=(targetSheet.rows[targetSheet.headerIdx]||[]).map(c=>normKey(c));
-  const dateCol=hdr.findIndex(c=>c==='date'||c==='stockdate');
+  const dateCol=hdr.findIndex(c=>c==='date'||c==='stockdate'||c==='stock_date');
   const storeCol=hdr.findIndex(c=>c==='storeid'||c==='store'||c==='storecode');
   const itemCol=hdr.findIndex(c=>c==='item'||c==='consumable');
   const countCol=hdr.findIndex(c=>c==='count'||c==='qty'||c==='cartons');
@@ -5694,11 +5694,15 @@ function parseStockBulkFile(wb,fileName){
     const row=targetSheet.rows[i];
     if(!row||row.every(c=>c==null||c===''))continue;
     const rowNum=i+1;
-    if(dateCol>=0&&row[dateCol]&&!result.detectedDate){
+
+    let rowDate=null;
+    if(dateCol>=0&&row[dateCol]){
       const d=row[dateCol];
-      if(d instanceof Date)result.detectedDate=d.toISOString().slice(0,10);
-      else{const parsed=new Date(d);if(!isNaN(parsed.getTime()))result.detectedDate=parsed.toISOString().slice(0,10)}
+      if(d instanceof Date)rowDate=d.toISOString().slice(0,10);
+      else{const parsed=new Date(d);if(!isNaN(parsed.getTime()))rowDate=parsed.toISOString().slice(0,10)}
     }
+    if(rowDate&&!result.detectedDate)result.detectedDate=rowDate;
+    
     const storeRaw=normStr(row[storeCol]).toUpperCase();
     if(!storeRaw){result.skipped.push({row:rowNum,reason:'Empty store'});continue}
     if(!validStoreCodes.has(storeRaw)){result.errors.push({row:rowNum,reason:'Store "'+storeRaw+'" not found'});continue}
@@ -5708,7 +5712,7 @@ function parseStockBulkFile(wb,fileName){
     if(!consKey||!state.materials[consKey]){result.skipped.push({row:rowNum,reason:'Unknown item "'+itemRaw+'"'});continue}
     const countVal=toNum(row[countCol]);
     if(countVal==null||countVal<0){result.errors.push({row:rowNum,reason:'Invalid count'});continue}
-    result.valid.push({storeId:storeRaw,item:itemRaw,consKey,count:Math.round(countVal)});
+    result.valid.push({storeId:storeRaw,item:itemRaw,consKey,count:Math.round(countVal),date:rowDate});
     result.affectedStores.add(storeRaw);
     result.affectedItems.add(consKey);
   }
@@ -5743,27 +5747,34 @@ async function confirmStockBulkImport(){
   const wsId=activeWorkspace.id;
   showSync('Importing...');
   try{
-    const byStore={};
-    result.valid.forEach(v=>{if(!byStore[v.storeId])byStore[v.storeId]={};byStore[v.storeId][stockKey(v.consKey)]=v.count});
-    Object.entries(byStore).forEach(([code,data])=>{
-      if(!state.stock[code])state.stock[code]={};
-      Object.entries(data).forEach(([k,v])=>{state.stock[code][k]=v});
-    });
-    const dDate=result.detectedDate||state.stkDate;
-    const dailyRows=Object.entries(byStore).map(([code,data])=>{
-      dailyStockData[code]={...(dailyStockData[code]||{}),...data};
-      return {
+      const fallbackDate=result.detectedDate||state.stkDate;
+      
+      const byDateStore={}; 
+      result.valid.forEach(v=>{
+        const dDate=v.date||fallbackDate;
+        const gk=dDate+'|'+v.storeId;
+        if(!byDateStore[gk])byDateStore[gk]={date:dDate,store:v.storeId,data:{}};
+        byDateStore[gk].data[stockKey(v.consKey)]=v.count;
+      });
+      
+      const byStore={};
+      result.valid.forEach(v=>{if(!byStore[v.storeId])byStore[v.storeId]={};byStore[v.storeId][stockKey(v.consKey)]=v.count});
+      Object.entries(byStore).forEach(([code,data])=>{
+        if(!state.stock[code])state.stock[code]={};
+        Object.entries(data).forEach(([k,v])=>{state.stock[code][k]=v});
+      });
+      
+      const dailyRows=Object.values(byDateStore).map(g=>({
         workspace_id:wsId,
-        stock_date:dDate,
-        store_code:code,
-        data:dailyStockData[code],
+        stock_date:g.date,
+        store_code:g.store,
+        data:g.data,
         updated_by:currentUser.id,
         updated_by_email:currentUser.email,
         updated_at:new Date().toISOString()
-      };
-    });
-    await supabaseClient.from('daily_stock').upsert(dailyRows,{onConflict:'workspace_id,stock_date,store_code'});
-    await loadDailyStockDates();
+      }));
+      await supabaseClient.from('daily_stock').upsert(dailyRows,{onConflict:'workspace_id,stock_date,store_code'});
+      await loadDailyStockDates();
     
     if(result.detectedDate)state.stkDate=result.detectedDate;
     const stockRows=Object.entries(byStore).map(([code,data])=>({workspace_id:wsId,store_code:code,data:state.stock[code],updated_at:new Date().toISOString()}));
