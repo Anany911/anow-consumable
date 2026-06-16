@@ -1585,6 +1585,10 @@ input[type="number"]{
         <div class="card-title"><span class="icon">N</span>Network Status</div>
       </div>
       <div class="card-body" id="statusBreakdown"></div>
+      <div class="card-head" style="border-top:1px solid var(--border-light)">
+        <div class="card-title" style="font-size:14px"><span class="icon">!</span>Count Compliance <span class="card-sub" id="ovCcSub"></span></div>
+      </div>
+      <div id="ovComplianceList"></div>
     </div>
   </div>
   <div class="card">
@@ -1635,6 +1639,14 @@ input[type="number"]{
   </div>
   <div class="update-info" id="stockUpdateInfo" style="display:flex">
     <div class="update-info-text" id="stockDateInfo">Loading...</div>
+  </div>
+
+  <div class="card" id="countComplianceCard">
+    <div class="card-head">
+      <div class="card-title"><span class="icon">!</span>Count Compliance <span class="card-sub" id="ccDateSub"></span></div>
+      <div id="ccSummary" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+    </div>
+    <div class="tbl-wrap"><div class="tbl-scroll" style="max-height:320px"><table id="tblCompliance"></table></div></div>
   </div>
 
   <div class="card">
@@ -1728,6 +1740,7 @@ input[type="number"]{
         <div class="field"><label>Buffer Multiplier</label><input type="number" id="bufMul" step="0.01" onchange="saveBuf()"></div>
         <div class="field"><label>Avg Units per Order (fallback)</label><input type="number" id="upo" step="0.01" onchange="saveUpo()"></div>
         <div class="field"><label>Replenishment Coverage (days)</label><input type="number" id="replenDays" step="1" min="1" onchange="saveReplenDays()"></div>
+        <div class="field"><label>Stale Count Threshold (days)</label><input type="number" id="staleDays" step="1" min="1" onchange="saveStaleDays()"></div>
       </div>
     </div>
   </div>
@@ -2447,7 +2460,7 @@ const MATERIAL_TYPES = {
 // GLOBAL STATE
 // ============================================
 
-let state = {cons:JSON.parse(JSON.stringify(DEFAULT_CONS)),materials:{},stores:[],stock:{},fc:{},fcUnits:{},buffer:1.30,upo:8.58,replenDays:7,stkDate:new Date().toISOString().slice(0,10)};
+let state = {cons:JSON.parse(JSON.stringify(DEFAULT_CONS)),materials:{},stores:[],stock:{},fc:{},fcUnits:{},buffer:1.30,upo:8.58,replenDays:7,staleDays:2,stkDate:new Date().toISOString().slice(0,10)};
 let docSelected = null;
 let currentUser = null;
 let currentProfile = null;
@@ -3417,11 +3430,12 @@ async function loadFromCloud(){
     });
     state.cons=JSON.parse(JSON.stringify(DEFAULT_CONS));
     state.materials={};
-    state.buffer=1.30;state.upo=8.58;state.replenDays=7;state.stkDate=new Date().toISOString().slice(0,10);
+    state.buffer=1.30;state.upo=8.58;state.replenDays=7;state.staleDays=2;state.stkDate=new Date().toISOString().slice(0,10);
     extraMaterials=[];
     (settings.data||[]).forEach(s=>{
       if(s.key==='buffer')state.buffer=+s.value||1.3;
       else if(s.key==='replenDays')state.replenDays=+s.value||7;
+      else if(s.key==='staleDays')state.staleDays=+s.value||2;
       else if(s.key==='upo')state.upo=+s.value||8.58;
       else if(s.key==='stkDate')state.stkDate=s.value||new Date().toISOString().slice(0,10);
       else if(s.key==='cons'&&s.value)state.cons=s.value;
@@ -3631,6 +3645,7 @@ async function bulkSyncAll(){
       {workspace_id:wsId,key:'buffer',value:state.buffer,updated_at:new Date().toISOString()},
       {workspace_id:wsId,key:'upo',value:state.upo,updated_at:new Date().toISOString()},
       {workspace_id:wsId,key:'replenDays',value:state.replenDays,updated_at:new Date().toISOString()},
+      {workspace_id:wsId,key:'staleDays',value:state.staleDays,updated_at:new Date().toISOString()},
       {workspace_id:wsId,key:'stkDate',value:state.stkDate,updated_at:new Date().toISOString()},
       {workspace_id:wsId,key:'cons',value:state.cons,updated_at:new Date().toISOString()},
       {workspace_id:wsId,key:'materials',value:state.materials,updated_at:new Date().toISOString()}
@@ -3784,8 +3799,42 @@ function renderOverview(){
   document.getElementById('heatmap').innerHTML=h;
   renderWarehouse();
   renderReplenLog();
+  renderOverviewCompliance();
   animateCounters();
 }
+
+
+
+function renderOverviewCompliance(){
+  const subEl=document.getElementById('ovCcSub');
+  const listEl=document.getElementById('ovComplianceList');
+  if(!listEl)return;
+  const c=buildCountCompliance(state.stkDate);
+  if(subEl)subEl.textContent='for '+state.stkDate;
+
+  const problems=c.rows.filter(r=>r.status!=='OK');
+  let html='<div style="padding:10px 20px;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--border-light)">'+
+    '<span class="pill pill-ok">Counted '+c.counted+'</span>'+
+    '<span class="pill pill-low">Missed '+c.missed+'</span>'+
+    '<span class="pill pill-crit">Stale '+c.stale+'</span>'+
+    (c.never>0?'<span class="pill pill-crit">Never '+c.never+'</span>':'')+'</div>';
+
+  if(problems.length===0){
+    html+='<div style="padding:20px;text-align:center;color:var(--success);font-weight:700">All Live stores counted ✓</div>';
+  } else {
+    problems.slice(0,8).forEach(r=>{
+      html+='<div class="alert-item"><div class="alert-icon">'+(r.daysAgo==='—'?'!':r.daysAgo)+'</div>'+
+        '<div class="alert-body"><div class="alert-title">'+r.code+'</div>'+
+        '<div class="alert-meta">'+r.area+' · last: '+(r.lastDate||'never')+'</div></div>'+
+        '<div class="alert-val">'+countStatusPill(r.status)+'</div></div>';
+    });
+    if(problems.length>8){
+      html+='<div style="padding:8px 20px;font-size:12px;color:var(--text-mut)">+ '+(problems.length-8)+' more — see Stock Count page</div>';
+    }
+  }
+  listEl.innerHTML=html;
+}  
+  
 
 function openStore(code){editStore=code;const s=code?state.stores.find(x=>x.code===code):{code:'',area:'',status:'Live',launch:'',cap:100};document.getElementById('mdTitle').textContent=code?'Edit '+code:'Add Store';mCode.value=s.code;mArea.value=s.area;mStat.value=s.status;mLaunch.value=s.launch||'';mCap.value=s.cap;mCode.disabled=!!code;document.getElementById('mdStore').classList.add('show')}
 function closeStore(){document.getElementById('mdStore').classList.remove('show')}
@@ -3941,7 +3990,48 @@ function renderStock(){
   if(!live.length){h+='<tr><td colspan="'+(keys.length+1)+'" style="padding:40px;text-align:center;color:var(--text-mut)">No live stores</td></tr>'}
   else{live.forEach(s=>{h+='<tr><td><b>'+s.code+'</b><div class="cell-sub">'+(s.area||'')+'</div></td>';keys.forEach(c=>{const v=readDailyStock(s.code,c);const cn=c.replace(/'/g,"\\'");h+='<td style="text-align:center"><input class="cell-input" type="number" value="'+v+'" onchange="updStk(\''+s.code+'\',\''+cn+'\',this.value)"></td>'});h+='</tr>'})}
   document.getElementById('tblStock').innerHTML=h;
+  renderCompliance();
 }
+
+
+
+  
+function renderCompliance(){
+  const date = state.stkDate;
+  const subEl = document.getElementById('ccDateSub');
+  const sumEl = document.getElementById('ccSummary');
+  const tblEl = document.getElementById('tblCompliance');
+  if(!tblEl) return;
+
+  const c = buildCountCompliance(date);
+  if(subEl) subEl.textContent = 'for '+date+' · stale > '+(state.staleDays||2)+' days';
+
+  if(sumEl){
+    sumEl.innerHTML =
+      '<span class="pill pill-ok">Counted '+c.counted+'</span>'+
+      '<span class="pill pill-low">Missed '+c.missed+'</span>'+
+      '<span class="pill pill-crit">Stale '+c.stale+'</span>'+
+      (c.never>0?'<span class="pill pill-crit">Never '+c.never+'</span>':'');
+  }
+
+  const problems = c.rows.filter(r=>r.status!=='OK');
+
+  let h='<tr><th>Store</th><th>Location</th><th>Last Counted</th><th class="nums">Days Ago</th><th>Status</th></tr>';
+  if(problems.length===0){
+    h+='<tr><td colspan="5" style="padding:30px;text-align:center;color:var(--success);font-weight:700">All Live stores counted for '+date+' ✓</td></tr>';
+  } else {
+    problems.forEach(r=>{
+      h+='<tr><td><b>'+r.code+'</b></td>'+
+         '<td>'+r.area+'</td>'+
+         '<td class="mono">'+(r.lastDate||'<span style="color:var(--danger)">never</span>')+'</td>'+
+         '<td class="nums">'+(r.daysAgo==='—'?'—':r.daysAgo)+'</td>'+
+         '<td>'+countStatusPill(r.status)+'</td></tr>';
+    });
+  }
+  tblEl.innerHTML=h;
+}
+
+  
 
 function updStk(code,c,v){
   if(!canEdit()){denyAccess('edit');return}
@@ -4176,6 +4266,7 @@ function renderCfg(){
   document.getElementById('bufMul').value=state.buffer;
   document.getElementById('upo').value=state.upo;
   const rd=document.getElementById('replenDays');if(rd)rd.value=state.replenDays||7;
+  const sd=document.getElementById('staleDays');if(sd)sd.value=state.staleDays||2;
 }
 
 
@@ -4449,6 +4540,16 @@ async function saveReplenDays(){
   state.replenDays=newVal;
   await saveSettingCloud('replenDays',newVal);
   await logActivity('config_change','settings','replenDays','replenDays',oldVal,newVal);
+  render();
+}
+
+  async function saveStaleDays(){
+  if(!canManageSettings()){denyAccess('manage settings');return}
+  const oldVal=state.staleDays;const newVal=+document.getElementById('staleDays').value||2;
+  if(oldVal===newVal)return;
+  state.staleDays=newVal;
+  await saveSettingCloud('staleDays',newVal);
+  await logActivity('config_change','settings','staleDays','staleDays',oldVal,newVal);
   render();
 }
 
@@ -6986,6 +7087,75 @@ function computeReportData(){
   };
 }
 
+
+
+// ============================================
+// COUNT COMPLIANCE DETECTION
+// ============================================
+// A store "counted" on a date only if it has a daily_stock row
+// for that date with AT LEAST ONE material value > 0.
+function buildCountCompliance(selectedDate){
+  const live = state.stores.filter(s=>s.status==='Live');
+  const staleDays = state.staleDays || 2;
+  const todayStr = selectedDate || state.stkDate;
+
+  // Map store -> sorted list of dates where it had a VALID count (any value > 0)
+  const validDatesByStore = {};
+  stockHistoryCache.forEach(r=>{
+    const data = r.data || {};
+    const hasValue = Object.values(data).some(v => (+v||0) > 0);
+    if(!hasValue) return;
+    if(!validDatesByStore[r.store_code]) validDatesByStore[r.store_code] = [];
+    validDatesByStore[r.store_code].push(r.snapshot_date);
+  });
+  Object.values(validDatesByStore).forEach(arr => arr.sort());
+
+  // Does this store have a VALID count for the selected date?
+  function hasValidCountOnDate(code, date){
+    const dates = validDatesByStore[code] || [];
+    return dates.includes(date);
+  }
+
+  const rows = [];
+  let counted=0, missed=0, stale=0, never=0;
+
+  live.forEach(s=>{
+    const dates = validDatesByStore[s.code] || [];
+    const lastDate = dates.length ? dates[dates.length-1] : null;
+    const countedToday = hasValidCountOnDate(s.code, todayStr);
+
+    let status, daysAgo='—';
+    if(countedToday){
+      status='OK'; counted++; daysAgo=0;
+    } else if(!lastDate){
+      status='NEVER'; never++;
+    } else {
+      // days between lastDate and selected date
+      const diff = Math.round((new Date(todayStr) - new Date(lastDate)) / 86400000);
+      daysAgo = diff;
+      if(diff > staleDays){ status='STALE'; stale++; }
+      else { status='MISSED'; missed++; }
+    }
+
+    rows.push({code:s.code, area:s.area||'', lastDate:lastDate||null, daysAgo, status});
+  });
+
+  // Sort: worst first (NEVER, STALE, MISSED, OK)
+  const order={NEVER:0,STALE:1,MISSED:2,OK:3};
+  rows.sort((a,b)=> (order[a.status]-order[b.status]) || a.code.localeCompare(b.code));
+
+  return {rows, counted, missed, stale, never, total:live.length};
+}
+
+function countStatusPill(status){
+  if(status==='OK') return '<span class="pill pill-ok">Counted</span>';
+  if(status==='MISSED') return '<span class="pill pill-low">Missed</span>';
+  if(status==='STALE') return '<span class="pill pill-crit">Stale</span>';
+  if(status==='NEVER') return '<span class="pill pill-crit">Never</span>';
+  return '<span class="pill pill-nl">'+status+'</span>';
+}
+  
+  
 function buildWeeklyReport(){
   reportData=computeReportData();
   const d=reportData;
