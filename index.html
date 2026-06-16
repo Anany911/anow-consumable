@@ -9,6 +9,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 :root{
   --amz-navy:#131A22; --amz-navy-2:#232F3E; --amz-orange:#FF9900; --amz-orange-dark:#E88B00;
@@ -1546,32 +1548,7 @@ input[type="number"]{
   </div>
   <div class="kpi-grid" id="kpiBox"></div>
   
-  <div class="card">
-    <div class="card-head">
-      <div class="card-title"><span class="icon">WH</span>Warehouse Inventory <span class="card-sub">Available = Added − Sent to stores</span></div>
-      <button class="btn-link" onclick="document.querySelector('[data-tab=replenlog]').click()">Manage Inventory</button>
-    </div>
-    <div class="tbl-wrap"><div class="tbl-scroll"><table id="tblWarehouseOv"></table></div></div>
-  </div>
-
-  <div class="card">
-    <div class="card-head">
-      <div class="card-title"><span class="icon">SUM</span>Replenishment Summary <span class="card-sub" id="rlSummaryPeriodOv"></span></div>
-    </div>
-    <div class="card-body">
-      <div class="kpi-grid" id="rlSummaryKpisOv"></div>
-      <div class="grid-2">
-        <div class="card" style="margin:0">
-          <div class="card-head"><div class="card-title" style="font-size:14px">Top Stores</div></div>
-          <div id="rlTopStoresOv"></div>
-        </div>
-        <div class="card" style="margin:0">
-          <div class="card-head"><div class="card-title" style="font-size:14px">Top Materials</div></div>
-          <div id="rlTopMaterialsOv"></div>
-        </div>
-      </div>
-    </div>
-  </div>
+ 
   <div class="grid-2">
     <div class="card">
       <div class="card-head">
@@ -1583,8 +1560,13 @@ input[type="number"]{
     <div class="card">
       <div class="card-head">
         <div class="card-title"><span class="icon">N</span>Network Status</div>
+        <div class="legend" style="font-size:11px">
+          <div class="legend-item"><span class="legend-swatch" style="background:#067D62"></span>Live</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:#888C8C"></span>Not Live</div>
+        </div>
       </div>
-      <div class="card-body" id="statusBreakdown"></div>
+      <div id="storeMap" style="height:300px;width:100%;border-bottom:1px solid var(--border-light)"></div>
+      <div class="card-body" id="statusBreakdown"></div>  
       <div class="card-head" style="border-top:1px solid var(--border-light)">
         <div class="card-title" style="font-size:14px"><span class="icon">!</span>Count Compliance <span class="card-sub" id="ovCcSub"></span></div>
       </div>
@@ -1709,11 +1691,39 @@ input[type="number"]{
   <div class="card">
     <div class="filters">
       <input class="input" type="text" id="rlStoreFilter" placeholder="Search store..." oninput="renderReplenLog()" style="min-width:160px">
+
+                <div class="card">
+            <div class="card-head">
+              <div class="card-title"><span class="icon">WH</span>Warehouse Inventory <span class="card-sub">Available = Added − Sent to stores</span></div>
+            </div>
+            <div class="tbl-wrap"><div class="tbl-scroll"><table id="tblWarehouseOv"></table></div></div>
+          </div>
+        
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title"><span class="icon">SUM</span>Replenishment Summary <span class="card-sub" id="rlSummaryPeriodOv"></span></div>
+            </div>
+            <div class="card-body">
+              <div class="kpi-grid" id="rlSummaryKpisOv"></div>
+              <div class="grid-2">
+                <div class="card" style="margin:0">
+                  <div class="card-head"><div class="card-title" style="font-size:14px">Top Stores</div></div>
+                  <div id="rlTopStoresOv"></div>
+                </div>
+                <div class="card" style="margin:0">
+                  <div class="card-head"><div class="card-title" style="font-size:14px">Top Materials</div></div>
+                  <div id="rlTopMaterialsOv"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+      
+      
       <select class="select" id="rlMatFilter" onchange="renderReplenLog()"><option value="">All Materials</option></select>
       <input class="input" type="date" id="rlFromDate" onchange="renderReplenLog()" style="min-width:150px">
       <input class="input" type="date" id="rlToDate" onchange="renderReplenLog()" style="min-width:150px">
       <div style="margin-left:auto;color:var(--text-mut);font-size:12px" id="rlCount"></div>
-    </div>
+    </div>  
     <div class="tbl-wrap"><div class="tbl-scroll"><table id="tblReplenLog"></table></div></div>
   </div>
 
@@ -2079,6 +2089,10 @@ input[type="number"]{
           <div class="field"><label>OB Launch</label><input id="mLaunch"></div>
         </div>
         <div class="field"><label>Store Capacity</label><input type="number" id="mCap"></div>
+        <div class="field-row">
+          <div class="field"><label>Latitude</label><input type="number" step="any" id="mLat" placeholder="e.g. 30.0444"></div>
+          <div class="field"><label>Longitude</label><input type="number" step="any" id="mLng" placeholder="e.g. 31.2357"></div>
+        </div>
       </div>
     </div>
     <div class="modal-actions">
@@ -3421,7 +3435,7 @@ async function loadFromCloud(){
       supabaseClient.from('settings').select('*').eq('workspace_id',wsId)
     ]);
     if(stores.error)throw stores.error;
-    state.stores=(stores.data||[]).map(s=>({...s,matCap:s.mat_cap||{}}));
+    state.stores=(stores.data||[]).map(s=>({...s,matCap:s.mat_cap||{},lat:s.lat??null,lng:s.lng??null}));
     state.stock={};(stock.data||[]).forEach(r=>{state.stock[r.store_code]=r.data||{}});
     state.fc={};state.fcUnits={};
     (forecasts.data||[]).forEach(r=>{
@@ -3559,7 +3573,7 @@ async function saveStoreCloud(store){
   if(!activeWorkspace)return;
   showSync();
   try{
-    const {error}=await supabaseClient.from('stores').upsert({workspace_id:activeWorkspace.id,code:store.code,area:store.area,status:store.status,launch:store.launch,cap:store.cap,mat_cap:store.matCap||{},updated_at:new Date().toISOString()});
+    const {error}=await supabaseClient.from('stores').upsert({workspace_id:activeWorkspace.id,code:store.code,area:store.area,status:store.status,launch:store.launch,cap:store.cap,mat_cap:store.matCap||{},lat:store.lat??null,lng:store.lng??null,updated_at:new Date().toISOString()});
     if(error)throw error;
   }catch(e){toast('Sync error','error')}
   hideSync();
@@ -3634,7 +3648,7 @@ async function bulkSyncAll(){
   showSync('Syncing to cloud...');
   try{
     if(state.stores.length){
-      await supabaseClient.from('stores').upsert(state.stores.map(s=>({workspace_id:wsId,code:s.code,area:s.area,status:s.status,launch:s.launch,cap:s.cap,mat_cap:s.matCap||{},updated_at:new Date().toISOString()})));
+      await supabaseClient.from('stores').upsert(state.stores.map(s=>({workspace_id:wsId,code:s.code,area:s.area,status:s.status,launch:s.launch,cap:s.cap,mat_cap:s.matCap||{},lat:s.lat??null,lng:s.lng??null,updated_at:new Date().toISOString()})));
     }
     const stockRows=Object.entries(state.stock).map(([code,data])=>({workspace_id:wsId,store_code:code,data,updated_at:new Date().toISOString()}));
     if(stockRows.length)await supabaseClient.from('stock').upsert(stockRows);
@@ -3800,9 +3814,63 @@ function renderOverview(){
   renderWarehouse();
   renderReplenLog();
   renderOverviewCompliance();
+  renderStoreMap();
   animateCounters();
 }
 
+
+  
+let storeMapInstance = null;
+let storeMapMarkers = [];
+
+function renderStoreMap(){
+  const el=document.getElementById('storeMap');
+  if(!el||typeof L==='undefined')return;
+
+  const withCoords=state.stores.filter(s=>s.lat!=null&&s.lng!=null&&!isNaN(s.lat)&&!isNaN(s.lng));
+
+  // Init map once
+  if(!storeMapInstance){
+    storeMapInstance=L.map('storeMap',{scrollWheelZoom:false}).setView([30.0444,31.2357],6); // default Cairo
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+      attribution:'© OpenStreetMap',
+      maxZoom:19
+    }).addTo(storeMapInstance);
+  }
+
+  // Clear old markers
+  storeMapMarkers.forEach(m=>storeMapInstance.removeLayer(m));
+  storeMapMarkers=[];
+
+  if(withCoords.length===0){
+    return; // nothing to plot
+  }
+
+  const bounds=[];
+  withCoords.forEach(s=>{
+    const isLive=s.status==='Live';
+    const color=isLive?'#067D62':'#888C8C';
+    const marker=L.circleMarker([s.lat,s.lng],{
+      radius:8,
+      fillColor:color,
+      color:'#fff',
+      weight:2,
+      opacity:1,
+      fillOpacity:0.9
+    }).addTo(storeMapInstance);
+    marker.bindPopup('<b>'+s.code+'</b><br>'+(s.area||'')+'<br>Status: '+s.status);
+    storeMapMarkers.push(marker);
+    bounds.push([s.lat,s.lng]);
+  });
+
+  // Fit map to show all markers
+  if(bounds.length){
+    try{storeMapInstance.fitBounds(bounds,{padding:[30,30],maxZoom:12})}catch(e){}
+  }
+  // Leaflet needs a size refresh when container becomes visible
+  setTimeout(()=>{try{storeMapInstance.invalidateSize()}catch(e){}},200);
+}
+  
 
 
 function renderOverviewCompliance(){
@@ -3836,12 +3904,14 @@ function renderOverviewCompliance(){
 }  
   
 
-function openStore(code){editStore=code;const s=code?state.stores.find(x=>x.code===code):{code:'',area:'',status:'Live',launch:'',cap:100};document.getElementById('mdTitle').textContent=code?'Edit '+code:'Add Store';mCode.value=s.code;mArea.value=s.area;mStat.value=s.status;mLaunch.value=s.launch||'';mCap.value=s.cap;mCode.disabled=!!code;document.getElementById('mdStore').classList.add('show')}
+function openStore(code){editStore=code;const s=code?state.stores.find(x=>x.code===code):{code:'',area:'',status:'Live',launch:'',cap:100};document.getElementById('mdTitle').textContent=code?'Edit '+code:'Add Store';mCode.value=s.code;mArea.value=s.area;mStat.value=s.status;mLaunch.value=s.launch||'';mCap.value=s.cap;document.getElementById('mLat').value=s.lat||'';document.getElementById('mLng').value=s.lng||'';mCode.disabled=!!code;document.getElementById('mdStore').classList.add('show')}
 function closeStore(){document.getElementById('mdStore').classList.remove('show')}
 
 async function saveStore(){
   if(!canEdit()){denyAccess('edit');return}
-  const d={code:mCode.value.trim().toUpperCase(),area:mArea.value.trim(),status:mStat.value,launch:mLaunch.value,cap:+mCap.value||0};
+  const latV=parseFloat(document.getElementById('mLat').value);
+  const lngV=parseFloat(document.getElementById('mLng').value);
+  const d={code:mCode.value.trim().toUpperCase(),area:mArea.value.trim(),status:mStat.value,launch:mLaunch.value,cap:+mCap.value||0,lat:isNaN(latV)?null:latV,lng:isNaN(lngV)?null:lngV};
   if(!d.code||!d.area)return toast('Required','error');
   if(editStore){
     const old={...state.stores.find(x=>x.code===editStore)};
@@ -6872,6 +6942,7 @@ document.querySelectorAll('.tab').forEach(el=>{
     document.getElementById(tabId).classList.add('active');
     window.scrollTo(0,0);
     if(tabId==='activity')renderActivity();
+    if(tabId==='overview'){setTimeout(()=>{if(storeMapInstance)storeMapInstance.invalidateSize();renderStoreMap()},250)}
     if(tabId==='stock')renderStockUpdateInfo();
     if(tabId==='historical')initHistoricalView();
     if(tabId==='replenlog'){renderReplenLog();renderWarehouse();renderWarehouseLog();}
