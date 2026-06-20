@@ -1777,49 +1777,50 @@ td{ padding:11px 16px; }
       <button class="btn btn-cta" onclick="exportReplenLogCSV()">Export CSV</button>
     </div>
   </div>
+
+  <!-- ✅ MOVED OUT: Warehouse Inventory -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title"><i class="icon-warehouse icon"></i>Warehouse Inventory <span class="card-sub">Available = Added − Sent to stores</span></div>
+    </div>
+    <div class="tbl-wrap"><div class="tbl-scroll"><table id="tblWarehouseOv"></table></div></div>
+  </div>
+
+  <!-- ✅ MOVED OUT: Replenishment Summary -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title"><i class="icon-bar-chart-3 icon"></i>Replenishment Summary <span class="card-sub" id="rlSummaryPeriodOv"></span></div>
+    </div>
+    <div class="card-body">
+      <div class="kpi-grid" id="rlSummaryKpisOv"></div>
+      <div class="grid-2">
+        <div class="card" style="margin:0">
+          <div class="card-head"><div class="card-title" style="font-size:14px">Top Stores</div></div>
+          <div id="rlTopStoresOv"></div>
+        </div>
+        <div class="card" style="margin:0">
+          <div class="card-head"><div class="card-title" style="font-size:14px">Top Materials</div></div>
+          <div id="rlTopMaterialsOv"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ NOW the deliveries card with CLEAN filters -->
   <div class="card">
     <div class="filters">
       <input class="input" type="text" id="rlStoreFilter" placeholder="Search store..." oninput="renderReplenLog()" style="min-width:160px">
-
-                <div class="card">
-            <div class="card-head">
-              <div class="card-title"><span class="icon">WH</span>Warehouse Inventory <span class="card-sub">Available = Added − Sent to stores</span></div>
-            </div>
-            <div class="tbl-wrap"><div class="tbl-scroll"><table id="tblWarehouseOv"></table></div></div>
-          </div>
-        
-          <div class="card">
-            <div class="card-head">
-              <div class="card-title"><span class="icon">SUM</span>Replenishment Summary <span class="card-sub" id="rlSummaryPeriodOv"></span></div>
-            </div>
-            <div class="card-body">
-              <div class="kpi-grid" id="rlSummaryKpisOv"></div>
-              <div class="grid-2">
-                <div class="card" style="margin:0">
-                  <div class="card-head"><div class="card-title" style="font-size:14px">Top Stores</div></div>
-                  <div id="rlTopStoresOv"></div>
-                </div>
-                <div class="card" style="margin:0">
-                  <div class="card-head"><div class="card-title" style="font-size:14px">Top Materials</div></div>
-                  <div id="rlTopMaterialsOv"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-      
-      
       <select class="select" id="rlMatFilter" onchange="renderReplenLog()"><option value="">All Materials</option></select>
       <input class="input" type="date" id="rlFromDate" onchange="renderReplenLog()" style="min-width:150px">
       <input class="input" type="date" id="rlToDate" onchange="renderReplenLog()" style="min-width:150px">
       <div style="margin-left:auto;color:var(--text-mut);font-size:12px" id="rlCount"></div>
-    </div>  
+    </div>
     <div class="tbl-wrap"><div class="tbl-scroll"><table id="tblReplenLog"></table></div></div>
   </div>
 
-
   <div class="card">
     <div class="card-head">
-      <div class="card-title"><span class="icon">IN</span>Inventory Additions Log <span class="card-sub">History of stock added to warehouse</span></div>
+      <div class="card-title"><i class="icon-package-plus icon"></i>Inventory Additions Log <span class="card-sub">History of stock added to warehouse</span></div>
       <div style="display:flex;gap:8px;align-items:center">
         <select class="select" id="whLogMatFilter" onchange="renderWarehouseLog()" style="min-width:160px"><option value="">All Materials</option></select>
         <div style="color:var(--text-mut);font-size:12px" id="whLogCount"></div>
