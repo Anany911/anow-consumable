@@ -9,13 +9,10 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lucide-static@0.460.0/font/lucide.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 :root{
   --amz-navy:#131A22; --amz-navy-2:#232F3E; --amz-orange:#FF9900; --amz-orange-dark:#E88B00;
-  --amz-orange-light:#FFAC31; --amz-blue:#146EB4; --bg:#F4F5F7; --surface:#FFFFFF;
+  --amz-orange-light:#FFAC31; --amz-blue:#146EB4; --bg:#EAEDED; --surface:#FFFFFF;
   --surface-alt:#F7F8F8; --surface-hover:#F0F2F2; --border:#D5D9D9; --border-light:#E7E9EC;
   --text:#0F1111; --text-mut:#565959; --text-dim:#848A8C; --link:#007185; --link-hover:#C7511F;
   --success:#067D62; --success-bg:#D5F5E3; --warn:#B66A00; --warn-bg:#FFF3CD;
@@ -23,7 +20,7 @@
   --shadow-xs:0 1px 2px rgba(0,0,0,.08); --shadow-sm:0 2px 5px rgba(15,17,17,.15);
   --shadow:0 4px 12px rgba(15,17,17,.1); --shadow-lg:0 8px 24px rgba(15,17,17,.15);
 }
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter','Helvetica Neue',Arial,sans-serif}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Amazon Ember','Inter','Helvetica Neue',Arial,sans-serif}
 body{background:var(--bg);color:var(--text);font-size:14px;line-height:1.4}
 a{color:var(--link);text-decoration:none}
 a:hover{color:var(--link-hover);text-decoration:underline}
@@ -58,7 +55,7 @@ a:hover{color:var(--link-hover);text-decoration:underline}
 }
   
   
-.topnav{background:var(--amz-navy);color:#fff;position:sticky;top:0;z-index:100;box-shadow:0 1px 0 rgba(255,255,255,.06)}
+.topnav{background:var(--amz-navy);color:#fff;position:sticky;top:0;z-index:100;box-shadow:0 2px 5px rgba(0,0,0,.15)}
 .topnav-inner{display:flex;align-items:center;gap:20px;padding:0 24px;height:60px;max-width:1600px;margin:0 auto}
 .brand{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid transparent;border-radius:3px;cursor:pointer}
 .brand:hover{border-color:#fff}
@@ -1375,94 +1372,6 @@ input[type="number"]{
 }
 .login-footer a:hover{color:var(--link-hover);text-decoration:underline}
 
-
-
-/* ═══════════════════════════════════════
-   ✨ PROFESSIONAL POLISH OVERRIDE
-   ═══════════════════════════════════════ */
-:root{ --r:10px; }
-
-body{ font-size:13px; }
-
-/* Soften all cards — shadows instead of borders */
-.card,.kpi,.chart-container,.summary-card,
-.hist-filters,.daily-view-controls{
-  border:none !important;
-  box-shadow:0 0 0 1px rgba(0,0,0,.04), 0 1px 3px rgba(0,0,0,.06), 0 4px 12px rgba(0,0,0,.04) !important;
-  border-radius:14px !important;
-}
-[data-theme="dark"] .card,
-[data-theme="dark"] .kpi,
-[data-theme="dark"] .chart-container,
-[data-theme="dark"] .summary-card{
-  box-shadow:0 0 0 1px rgba(255,255,255,.06), 0 2px 8px rgba(0,0,0,.4) !important;
-}
-
-/* KPI cards — cleaner */
-.kpi-label{
-  text-transform:none;
-  letter-spacing:0;
-  font-weight:500;
-  font-size:12px;
-  color:var(--text-mut);
-}
-.kpi-value{ font-size:28px; letter-spacing:-.02em; }
-.kpi-icon{
-  width:40px; height:40px;
-  border-radius:11px;
-  font-size:18px;
-}
-
-/* Flat modern buttons (no more 2015 gradients) */
-.btn-cta{ background:var(--amz-orange); border:none; color:#fff; font-weight:600; }
-.btn-cta:hover{ background:var(--amz-orange-dark); }
-.btn-action{ background:var(--amz-blue); border:none; color:#fff; font-weight:600; }
-.btn-action:hover{ filter:brightness(1.08); }
-.btn{ border-radius:10px; }
-
-/* Card headers — softer */
-.card-head{
-  background:transparent;
-  border-bottom:1px solid var(--border-light);
-  padding:16px 22px;
-}
-.card-title .icon{
-  border-radius:9px;
-  background:var(--surface-alt);
-  color:var(--amz-orange-dark);
-  width:30px; height:30px;
-}
-
-/* Tables — cleaner headers */
-th{
-  background:transparent;
-  text-transform:none;
-  letter-spacing:0;
-  font-weight:600;
-  color:var(--text-mut);
-  border-bottom:1px solid var(--border);
-}
-td{ padding:11px 16px; }
-
-/* Inputs — consistent radius */
-.input,.select,.field input,.field select,.field textarea{
-  border-radius:10px;
-}
-
-/* Headings — more presence */
-.page-head h1{ font-size:26px; font-weight:700; letter-spacing:-.02em; }
-.page-head p{ font-size:13px; }
-
-/* Hub cards */
-.hub-card{ border-width:1px; border-radius:16px; }
-.hub-card-icon{ border-radius:16px; }
-
-/* Pills — softer */
-.pill{ border-radius:6px; }
-
-/* Subnav tabs — modern underline feel */
-.tab{ font-weight:500; }  
-
   
 </style>
 </head>
@@ -1596,7 +1505,7 @@ td{ padding:11px 16px; }
     </div>
     <div class="hub-cards">
       <div class="hub-card dashboard" onclick="enterView('dashboard')">
-        <div class="hub-card-icon"><i class="icon-layout-dashboard"></i></div>
+        <div class="hub-card-icon">DASH</div>
         <div class="hub-card-title">Dashboard</div>
         <div class="hub-card-desc">Real-time inventory operations and live data management for your store network.</div>
         <ul class="hub-card-features">
@@ -1608,7 +1517,7 @@ td{ padding:11px 16px; }
         <div class="hub-card-cta">Open Dashboard &gt;</div>
       </div>
       <div class="hub-card history" onclick="enterView('history')">
-        <div class="hub-card-icon"><i class="icon-trending-up"></i></div>
+        <div class="hub-card-icon">HIST</div>
         <div class="hub-card-title">Historical Data</div>
         <div class="hub-card-desc">Analyze trends, compare periods, and track consumption over time across all your stores.</div>
         <ul class="hub-card-features">
@@ -1637,34 +1546,50 @@ td{ padding:11px 16px; }
   </div>
   <div class="kpi-grid" id="kpiBox"></div>
   
- 
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title"><span class="icon">WH</span>Warehouse Inventory <span class="card-sub">Available = Added − Sent to stores</span></div>
+      <button class="btn-link" onclick="document.querySelector('[data-tab=replenlog]').click()">Manage Inventory</button>
+    </div>
+    <div class="tbl-wrap"><div class="tbl-scroll"><table id="tblWarehouseOv"></table></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title"><span class="icon">SUM</span>Replenishment Summary <span class="card-sub" id="rlSummaryPeriodOv"></span></div>
+    </div>
+    <div class="card-body">
+      <div class="kpi-grid" id="rlSummaryKpisOv"></div>
+      <div class="grid-2">
+        <div class="card" style="margin:0">
+          <div class="card-head"><div class="card-title" style="font-size:14px">Top Stores</div></div>
+          <div id="rlTopStoresOv"></div>
+        </div>
+        <div class="card" style="margin:0">
+          <div class="card-head"><div class="card-title" style="font-size:14px">Top Materials</div></div>
+          <div id="rlTopMaterialsOv"></div>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="grid-2">
     <div class="card">
       <div class="card-head">
-        <div class="card-title"><i class="icon-alert-triangle icon"></i>Priority Alerts <span class="card-sub">DOC less than 3 days</span></div>
+        <div class="card-title"><span class="icon">!</span>Priority Alerts <span class="card-sub">DOC less than 3 days</span></div>
         <button class="btn-link" onclick="document.querySelector('[data-tab=replen]').click()">View all</button>
       </div>
       <div id="critList"></div>
     </div>
     <div class="card">
       <div class="card-head">
-        <div class="card-title"><i class="icon-network icon"></i>Network Status</div>
-        <div class="legend" style="font-size:11px">
-          <div class="legend-item"><span class="legend-swatch" style="background:#067D62"></span>Live</div>
-          <div class="legend-item"><span class="legend-swatch" style="background:#888C8C"></span>Not Live</div>
-        </div>
+        <div class="card-title"><span class="icon">N</span>Network Status</div>
       </div>
-      <div id="storeMap" style="height:300px;width:100%;border-bottom:1px solid var(--border-light)"></div>
-      <div class="card-body" id="statusBreakdown"></div>  
-      <div class="card-head" style="border-top:1px solid var(--border-light)">
-        <div class="card-title" style="font-size:14px"><i class="icon-alert-triangle icon"></i>Count Compliance <span class="card-sub" id="ovCcSub"></span></div>
-      </div>
-      <div id="ovComplianceList"></div>
+      <div class="card-body" id="statusBreakdown"></div>
     </div>
   </div>
   <div class="card">
     <div class="card-head">
-      <div class="card-title"><i class="icon-grid-3x3 icon"></i>DOC Heatmap</div>
+      <div class="card-title"><span class="icon">H</span>DOC Heatmap</div>
       <div class="legend">
         <div class="legend-item"><span class="legend-swatch" style="background:#FCE4E4;border-color:#B12704"></span>Critical (less than 1d)</div>
         <div class="legend-item"><span class="legend-swatch" style="background:#FFF3CD;border-color:#B66A00"></span>Low (less than 3d)</div>
@@ -1710,14 +1635,6 @@ td{ padding:11px 16px; }
   </div>
   <div class="update-info" id="stockUpdateInfo" style="display:flex">
     <div class="update-info-text" id="stockDateInfo">Loading...</div>
-  </div>
-
-  <div class="card" id="countComplianceCard">
-    <div class="card-head">
-      <div class="card-title"><i class="icon-alert-triangle icon"></i>Count Compliance <span class="card-sub" id="ccDateSub"></span></div>
-      <div id="ccSummary" style="display:flex;gap:8px;flex-wrap:wrap"></div>
-    </div>
-    <div class="tbl-wrap"><div class="tbl-scroll" style="max-height:320px"><table id="tblCompliance"></table></div></div>
   </div>
 
   <div class="card">
@@ -1777,36 +1694,6 @@ td{ padding:11px 16px; }
       <button class="btn btn-cta" onclick="exportReplenLogCSV()">Export CSV</button>
     </div>
   </div>
-
-  <!-- ✅ MOVED OUT: Warehouse Inventory -->
-  <div class="card">
-    <div class="card-head">
-      <div class="card-title"><i class="icon-warehouse icon"></i>Warehouse Inventory <span class="card-sub">Available = Added − Sent to stores</span></div>
-    </div>
-    <div class="tbl-wrap"><div class="tbl-scroll"><table id="tblWarehouseOv"></table></div></div>
-  </div>
-
-  <!-- ✅ MOVED OUT: Replenishment Summary -->
-  <div class="card">
-    <div class="card-head">
-      <div class="card-title"><i class="icon-bar-chart-3 icon"></i>Replenishment Summary <span class="card-sub" id="rlSummaryPeriodOv"></span></div>
-    </div>
-    <div class="card-body">
-      <div class="kpi-grid" id="rlSummaryKpisOv"></div>
-      <div class="grid-2">
-        <div class="card" style="margin:0">
-          <div class="card-head"><div class="card-title" style="font-size:14px">Top Stores</div></div>
-          <div id="rlTopStoresOv"></div>
-        </div>
-        <div class="card" style="margin:0">
-          <div class="card-head"><div class="card-title" style="font-size:14px">Top Materials</div></div>
-          <div id="rlTopMaterialsOv"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ✅ NOW the deliveries card with CLEAN filters -->
   <div class="card">
     <div class="filters">
       <input class="input" type="text" id="rlStoreFilter" placeholder="Search store..." oninput="renderReplenLog()" style="min-width:160px">
@@ -1818,9 +1705,10 @@ td{ padding:11px 16px; }
     <div class="tbl-wrap"><div class="tbl-scroll"><table id="tblReplenLog"></table></div></div>
   </div>
 
+
   <div class="card">
     <div class="card-head">
-      <div class="card-title"><i class="icon-package-plus icon"></i>Inventory Additions Log <span class="card-sub">History of stock added to warehouse</span></div>
+      <div class="card-title"><span class="icon">IN</span>Inventory Additions Log <span class="card-sub">History of stock added to warehouse</span></div>
       <div style="display:flex;gap:8px;align-items:center">
         <select class="select" id="whLogMatFilter" onchange="renderWarehouseLog()" style="min-width:160px"><option value="">All Materials</option></select>
         <div style="color:var(--text-mut);font-size:12px" id="whLogCount"></div>
@@ -1834,20 +1722,19 @@ td{ padding:11px 16px; }
   <div class="breadcrumb"><a onclick="goToHub()">Operations</a><span class="sep">/</span><a onclick="enterView('dashboard')">Dashboard</a><span class="sep">/</span><span>Configuration</span></div>
   <div class="page-head"><div><h1>System Configuration</h1><p>Tuning parameters for current workspace</p></div></div>
   <div class="card">
-    <div class="card-head"><div class="card-title"><i class="icon-settings icon"></i>Global Parameters</div></div>
+    <div class="card-head"><div class="card-title"><span class="icon">G</span>Global Parameters</div></div>
     <div class="card-body">
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">
         <div class="field"><label>Buffer Multiplier</label><input type="number" id="bufMul" step="0.01" onchange="saveBuf()"></div>
         <div class="field"><label>Avg Units per Order (fallback)</label><input type="number" id="upo" step="0.01" onchange="saveUpo()"></div>
         <div class="field"><label>Replenishment Coverage (days)</label><input type="number" id="replenDays" step="1" min="1" onchange="saveReplenDays()"></div>
-        <div class="field"><label>Stale Count Threshold (days)</label><input type="number" id="staleDays" step="1" min="1" onchange="saveStaleDays()"></div>
       </div>
     </div>
   </div>
 
   <div class="card">
     <div class="card-head">
-      <div class="card-title"><i class="icon-box icon"></i>Material Definitions <span class="card-sub" id="matCountSub"></span></div>
+      <div class="card-title"><span class="icon">M</span>Material Definitions <span class="card-sub" id="matCountSub"></span></div>
       <div style="display:flex;gap:8px">
         <button class="btn btn-action btn-sm" onclick="openAddMaterial()">+ Add Material</button>
         <button class="btn btn-cta btn-sm" onclick="saveCfg()">Save Changes</button>
@@ -1926,15 +1813,15 @@ td{ padding:11px 16px; }
     </div>
   </div>
   <div class="card">
-    <div class="card-head"><div class="card-title"><i class="icon-building icon"></i>All Workspaces</div></div>
+    <div class="card-head"><div class="card-title"><span class="icon">W</span>All Workspaces</div></div>
     <div id="wsList"></div>
   </div>
   <div class="card">
-    <div class="card-head"><div class="card-title"><i class="icon-users icon"></i>All Users</div></div>
+    <div class="card-head"><div class="card-title"><span class="icon">U</span>All Users</div></div>
     <div id="usersList"></div>
   </div>
   <div class="card">
-    <div class="card-head"><div class="card-title"><i class="icon-shield icon"></i>Super Admin History</div></div>
+    <div class="card-head"><div class="card-title"><span class="icon">S</span>Super Admin History</div></div>
     <div id="superAdminLog"></div>
   </div>
 </section>
@@ -2179,10 +2066,6 @@ td{ padding:11px 16px; }
           <div class="field"><label>OB Launch</label><input id="mLaunch"></div>
         </div>
         <div class="field"><label>Store Capacity</label><input type="number" id="mCap"></div>
-        <div class="field-row">
-          <div class="field"><label>Latitude</label><input type="number" step="any" id="mLat" placeholder="e.g. 30.0444"></div>
-          <div class="field"><label>Longitude</label><input type="number" step="any" id="mLng" placeholder="e.g. 31.2357"></div>
-        </div>
       </div>
     </div>
     <div class="modal-actions">
@@ -2564,7 +2447,7 @@ const MATERIAL_TYPES = {
 // GLOBAL STATE
 // ============================================
 
-let state = {cons:JSON.parse(JSON.stringify(DEFAULT_CONS)),materials:{},stores:[],stock:{},fc:{},fcUnits:{},buffer:1.30,upo:8.58,replenDays:7,staleDays:2,stkDate:new Date().toISOString().slice(0,10)};
+let state = {cons:JSON.parse(JSON.stringify(DEFAULT_CONS)),materials:{},stores:[],stock:{},fc:{},fcUnits:{},buffer:1.30,upo:8.58,replenDays:7,stkDate:new Date().toISOString().slice(0,10)};
 let docSelected = null;
 let currentUser = null;
 let currentProfile = null;
@@ -3525,7 +3408,7 @@ async function loadFromCloud(){
       supabaseClient.from('settings').select('*').eq('workspace_id',wsId)
     ]);
     if(stores.error)throw stores.error;
-    state.stores=(stores.data||[]).map(s=>({...s,matCap:s.mat_cap||{},lat:s.lat??null,lng:s.lng??null}));
+    state.stores=(stores.data||[]).map(s=>({...s,matCap:s.mat_cap||{}}));
     state.stock={};(stock.data||[]).forEach(r=>{state.stock[r.store_code]=r.data||{}});
     state.fc={};state.fcUnits={};
     (forecasts.data||[]).forEach(r=>{
@@ -3534,12 +3417,11 @@ async function loadFromCloud(){
     });
     state.cons=JSON.parse(JSON.stringify(DEFAULT_CONS));
     state.materials={};
-    state.buffer=1.30;state.upo=8.58;state.replenDays=7;state.staleDays=2;state.stkDate=new Date().toISOString().slice(0,10);
+    state.buffer=1.30;state.upo=8.58;state.replenDays=7;state.stkDate=new Date().toISOString().slice(0,10);
     extraMaterials=[];
     (settings.data||[]).forEach(s=>{
       if(s.key==='buffer')state.buffer=+s.value||1.3;
       else if(s.key==='replenDays')state.replenDays=+s.value||7;
-      else if(s.key==='staleDays')state.staleDays=+s.value||2;
       else if(s.key==='upo')state.upo=+s.value||8.58;
       else if(s.key==='stkDate')state.stkDate=s.value||new Date().toISOString().slice(0,10);
       else if(s.key==='cons'&&s.value)state.cons=s.value;
@@ -3663,7 +3545,7 @@ async function saveStoreCloud(store){
   if(!activeWorkspace)return;
   showSync();
   try{
-    const {error}=await supabaseClient.from('stores').upsert({workspace_id:activeWorkspace.id,code:store.code,area:store.area,status:store.status,launch:store.launch,cap:store.cap,mat_cap:store.matCap||{},lat:store.lat??null,lng:store.lng??null,updated_at:new Date().toISOString()});
+    const {error}=await supabaseClient.from('stores').upsert({workspace_id:activeWorkspace.id,code:store.code,area:store.area,status:store.status,launch:store.launch,cap:store.cap,mat_cap:store.matCap||{},updated_at:new Date().toISOString()});
     if(error)throw error;
   }catch(e){toast('Sync error','error')}
   hideSync();
@@ -3738,7 +3620,7 @@ async function bulkSyncAll(){
   showSync('Syncing to cloud...');
   try{
     if(state.stores.length){
-      await supabaseClient.from('stores').upsert(state.stores.map(s=>({workspace_id:wsId,code:s.code,area:s.area,status:s.status,launch:s.launch,cap:s.cap,mat_cap:s.matCap||{},lat:s.lat??null,lng:s.lng??null,updated_at:new Date().toISOString()})));
+      await supabaseClient.from('stores').upsert(state.stores.map(s=>({workspace_id:wsId,code:s.code,area:s.area,status:s.status,launch:s.launch,cap:s.cap,mat_cap:s.matCap||{},updated_at:new Date().toISOString()})));
     }
     const stockRows=Object.entries(state.stock).map(([code,data])=>({workspace_id:wsId,store_code:code,data,updated_at:new Date().toISOString()}));
     if(stockRows.length)await supabaseClient.from('stock').upsert(stockRows);
@@ -3749,7 +3631,6 @@ async function bulkSyncAll(){
       {workspace_id:wsId,key:'buffer',value:state.buffer,updated_at:new Date().toISOString()},
       {workspace_id:wsId,key:'upo',value:state.upo,updated_at:new Date().toISOString()},
       {workspace_id:wsId,key:'replenDays',value:state.replenDays,updated_at:new Date().toISOString()},
-      {workspace_id:wsId,key:'staleDays',value:state.staleDays,updated_at:new Date().toISOString()},
       {workspace_id:wsId,key:'stkDate',value:state.stkDate,updated_at:new Date().toISOString()},
       {workspace_id:wsId,key:'cons',value:state.cons,updated_at:new Date().toISOString()},
       {workspace_id:wsId,key:'materials',value:state.materials,updated_at:new Date().toISOString()}
@@ -3878,15 +3759,8 @@ function renderOverview(){
   if(ovBanner)ovBanner.innerHTML='Real-time inventory intelligence · '+stockDateLabel();
   const totalOrders=Object.values(state.fc).reduce((a,b)=>a+b,0);
   document.getElementById('repBadge').textContent=crit+low;
-
-document.getElementById('kpiBox').innerHTML=`
-<div class="kpi navy"><div class="kpi-head"><i class="icon-store kpi-icon"></i></div><div class="kpi-label">Live Stores</div><div class="kpi-value">${live.length}/${state.stores.length}</div><div class="kpi-sub">${state.stores.length-live.length} not live</div></div>
-<div class="kpi red"><div class="kpi-head"><i class="icon-alert-circle kpi-icon"></i></div><div class="kpi-label">Critical</div><div class="kpi-value">${crit}</div><div class="kpi-sub">Below 1 day</div></div>
-<div class="kpi yellow"><div class="kpi-head"><i class="icon-alert-triangle kpi-icon"></i></div><div class="kpi-label">Low Stock</div><div class="kpi-value">${low}</div><div class="kpi-sub">1-3 days</div></div>
-<div class="kpi green"><div class="kpi-head"><i class="icon-check-circle kpi-icon"></i></div><div class="kpi-label">Healthy</div><div class="kpi-value">${ok+hi}</div><div class="kpi-sub">Above 3 days</div></div>
-<div class="kpi orange"><div class="kpi-head"><i class="icon-package kpi-icon"></i></div><div class="kpi-label">Replen Cartons</div><div class="kpi-value">${totalRep}</div><div class="kpi-sub">Next ${state.replenDays||7} days</div></div>
-<div class="kpi blue"><div class="kpi-head"><i class="icon-shopping-cart kpi-icon"></i></div><div class="kpi-label">Monthly Orders</div><div class="kpi-value">${n(totalOrders)}</div><div class="kpi-sub">Network</div></div>`;
- const alerts=[];
+  document.getElementById('kpiBox').innerHTML='<div class="kpi navy"><div class="kpi-head"><div class="kpi-icon">ST</div><span class="kpi-trend up">'+live.length+'/'+state.stores.length+'</span></div><div class="kpi-label">Live Stores</div><div class="kpi-value">'+live.length+'</div><div class="kpi-sub">'+(state.stores.length-live.length)+' not live</div></div><div class="kpi red"><div class="kpi-head"><div class="kpi-icon">!</div><span class="kpi-trend down">URGENT</span></div><div class="kpi-label">Critical</div><div class="kpi-value">'+crit+'</div><div class="kpi-sub">Below 1 day</div></div><div class="kpi yellow"><div class="kpi-head"><div class="kpi-icon">LO</div><span class="kpi-trend neutral">WATCH</span></div><div class="kpi-label">Low Stock</div><div class="kpi-value">'+low+'</div><div class="kpi-sub">1-3 days</div></div><div class="kpi green"><div class="kpi-head"><div class="kpi-icon">OK</div><span class="kpi-trend up">HEALTHY</span></div><div class="kpi-label">Healthy</div><div class="kpi-value">'+(ok+hi)+'</div><div class="kpi-sub">Above 3 days</div></div><div class="kpi orange"><div class="kpi-head"><div class="kpi-icon">CT</div></div><div class="kpi-label">Replen Cartons</div><div class="kpi-value">'+totalRep+'</div><div class="kpi-sub">Next 3 days</div></div><div class="kpi blue"><div class="kpi-head"><div class="kpi-icon">OR</div></div><div class="kpi-label">Monthly Orders</div><div class="kpi-value">'+n(totalOrders)+'</div><div class="kpi-sub">Network</div></div>';
+  const alerts=[];
   live.forEach(s=>fcKeys.forEach(c=>{if(!state.fc[s.code])return;const d=calcDOC(s.code,c);if(d<3&&d>0)alerts.push({s:s.code,area:s.area,c,d,r:calcReplen(s.code,c)})}));
   alerts.sort((a,b)=>a.d-b.d);
   document.getElementById('critList').innerHTML=alerts.length?alerts.slice(0,7).map(a=>'<div class="alert-item '+(a.d<1?'crit':'low')+'"><div class="alert-icon">'+matIcon(a.c)+'</div><div class="alert-body"><div class="alert-title">'+a.s+' - '+a.c+'</div><div class="alert-meta">'+a.area+'</div></div><div class="alert-val">'+docPill(a.d)+'<div class="cell-sub mono">Need: <b>'+a.r.ct+' ct</b></div></div></div>').join(''):'<div class="empty"><div class="ic">All Clear</div><p>'+(state.stores.length?'All systems normal':'Upload Excel to begin')+'</p></div>';
@@ -3910,105 +3784,15 @@ document.getElementById('kpiBox').innerHTML=`
   document.getElementById('heatmap').innerHTML=h;
   renderWarehouse();
   renderReplenLog();
-  renderOverviewCompliance();
-  renderStoreMap();
   animateCounters();
 }
 
-
-  
-let storeMapInstance = null;
-let storeMapMarkers = [];
-
-function renderStoreMap(){
-  const el=document.getElementById('storeMap');
-  if(!el||typeof L==='undefined')return;
-
-  const withCoords=state.stores.filter(s=>s.lat!=null&&s.lng!=null&&!isNaN(s.lat)&&!isNaN(s.lng));
-
-  // Init map once
-  if(!storeMapInstance){
-    storeMapInstance=L.map('storeMap',{scrollWheelZoom:false}).setView([30.0444,31.2357],6); // default Cairo
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-      attribution:'© OpenStreetMap',
-      maxZoom:19
-    }).addTo(storeMapInstance);
-  }
-
-  // Clear old markers
-  storeMapMarkers.forEach(m=>storeMapInstance.removeLayer(m));
-  storeMapMarkers=[];
-
-  if(withCoords.length===0){
-    return; // nothing to plot
-  }
-
-  const bounds=[];
-  withCoords.forEach(s=>{
-    const isLive=s.status==='Live';
-    const color=isLive?'#067D62':'#888C8C';
-    const marker=L.circleMarker([s.lat,s.lng],{
-      radius:8,
-      fillColor:color,
-      color:'#fff',
-      weight:2,
-      opacity:1,
-      fillOpacity:0.9
-    }).addTo(storeMapInstance);
-    marker.bindPopup('<b>'+s.code+'</b><br>'+(s.area||'')+'<br>Status: '+s.status);
-    storeMapMarkers.push(marker);
-    bounds.push([s.lat,s.lng]);
-  });
-
-  // Fit map to show all markers
-  if(bounds.length){
-    try{storeMapInstance.fitBounds(bounds,{padding:[30,30],maxZoom:12})}catch(e){}
-  }
-  // Leaflet needs a size refresh when container becomes visible
-  setTimeout(()=>{try{storeMapInstance.invalidateSize()}catch(e){}},200);
-}
-  
-
-
-function renderOverviewCompliance(){
-  const subEl=document.getElementById('ovCcSub');
-  const listEl=document.getElementById('ovComplianceList');
-  if(!listEl)return;
-  const c=buildCountCompliance(state.stkDate);
-  if(subEl)subEl.textContent='for '+state.stkDate;
-
-  const problems=c.rows.filter(r=>r.status!=='OK');
-  let html='<div style="padding:10px 20px;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--border-light)">'+
-    '<span class="pill pill-ok">Counted '+c.counted+'</span>'+
-    '<span class="pill pill-low">Missed '+c.missed+'</span>'+
-    '<span class="pill pill-crit">Stale '+c.stale+'</span>'+
-    (c.never>0?'<span class="pill pill-crit">Never '+c.never+'</span>':'')+'</div>';
-
-  if(problems.length===0){
-    html+='<div style="padding:20px;text-align:center;color:var(--success);font-weight:700">All Live stores counted ✓</div>';
-  } else {
-    problems.slice(0,8).forEach(r=>{
-      html+='<div class="alert-item"><div class="alert-icon">'+(r.daysAgo==='—'?'!':r.daysAgo)+'</div>'+
-        '<div class="alert-body"><div class="alert-title">'+r.code+'</div>'+
-        '<div class="alert-meta">'+r.area+' · last: '+(r.lastDate||'never')+'</div></div>'+
-        '<div class="alert-val">'+countStatusPill(r.status)+'</div></div>';
-    });
-    if(problems.length>8){
-      html+='<div style="padding:8px 20px;font-size:12px;color:var(--text-mut)">+ '+(problems.length-8)+' more — see Stock Count page</div>';
-    }
-  }
-  listEl.innerHTML=html;
-}  
-  
-
-function openStore(code){editStore=code;const s=code?state.stores.find(x=>x.code===code):{code:'',area:'',status:'Live',launch:'',cap:100};document.getElementById('mdTitle').textContent=code?'Edit '+code:'Add Store';mCode.value=s.code;mArea.value=s.area;mStat.value=s.status;mLaunch.value=s.launch||'';mCap.value=s.cap;document.getElementById('mLat').value=s.lat||'';document.getElementById('mLng').value=s.lng||'';mCode.disabled=!!code;document.getElementById('mdStore').classList.add('show')}
+function openStore(code){editStore=code;const s=code?state.stores.find(x=>x.code===code):{code:'',area:'',status:'Live',launch:'',cap:100};document.getElementById('mdTitle').textContent=code?'Edit '+code:'Add Store';mCode.value=s.code;mArea.value=s.area;mStat.value=s.status;mLaunch.value=s.launch||'';mCap.value=s.cap;mCode.disabled=!!code;document.getElementById('mdStore').classList.add('show')}
 function closeStore(){document.getElementById('mdStore').classList.remove('show')}
 
 async function saveStore(){
   if(!canEdit()){denyAccess('edit');return}
-  const latV=parseFloat(document.getElementById('mLat').value);
-  const lngV=parseFloat(document.getElementById('mLng').value);
-  const d={code:mCode.value.trim().toUpperCase(),area:mArea.value.trim(),status:mStat.value,launch:mLaunch.value,cap:+mCap.value||0,lat:isNaN(latV)?null:latV,lng:isNaN(lngV)?null:lngV};
+  const d={code:mCode.value.trim().toUpperCase(),area:mArea.value.trim(),status:mStat.value,launch:mLaunch.value,cap:+mCap.value||0};
   if(!d.code||!d.area)return toast('Required','error');
   if(editStore){
     const old={...state.stores.find(x=>x.code===editStore)};
@@ -4157,48 +3941,7 @@ function renderStock(){
   if(!live.length){h+='<tr><td colspan="'+(keys.length+1)+'" style="padding:40px;text-align:center;color:var(--text-mut)">No live stores</td></tr>'}
   else{live.forEach(s=>{h+='<tr><td><b>'+s.code+'</b><div class="cell-sub">'+(s.area||'')+'</div></td>';keys.forEach(c=>{const v=readDailyStock(s.code,c);const cn=c.replace(/'/g,"\\'");h+='<td style="text-align:center"><input class="cell-input" type="number" value="'+v+'" onchange="updStk(\''+s.code+'\',\''+cn+'\',this.value)"></td>'});h+='</tr>'})}
   document.getElementById('tblStock').innerHTML=h;
-  renderCompliance();
 }
-
-
-
-  
-function renderCompliance(){
-  const date = state.stkDate;
-  const subEl = document.getElementById('ccDateSub');
-  const sumEl = document.getElementById('ccSummary');
-  const tblEl = document.getElementById('tblCompliance');
-  if(!tblEl) return;
-
-  const c = buildCountCompliance(date);
-  if(subEl) subEl.textContent = 'for '+date+' · stale > '+(state.staleDays||2)+' days';
-
-  if(sumEl){
-    sumEl.innerHTML =
-      '<span class="pill pill-ok">Counted '+c.counted+'</span>'+
-      '<span class="pill pill-low">Missed '+c.missed+'</span>'+
-      '<span class="pill pill-crit">Stale '+c.stale+'</span>'+
-      (c.never>0?'<span class="pill pill-crit">Never '+c.never+'</span>':'');
-  }
-
-  const problems = c.rows.filter(r=>r.status!=='OK');
-
-  let h='<tr><th>Store</th><th>Location</th><th>Last Counted</th><th class="nums">Days Ago</th><th>Status</th></tr>';
-  if(problems.length===0){
-    h+='<tr><td colspan="5" style="padding:30px;text-align:center;color:var(--success);font-weight:700">All Live stores counted for '+date+' ✓</td></tr>';
-  } else {
-    problems.forEach(r=>{
-      h+='<tr><td><b>'+r.code+'</b></td>'+
-         '<td>'+r.area+'</td>'+
-         '<td class="mono">'+(r.lastDate||'<span style="color:var(--danger)">never</span>')+'</td>'+
-         '<td class="nums">'+(r.daysAgo==='—'?'—':r.daysAgo)+'</td>'+
-         '<td>'+countStatusPill(r.status)+'</td></tr>';
-    });
-  }
-  tblEl.innerHTML=h;
-}
-
-  
 
 function updStk(code,c,v){
   if(!canEdit()){denyAccess('edit');return}
@@ -4433,7 +4176,6 @@ function renderCfg(){
   document.getElementById('bufMul').value=state.buffer;
   document.getElementById('upo').value=state.upo;
   const rd=document.getElementById('replenDays');if(rd)rd.value=state.replenDays||7;
-  const sd=document.getElementById('staleDays');if(sd)sd.value=state.staleDays||2;
 }
 
 
@@ -4710,16 +4452,6 @@ async function saveReplenDays(){
   render();
 }
 
-  async function saveStaleDays(){
-  if(!canManageSettings()){denyAccess('manage settings');return}
-  const oldVal=state.staleDays;const newVal=+document.getElementById('staleDays').value||2;
-  if(oldVal===newVal)return;
-  state.staleDays=newVal;
-  await saveSettingCloud('staleDays',newVal);
-  await logActivity('config_change','settings','staleDays','staleDays',oldVal,newVal);
-  render();
-}
-
 function exportAll(){
   const wsName=activeWorkspace?.name||'workspace';
   const dump={workspace:activeWorkspace,...state};
@@ -4831,17 +4563,12 @@ function openReplenEntry(){
   document.getElementById('reStore').value='';
   document.getElementById('reStoreList').style.display='none';
   
-
-  // build a field per material (with per-material source)
+  // build a field per material
   let g='';
   matKeys().forEach(m=>{
     const key=stockKey(m);
     g+='<div class="matcap-field"><label>'+m+'</label><div class="sub">'+matIcon(m)+'</div>'+
-       '<input type="number" min="0" id="re_'+key+'" value="" placeholder="0" oninput="updateReplenTotal()">'+
-       '<select id="resrc_'+key+'" style="width:100%;margin-top:6px;padding:5px 8px;border:1px solid #D5D9D9;border-radius:6px;font-size:11px">'+
-       '<option value="inventory">From Inventory</option>'+
-       '<option value="vendor">Direct from Vendor</option>'+
-       '</select></div>';
+       '<input type="number" min="0" id="re_'+key+'" value="" placeholder="0" oninput="updateReplenTotal()"></div>';
   });
   document.getElementById('reMatGrid').innerHTML=g;
   updateReplenTotal();
@@ -4906,19 +4633,14 @@ function openEditReplen(date,store){
   const existing=replenLogCache.filter(r=>r.delivery_date===date&&r.store_code===store);
   const notesVal=existing.find(r=>r.notes)?.notes||'';
   document.getElementById('reNotes').value=notesVal;
-  // build material fields pre-filled (with per-material source)
+  // build material fields pre-filled
   let g='';
   matKeys().forEach(m=>{
     const key=stockKey(m);
     const found=existing.find(r=>stockKey(r.material_name)===key);
     const val=found?(+found.cartons||0):'';
-    const src=found?(found.source||'inventory'):'inventory';
     g+='<div class="matcap-field"><label>'+m+'</label><div class="sub">'+matIcon(m)+'</div>'+
-       '<input type="number" min="0" id="re_'+key+'" value="'+val+'" placeholder="0" oninput="updateReplenTotal()">'+
-       '<select id="resrc_'+key+'" style="width:100%;margin-top:6px;padding:5px 8px;border:1px solid #D5D9D9;border-radius:6px;font-size:11px">'+
-       '<option value="inventory"'+(src==='inventory'?' selected':'')+'>From Inventory</option>'+
-       '<option value="vendor"'+(src==='vendor'?' selected':'')+'>Direct from Vendor</option>'+
-       '</select></div>';
+       '<input type="number" min="0" id="re_'+key+'" value="'+val+'" placeholder="0" oninput="updateReplenTotal()"></div>';
   });
   document.getElementById('reMatGrid').innerHTML=g;
   updateReplenTotal();
@@ -4949,9 +4671,8 @@ async function saveReplenEntry(){
   const entries=[];
   matKeys().forEach(m=>{
     const el=document.getElementById('re_'+stockKey(m));
-    const srcEl=document.getElementById('resrc_'+stockKey(m));
     const v=+el?.value||0;
-    if(v>0)entries.push({material:m,cartons:v,source:srcEl?.value||'inventory'});
+    if(v>0)entries.push({material:m,cartons:v});
   });
   if(entries.length===0){toast('Enter at least one material','error');return}
   showSync('Saving...');
@@ -4971,8 +4692,7 @@ async function saveReplenEntry(){
       cartons:e.cartons,
       delivery_date:date,
       added_by_email:currentUser.email,
-      notes:notes||null,
-      source:e.source||'inventory'
+      notes:notes||null
     }));
     const {error}=await supabaseClient.from('replenishment_entries').insert(rows);
     if(error)throw error;
@@ -5071,7 +4791,7 @@ function renderReplenSummary(rows){
   setTXT('rlSummaryPeriodOv',periodTxt);
 
   if(!rows||!rows.length){
-    const emptyKpi='<div class="kpi navy"><div class="kpi-head"><i class="icon-package kpi-icon"></i></div><div class="kpi-label">Total Cartons</div><div class="kpi-value">0</div></div>';
+    const emptyKpi='<div class="kpi navy"><div class="kpi-head"><div class="kpi-icon">CT</div></div><div class="kpi-label">Total Cartons</div><div class="kpi-value">0</div></div>';
     const emptyBox='<div class="empty"><div class="ic">No Data</div></div>';
     setHTML('rlSummaryKpis',emptyKpi);setHTML('rlSummaryKpisOv',emptyKpi);
     setHTML('rlTopStores',emptyBox);setHTML('rlTopStoresOv',emptyBox);
@@ -5095,7 +4815,7 @@ function renderReplenSummary(rows){
   const avgPerDelivery=deliveryCount?Math.round(totalCartons/deliveryCount):0;
 
   const kpiHTML=
-    '<div class="kpi navy"><div class="kpi-head"><i class="icon-package kpi-icon"></i></div><div class="kpi-label">Total Cartons</div><div class="kpi-value">'+n(totalCartons)+'</div></div>'+
+    '<div class="kpi navy"><div class="kpi-head"><div class="kpi-icon">CT</div></div><div class="kpi-label">Total Cartons</div><div class="kpi-value">'+n(totalCartons)+'</div></div>'+
     '<div class="kpi orange"><div class="kpi-head"><div class="kpi-icon">DL</div></div><div class="kpi-label">Deliveries</div><div class="kpi-value">'+deliveryCount+'</div></div>'+
     '<div class="kpi blue"><div class="kpi-head"><div class="kpi-icon">ST</div></div><div class="kpi-label">Stores Served</div><div class="kpi-value">'+storeCount+'</div></div>'+
     '<div class="kpi green"><div class="kpi-head"><div class="kpi-icon">AVG</div></div><div class="kpi-label">Avg / Delivery</div><div class="kpi-value">'+n(avgPerDelivery)+'</div></div>';
@@ -5259,37 +4979,30 @@ async function saveWarehouseAdd(){
 
 // Calculate available inventory per material
 function calcWarehouseStock(){
-  const added={}; // material_key -> total added to warehouse
+  const added={}; // material_key -> total added
   warehouseInboundCache.forEach(r=>{
     const k=r.material_key;
     added[k]=(added[k]||0)+(+r.cartons||0);
   });
-  const sent={};   // material_key -> sent FROM inventory
-  const vendor={}; // material_key -> sent DIRECT from vendor (informational)
+  const sent={}; // material_key -> total sent to stores
   replenLogCache.forEach(r=>{
     const k=r.material_key;
-    const src=r.source||'inventory';
-    if(src==='vendor'){
-      vendor[k]=(vendor[k]||0)+(+r.cartons||0);
-    } else {
-      sent[k]=(sent[k]||0)+(+r.cartons||0);
-    }
+    sent[k]=(sent[k]||0)+(+r.cartons||0);
   });
-  return {added,sent,vendor};
+  return {added,sent};
 }
 
 function renderWarehouse(){
-  const {added,sent,vendor}=calcWarehouseStock();
+  const {added,sent}=calcWarehouseStock();
   const keys=matKeys();
-  let h='<tr><th>Material</th><th class="nums">Total Added</th><th class="nums">Sent (Inventory)</th><th class="nums">Vendor Direct</th><th class="nums">Available</th><th>Status</th></tr>';
+  let h='<tr><th>Material</th><th class="nums">Total Added</th><th class="nums">Sent to Stores</th><th class="nums">Available</th><th>Status</th></tr>';
   let anyData=false;
   keys.forEach(m=>{
     const k=stockKey(m);
     const tAdded=added[k]||0;
     const tSent=sent[k]||0;
-    const tVendor=vendor[k]||0;
-    const avail=tAdded-tSent;   // vendor-direct does NOT reduce warehouse
-    if(tAdded===0&&tSent===0&&tVendor===0)return; // skip untouched materials
+    const avail=tAdded-tSent;
+    if(tAdded===0&&tSent===0)return; // skip untouched materials
     anyData=true;
     let statusPill;
     if(avail<=0)statusPill='<span class="pill pill-crit">Empty</span>';
@@ -5298,12 +5011,11 @@ function renderWarehouse(){
     h+='<tr><td><b>'+m+'</b><div class="cell-sub">'+matIcon(m)+'</div></td>'+
       '<td class="nums">'+n(tAdded)+'</td>'+
       '<td class="nums" style="color:var(--danger)">'+n(tSent)+'</td>'+
-      '<td class="nums" style="color:var(--info)">'+(tVendor>0?n(tVendor):'-')+'</td>'+
       '<td class="nums" style="font-weight:700;color:'+(avail<=0?'var(--danger)':'var(--success)')+';font-size:15px">'+n(avail)+'</td>'+
       '<td>'+statusPill+'</td></tr>';
   });
   if(!anyData){
-    h+='<tr><td colspan="6" style="padding:40px;text-align:center;color:var(--text-mut)">No inventory yet. Click "+ Add to Inventory" to start.</td></tr>';
+    h+='<tr><td colspan="5" style="padding:40px;text-align:center;color:var(--text-mut)">No inventory yet. Click "+ Add to Inventory" to start.</td></tr>';
   }
   const elMain=document.getElementById('tblWarehouse');
   if(elMain)elMain.innerHTML=h;
@@ -7039,7 +6751,6 @@ document.querySelectorAll('.tab').forEach(el=>{
     document.getElementById(tabId).classList.add('active');
     window.scrollTo(0,0);
     if(tabId==='activity')renderActivity();
-    if(tabId==='overview'){setTimeout(()=>{if(storeMapInstance)storeMapInstance.invalidateSize();renderStoreMap()},250)}
     if(tabId==='stock')renderStockUpdateInfo();
     if(tabId==='historical')initHistoricalView();
     if(tabId==='replenlog'){renderReplenLog();renderWarehouse();renderWarehouseLog();}
@@ -7255,75 +6966,6 @@ function computeReportData(){
   };
 }
 
-
-
-// ============================================
-// COUNT COMPLIANCE DETECTION
-// ============================================
-// A store "counted" on a date only if it has a daily_stock row
-// for that date with AT LEAST ONE material value > 0.
-function buildCountCompliance(selectedDate){
-  const live = state.stores.filter(s=>s.status==='Live');
-  const staleDays = state.staleDays || 2;
-  const todayStr = selectedDate || state.stkDate;
-
-  // Map store -> sorted list of dates where it had a VALID count (any value > 0)
-  const validDatesByStore = {};
-  stockHistoryCache.forEach(r=>{
-    const data = r.data || {};
-    const hasValue = Object.values(data).some(v => (+v||0) > 0);
-    if(!hasValue) return;
-    if(!validDatesByStore[r.store_code]) validDatesByStore[r.store_code] = [];
-    validDatesByStore[r.store_code].push(r.snapshot_date);
-  });
-  Object.values(validDatesByStore).forEach(arr => arr.sort());
-
-  // Does this store have a VALID count for the selected date?
-  function hasValidCountOnDate(code, date){
-    const dates = validDatesByStore[code] || [];
-    return dates.includes(date);
-  }
-
-  const rows = [];
-  let counted=0, missed=0, stale=0, never=0;
-
-  live.forEach(s=>{
-    const dates = validDatesByStore[s.code] || [];
-    const lastDate = dates.length ? dates[dates.length-1] : null;
-    const countedToday = hasValidCountOnDate(s.code, todayStr);
-
-    let status, daysAgo='—';
-    if(countedToday){
-      status='OK'; counted++; daysAgo=0;
-    } else if(!lastDate){
-      status='NEVER'; never++;
-    } else {
-      // days between lastDate and selected date
-      const diff = Math.round((new Date(todayStr) - new Date(lastDate)) / 86400000);
-      daysAgo = diff;
-      if(diff > staleDays){ status='STALE'; stale++; }
-      else { status='MISSED'; missed++; }
-    }
-
-    rows.push({code:s.code, area:s.area||'', lastDate:lastDate||null, daysAgo, status});
-  });
-
-  // Sort: worst first (NEVER, STALE, MISSED, OK)
-  const order={NEVER:0,STALE:1,MISSED:2,OK:3};
-  rows.sort((a,b)=> (order[a.status]-order[b.status]) || a.code.localeCompare(b.code));
-
-  return {rows, counted, missed, stale, never, total:live.length};
-}
-
-function countStatusPill(status){
-  if(status==='OK') return '<span class="pill pill-ok">Counted</span>';
-  if(status==='MISSED') return '<span class="pill pill-low">Missed</span>';
-  if(status==='STALE') return '<span class="pill pill-crit">Stale</span>';
-  if(status==='NEVER') return '<span class="pill pill-crit">Never</span>';
-  return '<span class="pill pill-nl">'+status+'</span>';
-}
-  
-  
 function buildWeeklyReport(){
   reportData=computeReportData();
   const d=reportData;
