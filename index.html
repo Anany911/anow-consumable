@@ -3786,8 +3786,7 @@ function renderOverview(){
   const alerts=[];
   live.forEach(s=>fcKeys.forEach(c=>{if(!state.fc[s.code])return;const d=calcDOC(s.code,c);if(d<3&&d>0)alerts.push({s:s.code,area:s.area,c,d,r:calcReplen(s.code,c)})}));
   alerts.sort((a,b)=>a.d-b.d);
-  document.getElementById('critList').innerHTML=alerts.length?alerts.slice(0,7).map(a=>'<div class="alert-item '+(a.d<1?'crit':'low')+'"><div class="alert-icon">'+matIcon(a.c)+'</div><div class="alert-body"><div class="alert-title">'+a.s+' - '+matDisplay(a.c)+'</div>
-  <div class="alert-meta">'+a.area+'</div></div><div class="alert-val">'+docPill(a.d)+'<div class="cell-sub mono">Need: <b>'+a.r.ct+' ct</b></div></div></div>').join(''):'<div class="empty"><div class="ic">All Clear</div><p>'+(state.stores.length?'All systems normal':'Upload Excel to begin')+'</p></div>';
+  document.getElementById('critList').innerHTML=alerts.length?alerts.slice(0,7).map(a=>'<div class="alert-item '+(a.d<1?'crit':'low')+'"><div class="alert-icon">'+matIcon(a.c)+'</div><div class="alert-body"><div class="alert-title">'+a.s+' - '+matDisplay(a.c)+'</div><div class="alert-meta">'+a.area+'</div></div><div class="alert-val">'+docPill(a.d)+'<div class="cell-sub mono">Need: <b>'+a.r.ct+' ct</b></div></div></div>').join(''):'<div class="empty"><div class="ic">All Clear</div><p>'+(state.stores.length?'All systems normal':'Upload Excel to begin')+'</p></div>';
 
   const byStat={};state.stores.forEach(s=>byStat[s.status]=(byStat[s.status]||0)+1);
   const total=state.stores.length;
