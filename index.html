@@ -2496,6 +2496,8 @@ function migrateMaterials(){
     if(!c)return;
     state.materials[name]={
       name:name,
+      displayName:name,
+      sourceAliases:[],
       kind:'forecasted',
       type:c.type,
       trend:c.trend,
@@ -2552,6 +2554,15 @@ function matDef(name){return state.materials[name]||null}
 
 // Get icon for any material
 function matIcon(name){return state.materials[name]?.icon||name}
+
+// Get display name for any material (falls back to internal name)
+function matDisplay(name){return state.materials[name]?.displayName||name}
+
+// Get source aliases array for a material
+function matAliases(name){
+  const a=state.materials[name]?.sourceAliases;
+  return Array.isArray(a)?a:[];
+}
 
 // Get units-per-carton for any material
 function matUnits(name){return state.materials[name]?.units||1}
@@ -3775,7 +3786,9 @@ function renderOverview(){
   const alerts=[];
   live.forEach(s=>fcKeys.forEach(c=>{if(!state.fc[s.code])return;const d=calcDOC(s.code,c);if(d<3&&d>0)alerts.push({s:s.code,area:s.area,c,d,r:calcReplen(s.code,c)})}));
   alerts.sort((a,b)=>a.d-b.d);
-  document.getElementById('critList').innerHTML=alerts.length?alerts.slice(0,7).map(a=>'<div class="alert-item '+(a.d<1?'crit':'low')+'"><div class="alert-icon">'+matIcon(a.c)+'</div><div class="alert-body"><div class="alert-title">'+a.s+' - '+a.c+'</div><div class="alert-meta">'+a.area+'</div></div><div class="alert-val">'+docPill(a.d)+'<div class="cell-sub mono">Need: <b>'+a.r.ct+' ct</b></div></div></div>').join(''):'<div class="empty"><div class="ic">All Clear</div><p>'+(state.stores.length?'All systems normal':'Upload Excel to begin')+'</p></div>';
+  document.getElementById('critList').innerHTML=alerts.length?alerts.slice(0,7).map(a=>'<div class="alert-item '+(a.d<1?'crit':'low')+'"><div class="alert-icon">'+matIcon(a.c)+'</div><div class="alert-body"><div class="alert-title">'+a.s+' - '+matDisplay(a.c)+'</div>
+  <div class="alert-meta">'+a.area+'</div></div><div class="alert-val">'+docPill(a.d)+'<div class="cell-sub mono">Need: <b>'+a.r.ct+' ct</b></div></div></div>').join(''):'<div class="empty"><div class="ic">All Clear</div><p>'+(state.stores.length?'All systems normal':'Upload Excel to begin')+'</p></div>';
+
   const byStat={};state.stores.forEach(s=>byStat[s.status]=(byStat[s.status]||0)+1);
   const total=state.stores.length;
   const liveCap=state.stores.filter(s=>s.status==='Live').reduce((a,b)=>a+(+b.cap||0),0);
@@ -3945,7 +3958,7 @@ function renderStock(){
   }
   
   const keys=matKeys();
-  let h='<tr><th>Store</th>'+keys.map(c=>'<th style="text-align:center" title="'+c+'">'+matIcon(c)+(isCountOnly(c)?'<div style="font-size:8px;color:var(--text-mut)">count</div>':'')+'</th>').join('')+'</tr>';
+  let h='<tr><th>Store</th>'+keys.map(c=>'<th style="text-align:center" title="'+matDisplay(c)+'">'+matDisplay(c)+(isCountOnly(c)?'<div style="font-size:8px;color:var(--text-mut)">count</div>':'')+'</th>').join('')+'</tr>';
   const live=state.stores.filter(s=>s.status==='Live'&&(!q||s.code.toLowerCase().includes(q)));
   if(!live.length){h+='<tr><td colspan="'+(keys.length+1)+'" style="padding:40px;text-align:center;color:var(--text-mut)">No live stores</td></tr>'}
   else{live.forEach(s=>{h+='<tr><td><b>'+s.code+'</b><div class="cell-sub">'+(s.area||'')+'</div></td>';keys.forEach(c=>{const v=readDailyStock(s.code,c);const cn=c.replace(/'/g,"\\'");h+='<td style="text-align:center"><input class="cell-input" type="number" value="'+v+'" onchange="updStk(\''+s.code+'\',\''+cn+'\',this.value)"></td>'});h+='</tr>'})}
@@ -4067,7 +4080,7 @@ function renderDOC(){
   const keys=forecastedKeys();
   // Rebuild options if changed
   const curOpts=Array.from(sel.options).map(o=>o.value).join(',');
-  if(curOpts!==keys.join(',')){sel.innerHTML='';keys.forEach(k=>{const o=document.createElement('option');o.value=k;o.text=k;sel.add(o)})}
+  if(curOpts!==keys.join(',')){sel.innerHTML='';keys.forEach(k=>{const o=document.createElement('option');o.value=k;o.text=matDisplay(k);sel.add(o)})}
   if(docSelected&&keys.includes(docSelected))sel.value=docSelected;
   else if(keys.length)sel.value=keys[0];
   docSelected=sel.value;
@@ -4098,7 +4111,7 @@ function renderReplen(){
   }
   
   const keys=replenKeys();
-  let h='<tr><th>Store</th>'+keys.map(c=>'<th style="text-align:center" title="'+c+'">'+matIcon(c)+'</th>').join('')+'<th style="text-align:right;background:var(--amz-navy);color:#fff">Total</th></tr>';
+  let h='<tr><th>Store</th>'+keys.map(c=>'<th style="text-align:center" title="'+matDisplay(c)+'">'+matDisplay(c)+'</th>').join('')+'<th style="text-align:right;background:var(--amz-navy);color:#fff">Total</th></tr>';
   let gt=0;
   const list=state.stores.filter(s=>s.status==='Live'&&state.fc[s.code]);
   const colTotals={};keys.forEach(c=>colTotals[c]=0);
@@ -4164,6 +4177,8 @@ function renderCfg(){
     const inReplen=c.includeInReplen!==false;
     const kEsc=k.replace(/'/g,"\\'");
     hF+='<div class="cfg-card" draggable="true" ondragstart="cfgDragStart(event,\''+kEsc+'\')" ondragend="cfgDragEnd(event)" ondragover="cfgDragOver(event)" ondragleave="cfgDragLeave(event)" ondrop="cfgDrop(event,\''+kEsc+'\')"><h4><span><span class="drag-handle" title="اسحب لإعادة الترتيب">⋮⋮</span>'+k+'</span><div class="cfg-card-actions"><span class="type-tag">'+c.type+'</span><button class="btn btn-sm" style="padding:2px 8px" onclick="renameMaterial(\''+kEsc+'\')" title="Rename">Rename</button><button class="btn btn-sm btn-danger" style="padding:2px 8px" onclick="deleteMaterial(\''+kEsc+'\')" title="Delete">X</button></div></h4>'+
+      '<div class="cfg-field"><label>Display Name (shown in tool)</label><input type="text" id="dn_'+stockKey(k)+'" value="'+((c.displayName||k).replace(/"/g,'&quot;'))+'"></div>'+
+      '<div class="cfg-field"><label>Source Names (SOH file match, comma-separated)</label><input type="text" id="sa_'+stockKey(k)+'" value="'+((matAliases(k).join(', ')).replace(/"/g,'&quot;'))+'" placeholder="e.g. Paper Bag L, PaperBag-Large"></div>'+
       '<div class="cfg-field"><label>Icon</label><input type="text" id="ic_'+stockKey(k)+'" value="'+(c.icon||'')+'"></div>'+
       '<div class="cfg-field"><label>Trend</label><input type="number" step="0.0001" id="tr_'+stockKey(k)+'" value="'+c.trend+'"></div>'+
       '<div class="cfg-field"><label>Units/Carton</label><input type="number" id="un_'+stockKey(k)+'" value="'+c.units+'"></div>'+
@@ -4178,6 +4193,8 @@ function renderCfg(){
     const c=state.materials[k];
     const kEsc=k.replace(/'/g,"\\'");
     hC+='<div class="cfg-card" draggable="true" ondragstart="cfgDragStart(event,\''+kEsc+'\')" ondragend="cfgDragEnd(event)" ondragover="cfgDragOver(event)" ondragleave="cfgDragLeave(event)" ondrop="cfgDrop(event,\''+kEsc+'\')"><h4><span><span class="drag-handle" title="اسحب لإعادة الترتيب">⋮⋮</span>'+k+'</span><div class="cfg-card-actions"><span class="mat-kind-badge mat-kind-countonly">Count</span><button class="btn btn-sm" style="padding:2px 8px" onclick="renameMaterial(\''+kEsc+'\')" title="Rename">Rename</button><button class="btn btn-sm btn-danger" style="padding:2px 8px" onclick="deleteMaterial(\''+kEsc+'\')" title="Delete">X</button></div></h4>'+
+      '<div class="cfg-field"><label>Display Name (shown in tool)</label><input type="text" id="dn_'+stockKey(k)+'" value="'+((c.displayName||k).replace(/"/g,'&quot;'))+'"></div>'+
+      '<div class="cfg-field"><label>Source Names (SOH file match, comma-separated)</label><input type="text" id="sa_'+stockKey(k)+'" value="'+((matAliases(k).join(', ')).replace(/"/g,'&quot;'))+'" placeholder="e.g. Gel Pack, GelPad"></div>'+
       '<div class="cfg-field"><label>Icon</label><input type="text" id="ic_'+stockKey(k)+'" value="'+(c.icon||'')+'"></div>'+
       '<div class="cfg-field"><label>Units/Carton</label><input type="number" id="un_'+stockKey(k)+'" value="'+(c.units||1)+'"></div>'+
       '<div class="cfg-field"><label>Boxes/Pallet</label><input type="number" id="bx_'+stockKey(k)+'" value="'+(c.box||20)+'"></div>'+
@@ -4204,9 +4221,17 @@ async function saveCfg(){
     const icEl=document.getElementById('ic_'+sk);
     const unEl=document.getElementById('un_'+sk);
     const bxEl=document.getElementById('bx_'+sk);
+    const dnEl=document.getElementById('dn_'+sk);
+    const saEl=document.getElementById('sa_'+sk);
     if(icEl)m.icon=icEl.value.trim()||k;
     if(unEl)m.units=+unEl.value||1;
     if(bxEl)m.box=+bxEl.value||20;
+    // Display Name (what shows across the tool)
+    if(dnEl)m.displayName=dnEl.value.trim()||k;
+    // Source Aliases (names used to match the SOH/Sync file)
+    if(saEl){
+      m.sourceAliases=saEl.value.split(',').map(x=>x.trim()).filter(x=>x.length>0);
+    }
     if(m.kind==='forecasted'){
       const trEl=document.getElementById('tr_'+sk);
       if(trEl)m.trend=+trEl.value||0;
@@ -4413,7 +4438,7 @@ async function saveNewMaterial(){
   if(!icon)icon=autoIcon(name);
   const box=+document.getElementById('amBox').value||20;
   
-  const mat={name,kind:addMatKind,icon,box,order:nextMatOrder()};
+  const mat={name,displayName:name,sourceAliases:[],kind:addMatKind,icon,box,order:nextMatOrder()};
   
   if(addMatKind==='forecasted'){
     const type=document.getElementById('amType').value;
@@ -4781,7 +4806,7 @@ function renderReplenLog(){
     groupList.reduce((a,b)=>a+b.total,0)+' cartons';
 
   let h='<tr><th>Date</th><th>Store</th>'+
-    keys.map(m=>'<th class="nums" title="'+m+'">'+matIcon(m)+'</th>').join('')+
+    keys.map(m=>'<th class="nums" title="'+matDisplay(m)+'">'+matDisplay(m)+'</th>').join('')+
     '<th class="nums" style="background:var(--amz-navy);color:#fff">Total</th><th></th></tr>';
 
   if(!groupList.length){
@@ -5603,14 +5628,23 @@ function parseTrends(rows,name,log){
 }
 
   
-// Match an Excel column header to ANY existing material (dynamic, exact-aware)
-// Returns the material NAME if matched, else null
 function matchMaterialColumn(header){
   if(!header)return null;
   const hk=normKey(header);
   if(!hk)return null;
-  // 1) Try exact match against existing material names (normalized)
   const allMats=Object.keys(state.materials);
+
+  // 0) HIGHEST PRIORITY: match against user-defined source aliases
+  for(const m of allMats){
+    const aliases=state.materials[m].sourceAliases;
+    if(Array.isArray(aliases)){
+      for(const a of aliases){
+        if(a&&normKey(a)===hk)return m;
+      }
+    }
+  }
+
+  // 1) Try exact match against existing material names (normalized)
   for(const m of allMats){
     if(normKey(m)===hk)return m;
   }
@@ -5619,6 +5653,15 @@ function matchMaterialColumn(header){
   for(const m of allMats){
     const mk=normKey(m).replace(/boxes$/,'').replace(/rolls$/,'');
     if(mk===hkClean)return m;
+    // also check aliases without trailing units
+    const aliases=state.materials[m].sourceAliases;
+    if(Array.isArray(aliases)){
+      for(const a of aliases){
+        if(!a)continue;
+        const ak=normKey(a).replace(/boxes$/,'').replace(/rolls$/,'');
+        if(ak===hkClean)return m;
+      }
+    }
   }
   // 3) Fall back to legacy resolveConsKey (handles brown bag, bubble pouch synonyms)
   //    but ONLY if that resolved key exists as a material
@@ -5627,6 +5670,7 @@ function matchMaterialColumn(header){
   return null;
 }
 
+  
 async function importExcel(e){
   if(!canEdit()){denyAccess('import');e.target.value='';return}
   const f=e.target.files[0];if(!f)return;
@@ -5785,7 +5829,7 @@ function showStockPreview(result,fileName){
   let html='<div class="stock-meta"><b>File:</b> '+fileName+(result.detectedDate?' - <b>Date:</b> '+result.detectedDate:'')+' - <b>Workspace:</b> '+activeWorkspace.name+'</div><div class="stock-preview-stats"><div class="stock-stat valid"><div class="stock-stat-num">'+result.valid.length+'</div><div class="stock-stat-lbl">Valid</div></div><div class="stock-stat skip"><div class="stock-stat-num">'+result.skipped.length+'</div><div class="stock-stat-lbl">Skipped</div></div><div class="stock-stat error"><div class="stock-stat-num">'+result.errors.length+'</div><div class="stock-stat-lbl">Errors</div></div><div class="stock-stat info"><div class="stock-stat-num">'+result.affectedStores.size+'</div><div class="stock-stat-lbl">Stores</div></div></div>';
   if(result.valid.length>0){
     html+='<div style="font-weight:700;font-size:13px;margin-bottom:6px">Preview:</div><div class="stock-table-wrap"><table><thead><tr><th>Store</th><th>Item</th><th style="text-align:right">Count</th></tr></thead><tbody>';
-    result.valid.slice(0,10).forEach(v=>{html+='<tr><td><b>'+v.storeId+'</b></td><td>'+v.consKey+'</td><td class="nums">'+v.count+'</td></tr>'});
+    result.valid.slice(0,10).forEach(v=>{html+='<tr><td><b>'+v.storeId+'</b></td><td>'+matDisplay(v.consKey)+' <span style="color:var(--text-mut);font-size:11px">('+v.item+')</span></td><td class="nums">'+v.count+'</td></tr>'});
     html+='</tbody></table></div>';
   }
   const allIssues=[...result.errors,...result.skipped];
@@ -6698,8 +6742,7 @@ function renderDailyView(){
   h+='<th class="status-col">Status</th>';
   matsWithData.forEach(mat=>{
     const isExtra=isExtraMaterial(mat);
-    const label=mat.replace('BubbleWrap','BubbleWraps').replace('PaperBag','PaperBag');
-    h+='<th class="'+(isExtra?'extra-col':'')+'">'+mat+'</th>';
+    h+='<th class="'+(isExtra?'extra-col':'')+'">'+matDisplay(mat)+'</th>';
   });
   h+='</tr></thead><tbody>';
   
