@@ -5806,39 +5806,56 @@ async function confirmStockBulkImport(){
   const wsId=activeWorkspace.id;
   showSync('Importing...');
   try{
-    const byStore={};
-    result.valid.forEach(v=>{if(!byStore[v.storeId])byStore[v.storeId]={};byStore[v.storeId][stockKey(v.consKey)]=v.count});
-    Object.entries(byStore).forEach(([code,data])=>{
-      if(!state.stock[code])state.stock[code]={};
-      Object.entries(data).forEach(([k,v])=>{state.stock[code][k]=v});
-    });
+    // Set the active date FIRST so display and save agree
     const dDate=result.detectedDate||state.stkDate;
-    const dailyRows=Object.entries(byStore).map(([code,data])=>{
-      dailyStockData[code]={...(dailyStockData[code]||{}),...data};
-      return {
-        workspace_id:wsId,
-        stock_date:dDate,
-        store_code:code,
-        data:dailyStockData[code],
-        updated_by:currentUser.id,
-        updated_by_email:currentUser.email,
-        updated_at:new Date().toISOString()
-      };
+    state.stkDate=dDate;
+
+    // Build fresh per-store data from the file (file = source of truth)
+    const byStore={};
+    result.valid.forEach(v=>{
+      if(!byStore[v.storeId])byStore[v.storeId]={};
+      const k=stockKey(v.consKey);
+      byStore[v.storeId][k]=(byStore[v.storeId][k]||0)+v.count; // sum duplicates safely
     });
+
+    // REPLACE (not merge) each affected store's data so counts match the file exactly
+    Object.entries(byStore).forEach(([code,data])=>{
+      dailyStockData[code]={...data};
+      state.stock[code]={...data};
+    });
+
+    const dailyRows=Object.entries(byStore).map(([code,data])=>({
+      workspace_id:wsId,
+      stock_date:dDate,
+      store_code:code,
+      data:dailyStockData[code],
+      updated_by:currentUser.id,
+      updated_by_email:currentUser.email,
+      updated_at:new Date().toISOString()
+    }));
+
     await supabaseClient.from('daily_stock').upsert(dailyRows,{onConflict:'workspace_id,stock_date,store_code'});
     await loadDailyStockDates();
-    
-    if(result.detectedDate)state.stkDate=result.detectedDate;
-    const stockRows=Object.entries(byStore).map(([code,data])=>({workspace_id:wsId,store_code:code,data:state.stock[code],updated_at:new Date().toISOString()}));
+
+    const stockRows=Object.entries(byStore).map(([code])=>({
+      workspace_id:wsId,
+      store_code:code,
+      data:state.stock[code],
+      updated_at:new Date().toISOString()
+    }));
     await supabaseClient.from('stock').upsert(stockRows);
-    if(result.detectedDate)await supabaseClient.from('settings').upsert({workspace_id:wsId,key:'stkDate',value:result.detectedDate,updated_at:new Date().toISOString()});
+
+    await supabaseClient.from('settings').upsert({workspace_id:wsId,key:'stkDate',value:dDate,updated_at:new Date().toISOString()});
     await supabaseClient.from('stock_update_log').insert({workspace_id:wsId,updated_by:currentUser.id,updated_by_email:currentUser.email,update_type:'bulk_import',notes:'Bulk import: '+result.fileName});
     await loadLastStockUpdate();
     await createSnapshot('bulk_import','Bulk import: '+result.fileName);
     await logActivity('bulk_import','stock',null,null,null,null,{fileName:result.fileName,entries:result.valid.length});
+
+    dailyStockLoaded=true;
     hideSync();
     closeStockBulkModal();
-    toast('Imported '+result.valid.length+' entries');
+    toast('Imported '+result.valid.length+' entries for '+dDate);
+    document.getElementById('stkDate').value=dDate;
     render();
   }catch(err){hideSync();toast('Failed: '+err.message,'error')}
 }
