@@ -35,9 +35,6 @@ a:hover{color:var(--link-hover);text-decoration:underline}
 .brand:active{transform:scale(.97)}  
 
 #rlStoreFilter,#dailySearch{
-  background-image:url("data:image/svg+xml,...");
-  background-repeat:no-repeat;
-  background-position:left 12px center;
   padding-left:34px !important;
 }
 
@@ -545,14 +542,13 @@ tr:last-child td{border-bottom:none}
 
   /* الأزرار في النافبار - أيقونات صغيرة */
   .nav-actions{gap:6px}
-@media(max-width:768px){
   .nav-btn{padding:8px 10px}
   .nav-btn-text{display:none}      /* نخفي النص */
   .nav-btn-icon{font-size:16px}    /* نسيب الأيقونة */
-}
-@media(min-width:769px){
-  .nav-btn-icon{display:none}      /* في الديسكتوب نخفي الأيقونة ونسيب النص */
-}
+
+  /* الـ Tabs تبقى أصغر */
+  .tab{padding:10px 14px;font-size:12px}
+  .subnav-inner{padding:0 12px}
 
   /* الـ Tabs تبقى أصغر */
   .tab{padding:10px 14px;font-size:12px}
@@ -1622,6 +1618,7 @@ input[type="number"]{
 <section class="pane" id="stock">
   <div class="breadcrumb"><a onclick="goToHub()">Operations</a><span class="sep">/</span><a onclick="enterView('dashboard')">Dashboard</a><span class="sep">/</span><span>Stock Count</span></div>
   <div class="page-head">
+  <div class="page-head">
     <div><h1>Stock Count Entry</h1><p>Cartons on hand per store</p></div>
     <div class="page-actions">
         <button class="btn" onclick="downloadStockTemplate()" title="Download Excel template for bulk upload">Template</button>
@@ -1629,6 +1626,7 @@ input[type="number"]{
         <input type="file" id="stockBulkFile" accept=".xlsx,.xls" style="display:none" onchange="importStockBulk(event)">
         <button class="btn" id="pickFolderBtn" onclick="pickStockFolder()">📁 Connect Folder</button>
         <button class="btn btn-cta" id="syncTodayBtn" onclick="syncTodayStock()" title="Auto-import today's stock from SharePoint">🔄 Sync Today</button>
+        <button class="btn btn-cta" onclick="markStockUpdated()" title="Record a manual update and save a snapshot">✓ Mark as Updated</button>
         <label style="font-size:12px;color:var(--text-mut);font-weight:500;align-self:center;margin-left:10px">Date:</label>
         <input class="input" type="date" id="stkDate" style="min-width:160px" onchange="saveStkDate()">
       </div>
@@ -2523,9 +2521,12 @@ function matKeys(){
     .map(m=>m.name);
 }
 
-  Object.defineProperty(window, 'CONS_KEYS', {
-  get(){ return matKeys(); }
-});
+  if(!Object.getOwnPropertyDescriptor(window,'CONS_KEYS')){
+    Object.defineProperty(window, 'CONS_KEYS', {
+      configurable:true,
+      get(){ return matKeys(); }
+    });
+  }
 
 // Get only forecasted materials (have equation) - used for DOC/Heatmap/Forecast
 function forecastedKeys(){
@@ -3632,7 +3633,6 @@ async function bulkSyncAll(){
       {workspace_id:wsId,key:'upo',value:state.upo,updated_at:new Date().toISOString()},
       {workspace_id:wsId,key:'replenDays',value:state.replenDays,updated_at:new Date().toISOString()},
       {workspace_id:wsId,key:'stkDate',value:state.stkDate,updated_at:new Date().toISOString()},
-      {workspace_id:wsId,key:'cons',value:state.cons,updated_at:new Date().toISOString()},
       {workspace_id:wsId,key:'materials',value:state.materials,updated_at:new Date().toISOString()}
     ]);
     await logActivity('bulk_import','workspace',null,null,null,null,{stores:state.stores.length,forecasts:Object.keys(state.fc).length,stock:Object.keys(state.stock).length});
@@ -3649,14 +3649,31 @@ async function resetWorkspaceData(){
   try{
     const wsId=activeWorkspace.id;
     const stats={stores:state.stores.length,forecasts:Object.keys(state.fc).length,stock:Object.keys(state.stock).length};
-    await supabaseClient.from('stores').delete().eq('workspace_id',wsId);
+    await Promise.all([
+      supabaseClient.from('stores').delete().eq('workspace_id',wsId),
+      supabaseClient.from('stock').delete().eq('workspace_id',wsId),
+      supabaseClient.from('forecasts').delete().eq('workspace_id',wsId),
+      supabaseClient.from('daily_stock').delete().eq('workspace_id',wsId),
+      supabaseClient.from('replenishment_entries').delete().eq('workspace_id',wsId),
+      supabaseClient.from('warehouse_inbound').delete().eq('workspace_id',wsId)
+    ]);
     await logActivity('workspace_reset','workspace',activeWorkspace.code,null,stats,null,{workspaceName:activeWorkspace.name});
     state={cons:JSON.parse(JSON.stringify(DEFAULT_CONS)),materials:{},stores:[],stock:{},fc:{},fcUnits:{},buffer:1.30,upo:8.58,replenDays:7,stkDate:new Date().toISOString().slice(0,10)};
     migrateMaterials();
+    // Clear local caches
+    replenLogCache=[];
+    warehouseInboundCache=[];
+    dailyStockData={};
+    dailyStockDates=[];
+    dailyStockLoaded=true;
+    extraMaterials=[];
+    stockHistoryCache=[];
+    lastStockUpdate=null;
     docSelected=null;
     render();
+    renderWarehouseLog();
     toast('Workspace data wiped');
-  }catch(e){toast('Reset failed','error')}
+  }catch(e){console.error(e);toast('Reset failed','error')}
   hideSync();
 }
 
@@ -3964,8 +3981,9 @@ async function saveStkDate(){
   state.stkDate=document.getElementById('stkDate').value;
   await saveSettingCloud('stkDate',state.stkDate);
   dailyStockLoaded=false;
-  renderStock();
+  renderStock();               // shows "Loading..." state
   await loadDailyStock(state.stkDate);
+  renderStock();               // re-render with loaded data
   render();
 }
   
@@ -4001,12 +4019,17 @@ async function confirmStockUpdate(){
 function renderStockUpdateInfo(){
   const el=document.getElementById('stockUpdateInfo');
   if(!el)return;
-  if(!lastStockUpdate){el.style.display='none';return}
   el.style.display='flex';
-  document.getElementById('stockLastUser').textContent=lastStockUpdate.updated_by_email||'Unknown';
-  const t=new Date(lastStockUpdate.created_at);
-  document.getElementById('stockLastTime').textContent='Last update: '+t.toLocaleString();
-  document.getElementById('stockLastNotes').textContent=lastStockUpdate.notes?'Note: '+lastStockUpdate.notes:'';
+  const dateInfo=document.getElementById('stockDateInfo');
+  if(dateInfo){
+    let html='Editing stock for <b>'+state.stkDate+'</b> - changes save automatically';
+    if(lastStockUpdate){
+      const t=new Date(lastStockUpdate.created_at);
+      html+=' &nbsp;·&nbsp; Last manual update by <b>'+(lastStockUpdate.updated_by_email||'Unknown')+'</b> at '+t.toLocaleString();
+      if(lastStockUpdate.notes)html+=' (Note: '+lastStockUpdate.notes+')';
+    }
+    dateInfo.innerHTML=html;
+  }
 }
 
 function renderForecast(){
@@ -4517,12 +4540,23 @@ function toggleAllNewMaterials(select){
 async function confirmNewMaterials(){
   const selected=pendingNewMaterials.filter(m=>m.selected).map(m=>m.name);
   if(selected.length>0){
-    extraMaterials=[...new Set([...extraMaterials,...selected])];
-    await saveExtraMaterials();
+    // Add selected as count-only materials in the dynamic system (persisted)
+    selected.forEach(name=>{
+      if(state.materials[name])return;
+      const sk=stockKey(name);
+      const collision=matKeys().find(k=>stockKey(k)===sk);
+      if(collision)return;
+      state.materials[name]={
+        name,kind:'countonly',icon:autoIcon(name),
+        units:1,box:20,includeInReplen:false,order:nextMatOrder()
+      };
+    });
+    await saveMaterialsCloud();
     toast(selected.length+' new material(s) added');
   }
   pendingNewMaterials=[];
   document.getElementById('mdNewMaterials').classList.remove('show');
+  render();
   // Re-render if on historical daily view
   if(currentView==='history'){
     const activeSubtab=document.querySelector('.subtab.active')?.dataset.subtab;
@@ -5123,8 +5157,7 @@ function showSkeletons(){
 
   
   
-function render(){renderOverview();renderStores();renderStock();renderForecast();renderDOC();renderReplen();renderCfg()}
-
+function render(){renderOverview();renderStores();renderStock();renderForecast();renderDOC();renderReplen();renderCfg();renderWarehouseLog()}
 
 async function loadActivityLog(filters){
   filters=filters||{};
@@ -5558,10 +5591,17 @@ function parseTrends(rows,name,log){
       if(typeof unitsVal==='string'){const m=unitsVal.match(/\d+/g);unitsVal=m?parseFloat(m[m.length-1]):null}
       else unitsVal=toNum(unitsVal);
       const boxVal=toNum(row[ci+4]);
-      if(state.cons[ck]&&trendVal!=null&&trendVal>0&&trendVal<100){
-        state.cons[ck].trend=trendVal;
-        if(unitsVal!=null&&unitsVal>0)state.cons[ck].units=unitsVal;
-        if(boxVal!=null&&boxVal>0)state.cons[ck].box=boxVal;
+      // Write to the active dynamic material definition (source of truth)
+      if(state.materials[ck]&&state.materials[ck].kind==='forecasted'&&trendVal!=null&&trendVal>0&&trendVal<100){
+        state.materials[ck].trend=trendVal;
+        if(unitsVal!=null&&unitsVal>0)state.materials[ck].units=unitsVal;
+        if(boxVal!=null&&boxVal>0)state.materials[ck].box=boxVal;
+        // Keep legacy cons in sync for backward compatibility
+        if(state.cons[ck]){
+          state.cons[ck].trend=trendVal;
+          if(unitsVal!=null&&unitsVal>0)state.cons[ck].units=unitsVal;
+          if(boxVal!=null&&boxVal>0)state.cons[ck].box=boxVal;
+        }
         updated++;
       }
       break;
