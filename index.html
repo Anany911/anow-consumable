@@ -550,10 +550,6 @@ tr:last-child td{border-bottom:none}
   .tab{padding:10px 14px;font-size:12px}
   .subnav-inner{padding:0 12px}
 
-  /* الـ Tabs تبقى أصغر */
-  .tab{padding:10px 14px;font-size:12px}
-  .subnav-inner{padding:0 12px}
-
   /* مؤشر السحب للجداول */
   .tbl-wrap{position:relative}
   .tbl-wrap::after{
@@ -1617,7 +1613,6 @@ input[type="number"]{
 
 <section class="pane" id="stock">
   <div class="breadcrumb"><a onclick="goToHub()">Operations</a><span class="sep">/</span><a onclick="enterView('dashboard')">Dashboard</a><span class="sep">/</span><span>Stock Count</span></div>
-  <div class="page-head">
   <div class="page-head">
     <div><h1>Stock Count Entry</h1><p>Cartons on hand per store</p></div>
     <div class="page-actions">
@@ -3941,11 +3936,8 @@ function renderStock(){
   const q=(document.getElementById('srchStk')?.value||'').toLowerCase();
   document.getElementById('stkDate').value=state.stkDate;
   
-  // Show which date we're editing
-  const dateInfo=document.getElementById('stockDateInfo');
-  if(dateInfo){
-    dateInfo.innerHTML='Editing stock for <b>'+state.stkDate+'</b> - changes save automatically';
-  }
+  // Show which date we're editing (delegate to renderStockUpdateInfo for consistency)
+  renderStockUpdateInfo();
   
   if(!dailyStockLoaded){
     document.getElementById('tblStock').innerHTML='<tr><td style="padding:40px;text-align:center;color:var(--text-mut)">Loading...</td></tr>';
