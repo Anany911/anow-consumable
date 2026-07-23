@@ -1395,6 +1395,30 @@ input[type="number"]{
 }
 .login-footer a:hover{color:var(--link-hover);text-decoration:underline}
 
+
+
+
+/* ════════════════════════════════════════
+   👤 PROFILE PAGE
+   ════════════════════════════════════════ */
+.profile-wrap{max-width:720px;margin:0 auto}
+.profile-hero{background:linear-gradient(135deg,var(--amz-navy),var(--amz-navy-2));border-radius:12px;padding:28px;display:flex;align-items:center;gap:22px;margin-bottom:20px;position:relative;overflow:hidden}
+.profile-hero::after{content:'';position:absolute;right:-40px;top:-40px;width:180px;height:180px;background:radial-gradient(circle,rgba(255,153,0,.18),transparent 70%)}
+.profile-avatar-lg{position:relative;width:96px;height:96px;flex-shrink:0;z-index:1}
+.profile-avatar-lg .pa-img{width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid var(--amz-orange);background:var(--amz-orange);display:grid;place-items:center;font-size:34px;font-weight:700;color:var(--amz-navy)}
+.profile-avatar-lg .pa-edit{position:absolute;bottom:0;right:0;width:32px;height:32px;border-radius:50%;background:var(--amz-orange);color:var(--amz-navy);border:2px solid var(--amz-navy);cursor:pointer;display:grid;place-items:center;font-size:15px;transition:transform .15s}
+.profile-avatar-lg .pa-edit:hover{transform:scale(1.1)}
+.profile-hero-info{z-index:1;color:#fff;min-width:0}
+.profile-hero-info h2{font-size:22px;font-weight:700;margin-bottom:4px;word-break:break-word}
+.profile-hero-info .ph-email{font-size:13px;color:#cbd5e0;word-break:break-all}
+.profile-hero-info .ph-badges{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
+.profile-section{margin-bottom:16px}
+.profile-section-title{font-size:14px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.profile-hint{font-size:11px;color:var(--text-mut);margin-top:4px}
+[data-theme="dark"] .profile-hero{background:linear-gradient(135deg,#161B22,#21262D)}
+  
+
+  
   
 </style>
 </head>
@@ -1491,7 +1515,7 @@ input[type="number"]{
         <button class="nav-btn" onclick="logout()" title="Logout">
           <span class="nav-btn-icon">⏻</span><span class="nav-btn-text">Logout</span>
         </button>
-      <div class="user-chip">
+      <div class="user-chip" onclick="openProfile()" title="My Profile" style="cursor:pointer">
         <div class="avatar" id="userAvatar">??</div>
         <div class="user-info">
           <div class="greet">Hello,</div>
@@ -2067,6 +2091,77 @@ input[type="number"]{
   </div>
 </section>
 
+
+<section class="pane" id="profile">
+  <div class="breadcrumb"><a onclick="goToHub()">Operations</a><span class="sep">/</span><span>My Profile</span></div>
+  <div class="page-head">
+    <div><h1>My Profile</h1><p>Manage your name, photo, and account security</p></div>
+  </div>
+  <div class="profile-wrap">
+    <div class="profile-hero">
+      <div class="profile-avatar-lg">
+        <div class="pa-img" id="profileAvatarImg">??</div>
+        <button class="pa-edit" onclick="document.getElementById('profilePhotoFile').click()" title="Change photo">✎</button>
+        <input type="file" id="profilePhotoFile" accept="image/*" style="display:none" onchange="uploadAvatar(event)">
+      </div>
+      <div class="profile-hero-info">
+        <h2 id="profileHeroName">User</h2>
+        <div class="ph-email" id="profileHeroEmail">-</div>
+        <div class="ph-badges" id="profileHeroBadges"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-title"><span class="icon">i</span>Personal Info</div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="field">
+            <label>Display Name</label>
+            <input type="text" id="profileName" placeholder="Your name" maxlength="60">
+            <div class="profile-hint">This name appears across the app instead of your email prefix.</div>
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input type="email" id="profileEmail" disabled style="opacity:.7;cursor:not-allowed">
+            <div class="profile-hint">Email cannot be changed here.</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions" style="justify-content:flex-end">
+        <button class="btn btn-cta" onclick="saveProfileInfo()">Save Changes</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-title"><span class="icon">🔒</span>Change Password</div></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="field">
+            <label>New Password</label>
+            <input type="password" id="profileNewPass" placeholder="At least 6 characters">
+          </div>
+          <div class="field">
+            <label>Confirm New Password</label>
+            <input type="password" id="profileConfirmPass" placeholder="Re-type new password">
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions" style="justify-content:flex-end">
+        <button class="btn btn-action" onclick="changeMyPassword()">Update Password</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="card-title"><span class="icon">⎋</span>Session</div></div>
+      <div class="card-body">
+        <p style="font-size:13px;color:var(--text-mut);margin-bottom:12px">Sign out of your account on this device.</p>
+        <button class="btn btn-danger" onclick="logout()">Sign Out</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+  
   <footer class="app-footer">
     <div class="ft-left">
       © <span id="footerYear"></span> <b>Anow Operations</b> · All rights reserved
@@ -2845,6 +2940,156 @@ function hideRoleTestBanner(){
   document.querySelector('.topnav').style.marginTop='0';
 }
 
+
+// ════════════════════════════════════════
+// 👤 PROFILE PAGE
+// ════════════════════════════════════════
+
+function getDisplayName(){
+  return currentProfile?.full_name?.trim() || currentUser?.email?.split('@')[0] || 'User';
+}
+
+function getInitials(name){
+  const n=(name||'').trim();
+  if(!n)return '??';
+  const parts=n.split(/\s+/);
+  if(parts.length>=2)return (parts[0][0]+parts[1][0]).toUpperCase();
+  return n.slice(0,2).toUpperCase();
+}
+
+// Refresh the small avatar + name in the topnav from currentProfile
+function refreshUserChip(){
+  const name=getDisplayName();
+  const nameEl=document.getElementById('userName');
+  if(nameEl)nameEl.textContent=name;
+  const avEl=document.getElementById('userAvatar');
+  if(avEl){
+    if(currentProfile?.avatar_url){
+      avEl.innerHTML='<img src="'+currentProfile.avatar_url+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover" alt="">';
+    } else {
+      avEl.textContent=getInitials(name);
+    }
+  }
+}
+
+function openProfile(){
+  currentView='profile';
+  // Hide all tabs' active state; show all view-tabs as needed but activate none
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  const pane=document.getElementById('profile');
+  if(pane)pane.classList.add('active');
+  // Make sure hub/dashboard/history tabs stay hidden (profile is a standalone view)
+  document.querySelectorAll('.tab').forEach(t=>{
+    const v=t.dataset.view;
+    if(v==='hub')t.style.display='inline-flex';
+    else if(v==='dashboard'||v==='history')t.style.display='none';
+  });
+  if(isSuperAdmin()){
+    const adminTab=document.getElementById('adminTab');
+    if(adminTab)adminTab.style.display='inline-flex';
+  }
+  window.scrollTo(0,0);
+  renderProfile();
+}
+
+function renderProfile(){
+  const name=getDisplayName();
+  const email=currentUser?.email||'-';
+
+  // Hero
+  const heroName=document.getElementById('profileHeroName');
+  if(heroName)heroName.textContent=name;
+  const heroEmail=document.getElementById('profileHeroEmail');
+  if(heroEmail)heroEmail.textContent=email;
+
+  // Hero avatar
+  const heroImg=document.getElementById('profileAvatarImg');
+  if(heroImg){
+    if(currentProfile?.avatar_url){
+      heroImg.innerHTML='<img src="'+currentProfile.avatar_url+'" class="pa-img" style="border:none" alt="">';
+    } else {
+      heroImg.innerHTML=getInitials(name);
+    }
+  }
+
+  // Badges
+  const badges=document.getElementById('profileHeroBadges');
+  if(badges){
+    let b='';
+    if(isSuperAdmin())b+='<span class="pill pill-owner">Super Admin</span>';
+    if(activeWorkspace)b+='<span class="pill pill-hi">'+activeWorkspace.name+' · '+getRoleLabel(currentPermissions.role)+'</span>';
+    badges.innerHTML=b;
+  }
+
+  // Form fields
+  const nameInput=document.getElementById('profileName');
+  if(nameInput)nameInput.value=currentProfile?.full_name||'';
+  const emailInput=document.getElementById('profileEmail');
+  if(emailInput)emailInput.value=email;
+  const np=document.getElementById('profileNewPass');if(np)np.value='';
+  const cp=document.getElementById('profileConfirmPass');if(cp)cp.value='';
+}
+
+async function saveProfileInfo(){
+  const name=document.getElementById('profileName').value.trim();
+  showSync('Saving profile...');
+  try{
+    const {error}=await supabaseClient.from('user_profiles')
+      .update({full_name:name||null})
+      .eq('id',currentUser.id);
+    if(error)throw error;
+    currentProfile.full_name=name||null;
+    refreshUserChip();
+    renderProfile();
+    toast('Profile updated');
+  }catch(e){toast('Failed: '+e.message,'error')}
+  hideSync();
+}
+
+async function uploadAvatar(e){
+  const file=e.target.files[0];
+  e.target.value='';
+  if(!file)return;
+  if(!file.type.startsWith('image/')){toast('Please select an image','error');return}
+  if(file.size>3*1024*1024){toast('Image too large (max 3MB)','error');return}
+  showSync('Uploading photo...');
+  try{
+    const ext=(file.name.split('.').pop()||'png').toLowerCase();
+    // Path MUST start with user id folder for the RLS policy to allow it
+    const path=currentUser.id+'/avatar_'+Date.now()+'.'+ext;
+    const {error:upErr}=await supabaseClient.storage.from('avatars').upload(path,file,{upsert:true,contentType:file.type});
+    if(upErr)throw upErr;
+    const {data:pub}=supabaseClient.storage.from('avatars').getPublicUrl(path);
+    const publicUrl=pub.publicUrl;
+    const {error:dbErr}=await supabaseClient.from('user_profiles')
+      .update({avatar_url:publicUrl}).eq('id',currentUser.id);
+    if(dbErr)throw dbErr;
+    currentProfile.avatar_url=publicUrl;
+    refreshUserChip();
+    renderProfile();
+    toast('Photo updated');
+  }catch(e){toast('Upload failed: '+e.message,'error')}
+  hideSync();
+}
+
+async function changeMyPassword(){
+  const np=document.getElementById('profileNewPass').value;
+  const cp=document.getElementById('profileConfirmPass').value;
+  if(!np||np.length<6){toast('Password min 6 characters','error');return}
+  if(np!==cp){toast('Passwords do not match','error');return}
+  showSync('Updating password...');
+  try{
+    const {error}=await supabaseClient.auth.updateUser({password:np});
+    if(error)throw error;
+    document.getElementById('profileNewPass').value='';
+    document.getElementById('profileConfirmPass').value='';
+    toast('Password updated');
+  }catch(e){toast('Failed: '+e.message,'error')}
+  hideSync();
+}
+
+  
 // ============================================
 // VIEW NAVIGATION (Hub / Dashboard / History)
 // ============================================
@@ -3126,10 +3371,7 @@ async function selectWorkspace(wsId){
   document.getElementById('mainPage').style.display='block';
   
   const email=currentUser.email;
-  const name=email.split('@')[0];
-  const initials=name.slice(0,2).toUpperCase();
-  document.getElementById('userName').textContent=name;
-  document.getElementById('userAvatar').textContent=initials;
+  refreshUserChip();
   document.getElementById('curWsName').textContent=activeWorkspace.name;
   document.getElementById('bannerTitle').textContent=activeWorkspace.name+' - Operations Center';
   document.getElementById('dzWsName').textContent=activeWorkspace.name;
@@ -3332,7 +3574,7 @@ function resetIdleTimer(){
   },IDLE_TIMEOUT);
 }
 
-// نحدّث حالتنا في الـ Presence channel
+//  Presence channel
 async function updatePresenceStatus(){
   if(!presenceChannel||!currentUser)return;
   try{
@@ -3472,7 +3714,10 @@ async function loadFromCloud(){
       await saveSettingCloud('materials',state.materials);
       console.log('Auto-migration complete + saved to cloud');
     }
-    document.getElementById('lastUpd').textContent=new Date().toLocaleString();
+
+        const luEl=document.getElementById('lastUpd');
+    if(luEl)luEl.textContent=new Date().toLocaleString();
+  
   }catch(e){console.error(e);toast('Load failed: '+e.message,'error')}
 }
 
@@ -4013,6 +4258,7 @@ function updStk(code,c,v){
 }
 
 async function saveStkDate(){
+  if(!canEdit()){denyAccess('edit');renderStock();return}
   state.stkDate=document.getElementById('stkDate').value;
   await saveSettingCloud('stkDate',state.stkDate);
   dailyStockLoaded=false;
