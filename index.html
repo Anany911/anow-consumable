@@ -485,7 +485,38 @@ tr:last-child td{border-bottom:none}
 .mat-kind-countonly{background:var(--surface-alt);color:var(--text-mut);border:1px solid var(--border)}
 .mat-replen-tag{font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;background:var(--success-bg);color:var(--success);margin-left:4px}
 .mat-noreplen-tag{font-size:9px;font-weight:700;padding:2px 7px;border-radius:10px;background:var(--warn-bg);color:var(--warn);margin-left:4px}
-.cfg-card-actions{display:flex;gap:6px;align-items:center}
+.cfg-card h4{
+  font-size:13px;
+  font-weight:700;
+  margin-bottom:10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:8px;
+}
+.cfg-card h4 > span:first-child{
+  flex:1;
+  min-width:0;
+  word-break:break-word;
+  overflow-wrap:anywhere;
+  line-height:1.3;
+  padding-top:2px;
+}
+.cfg-card-actions{
+  display:flex;
+  gap:6px;
+  align-items:center;
+  flex-shrink:0;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+.cfg-card-actions .type-tag,
+.cfg-card-actions .mat-kind-badge{
+  white-space:nowrap;
+}
+.cfg-card-actions .btn-sm{
+  white-space:nowrap;
+}
 .cfg-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid var(--border-light);margin-top:8px}
 .cfg-toggle-label{font-size:11px;font-weight:600;color:var(--text-mut)}
 .toggle-switch{position:relative;width:40px;height:22px;flex-shrink:0}
