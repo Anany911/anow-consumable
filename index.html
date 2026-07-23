@@ -3157,10 +3157,10 @@ function openProfile(){
   const pane=document.getElementById('profile');
   if(pane)pane.classList.add('active');
   // Make sure hub/dashboard/history tabs stay hidden (profile is a standalone view)
-  document.querySelectorAll('.tab').forEach(t=>{
+document.querySelectorAll('.tab').forEach(t=>{
     const v=t.dataset.view;
     if(v==='hub')t.style.display='inline-flex';
-    else if(v==='dashboard'||v==='history')t.style.display='none';
+    else if(t.id!=='adminTab')t.style.display='none';
   });
   if(isSuperAdmin()){
     const adminTab=document.getElementById('adminTab');
@@ -3635,8 +3635,7 @@ function enterSohView(){
   document.querySelectorAll('.tab').forEach(t=>{
     const v=t.dataset.view;
     if(v==='soh'){t.style.display='inline-flex';t.classList.remove('active')}
-    else if(v==='hub'){t.style.display='inline-flex'}
-    else if(v==='dashboard'||v==='history'){t.style.display='none';t.classList.remove('active')}
+    else if(v!=='soh' && t.id!=='adminTab'){t.style.display='none';t.classList.remove('active')}
   });
   if(isSuperAdmin()){
     const adminTab=document.getElementById('adminTab');
@@ -3664,11 +3663,12 @@ function goToHub(){
     if(view==='hub'){
       t.style.display='inline-flex';
       t.classList.add('active');
-    } else if(view==='dashboard'||view==='history'){
+    } else if(view!=='hub' && t.id!=='adminTab'){
       t.style.display='none';
       t.classList.remove('active');
     }
   });
+
   if(isSuperAdmin()){
     const adminTab=document.getElementById('adminTab');
     if(adminTab){adminTab.style.display='inline-flex';adminTab.classList.remove('active')}
@@ -3684,16 +3684,18 @@ function goToHub(){
 
 function enterView(view){
   currentView=view;
-  if(view==='dashboard'){
+if(view==='dashboard'){
     document.querySelectorAll('.tab').forEach(t=>{
       const v=t.dataset.view;
       if(v==='dashboard'){
         t.style.display='inline-flex';
         t.classList.remove('active');
-      } else if(v==='hub'||v==='history'){
+      } else if(v!=='dashboard' && t.id!=='adminTab'){
         t.style.display='none';
+        t.classList.remove('active');
       }
     });
+
     if(isSuperAdmin()){
       const adminTab=document.getElementById('adminTab');
       if(adminTab)adminTab.style.display='inline-flex';
@@ -3708,17 +3710,18 @@ function enterView(view){
       document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
       document.getElementById('overview').classList.add('active');
     }
-  } else if(view==='history'){
+} else if(view==='history'){
     document.querySelectorAll('.tab').forEach(t=>{
       const v=t.dataset.view;
       if(v==='history'){
         t.style.display='inline-flex';
         t.classList.add('active');
-      } else if(v==='hub'||v==='dashboard'){
+      } else if(v!=='history' && t.id!=='adminTab'){
         t.style.display='none';
         t.classList.remove('active');
       }
     });
+
     if(isSuperAdmin()){
       const adminTab=document.getElementById('adminTab');
       if(adminTab)adminTab.style.display='inline-flex';
