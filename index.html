@@ -1414,11 +1414,75 @@ input[type="number"]{
 .profile-hero-info .ph-badges{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
 .profile-section{margin-bottom:16px}
 .profile-section-title{font-size:14px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+
 .profile-hint{font-size:11px;color:var(--text-mut);margin-top:4px}
 [data-theme="dark"] .profile-hero{background:linear-gradient(135deg,#161B22,#21262D)}
-  
 
-  
+
+/* ════════════════════════════════════════
+   📟 SOH SCANNER
+   ════════════════════════════════════════ */
+.soh-hub-icon{background:linear-gradient(135deg,#146EB4,#0d4d7f)!important;color:#fff!important}
+
+.soh-cfg-card{background:var(--surface-alt);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:12px}
+.soh-cfg-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px}
+.soh-cfg-name{font-weight:700;font-size:15px}
+.soh-cfg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.soh-cfg-field label{display:block;font-size:10px;font-weight:700;color:var(--text-mut);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.soh-cfg-field input{width:100%;padding:7px 10px;border:1px solid #D5D9D9;border-radius:6px;font-size:13px}
+.soh-cfg-field input:focus{outline:none;border-color:var(--amz-orange);box-shadow:0 0 0 3px rgba(255,153,0,.15)}
+.soh-barcode-input{font-family:monospace;font-weight:700;letter-spacing:1px;background:#FFF8EC!important}
+
+.scan-store-bar{background:var(--amz-navy);color:#fff;border-radius:10px;padding:16px 20px;display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.scan-store-bar .ssb-label{font-size:12px;color:#ccc;text-transform:uppercase;letter-spacing:.5px}
+.scan-store-bar select{padding:8px 12px;border-radius:6px;border:1px solid var(--amz-orange);background:rgba(255,153,0,.15);color:#fff;font-size:14px;font-weight:700;min-width:180px}
+.scan-store-bar select option{background:var(--amz-navy);color:#fff}
+
+.scan-input-wrap{position:relative;margin-bottom:16px}
+.scan-input-big{width:100%;padding:20px 24px;font-size:22px;font-family:monospace;font-weight:700;letter-spacing:2px;border:3px solid var(--amz-orange);border-radius:12px;text-align:center;background:#FFF8EC;box-shadow:0 0 0 4px rgba(255,153,0,.1)}
+.scan-input-big:focus{outline:none;border-color:var(--amz-orange-dark);box-shadow:0 0 0 6px rgba(255,153,0,.2)}
+.scan-input-hint{text-align:center;font-size:12px;color:var(--text-mut);margin-top:8px}
+[data-theme="dark"] .scan-input-big{background:#1F1A0E}
+[data-theme="dark"] .soh-barcode-input{background:#1F1A0E!important}
+
+.scan-card{background:var(--surface);border:2px solid var(--amz-orange);border-radius:12px;padding:20px;margin-bottom:16px;animation:paneIn .25s}
+.scan-card-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px}
+.scan-card-mat{font-size:20px;font-weight:700}
+.scan-card-meta{font-size:12px;color:var(--text-mut);margin-top:2px}
+.scan-card-soh{text-align:right}
+.scan-card-soh .num{font-size:32px;font-weight:700;color:var(--amz-orange-dark);line-height:1}
+.scan-card-soh .lbl{font-size:11px;color:var(--text-mut);text-transform:uppercase}
+.scan-action-toggle{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.scan-action-btn{padding:16px;border-radius:10px;border:2px solid var(--border);background:var(--surface-alt);cursor:pointer;font-size:16px;font-weight:700;transition:all .15s}
+.scan-action-btn.add.active{border-color:var(--success);background:var(--success-bg);color:var(--success)}
+.scan-action-btn.remove.active{border-color:var(--danger);background:var(--danger-bg);color:var(--danger)}
+.scan-qty-row{display:flex;align-items:center;gap:12px;margin-bottom:16px;justify-content:center}
+.scan-qty-btn{width:48px;height:48px;border-radius:10px;border:1px solid var(--border);background:var(--surface-alt);font-size:24px;font-weight:700;cursor:pointer}
+.scan-qty-btn:hover{background:var(--surface-hover);border-color:var(--amz-orange)}
+.scan-qty-input{width:120px;padding:12px;font-size:28px;font-weight:700;text-align:center;border:2px solid var(--border);border-radius:10px}
+.scan-qty-input:focus{outline:none;border-color:var(--amz-orange)}
+.scan-confirm-btn{width:100%;padding:18px;border-radius:12px;border:none;font-size:18px;font-weight:700;cursor:pointer;color:#fff;transition:all .15s}
+.scan-confirm-btn.add{background:var(--success)}
+.scan-confirm-btn.remove{background:var(--danger)}
+.scan-confirm-btn:hover{opacity:.9;transform:translateY(-1px)}
+
+.scan-feed{max-height:400px;overflow-y:auto}
+.scan-feed-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border-light);font-size:13px}
+.scan-feed-item:last-child{border-bottom:none}
+.scan-feed-badge{font-weight:700;padding:2px 8px;border-radius:6px;font-size:12px;min-width:52px;text-align:center}
+.scan-feed-badge.add{background:var(--success-bg);color:var(--success)}
+.scan-feed-badge.remove{background:var(--danger-bg);color:var(--danger)}
+.scan-feed-mat{flex:1;font-weight:600}
+.scan-feed-meta{font-size:11px;color:var(--text-mut)}
+
+.soh-grid-tile{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--border);border-radius:8px;padding:14px}
+.soh-grid-tile.ok{border-left-color:var(--success)}
+.soh-grid-tile.warn{border-left-color:var(--warn)}
+.soh-grid-tile.crit{border-left-color:var(--danger)}
+.soh-grid-tile .sgt-mat{font-size:12px;font-weight:700;color:var(--text-mut)}
+.soh-grid-tile .sgt-num{font-size:26px;font-weight:700;line-height:1.1;margin-top:4px}
+.soh-grid-tile .sgt-cap{font-size:11px;color:var(--text-mut);margin-top:2px}
+
   
 </style>
 </head>
@@ -1537,6 +1601,9 @@ input[type="number"]{
       <button class="tab" data-tab="config" data-view="dashboard" style="display:none">Configuration</button>
       <button class="tab" data-tab="activity" data-view="dashboard" style="display:none">Activity Log</button>
       <button class="tab" data-tab="historical" data-view="history" style="display:none">Historical Data</button>
+      <button class="tab" data-tab="sohScan" data-view="soh" style="display:none">Scan Station</button>
+      <button class="tab" data-tab="sohHistory" data-view="soh" style="display:none">SOH History</button>
+      <button class="tab" data-tab="sohConfig" data-view="soh" style="display:none">Barcode Config</button>
       <button class="tab admin-only" data-tab="admin" id="adminTab" style="display:none">Admin</button>
     </div>
   </div>
@@ -1574,6 +1641,17 @@ input[type="number"]{
           <li>Consumption Reports</li>
         </ul>
         <div class="hub-card-cta">Open History &gt;</div>
+      </div>
+      <div class="hub-card" onclick="enterView('soh')">
+        <div class="hub-card-icon soh-hub-icon">SCAN</div>
+        <div class="hub-card-title">SOH Scanner</div>
+        <div class="hub-card-desc">Real-time stock counting via barcode scan. Add or remove cartons per store with live tracking.</div>
+        <ul class="hub-card-features">
+          <li>Scan &amp; Count (Live)</li>
+          <li>SOH History</li>
+          <li>Barcode Config</li>
+        </ul>
+        <div class="hub-card-cta">Open Scanner &gt;</div>
       </div>
     </div>
   </div>
@@ -2161,6 +2239,37 @@ input[type="number"]{
   </div>
 </section>
 
+<section class="pane" id="sohConfig">
+  <div class="breadcrumb"><a onclick="goToHub()">Operations</a><span class="sep">/</span><a onclick="enterView('soh')">SOH Scanner</a><span class="sep">/</span><span>Barcode Config</span></div>
+  <div class="page-head">
+    <div><h1>Barcode Configuration</h1><p>Assign scan barcodes and vendor details to each material</p></div>
+    <div class="page-actions"><button class="btn btn-cta" onclick="saveSohConfig()">Save All</button></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title"><span class="icon">T</span>Snapshot Schedule</div>
+    </div>
+    <div class="card-body">
+      <p style="font-size:12px;color:var(--text-mut);margin-bottom:12px">Automatic daily snapshot time (in your local timezone). The system captures each store's live count at this time every day.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">
+        <div class="field"><label>Snapshot Time</label><input type="time" id="sohSnapTime" value="21:00"></div>
+        <div class="field"><label>Timezone</label>
+          <select id="sohTimezone">
+            <option value="Africa/Cairo">Egypt (Cairo)</option>
+            <option value="Asia/Riyadh">Saudi Arabia (Riyadh)</option>
+            <option value="Asia/Dubai">UAE (Dubai)</option>
+            <option value="Asia/Kuwait">Kuwait</option>
+            <option value="Asia/Qatar">Qatar</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sohConfigList"></div>
+</section>
+
   
   <footer class="app-footer">
     <div class="ft-left">
@@ -2596,6 +2705,14 @@ let currentPermissions = {role:'none',canView:false,canEdit:false,canManageSetti
 let extraMaterials = [];
 let pendingNewMaterials = [];
 let dailyViewDates = []; // available snapshot dates for daily view
+// ════════ SOH SCANNER STATE ════════
+let sohEvents = [];
+let sohCurrent = {};
+let sohActiveStore = null;
+let sohRealtimeChannel = null;
+let sohScanMaterial = null;
+let sohScanAction = 'add';
+
 let presenceChannel = null;
 let onlineUsers = {};  
 let idleTimer = null;
@@ -3073,6 +3190,7 @@ async function uploadAvatar(e){
   hideSync();
 }
 
+
 async function changeMyPassword(){
   const np=document.getElementById('profileNewPass').value;
   const cp=document.getElementById('profileConfirmPass').value;
@@ -3088,6 +3206,132 @@ async function changeMyPassword(){
   }catch(e){toast('Failed: '+e.message,'error')}
   hideSync();
 }
+
+
+// ════════════════════════════════════════
+// 📟 SOH SCANNER — CONFIG
+// ════════════════════════════════════════
+
+function resolveBarcodeToMaterial(code){
+  const c=normStr(code).toUpperCase();
+  if(!c)return null;
+  for(const name of matKeys()){
+    const m=state.materials[name];
+    if(m.barcode && m.barcode.toUpperCase()===c)return name;
+  }
+  return null;
+}
+
+function renderSohConfig(){
+  const timeEl=document.getElementById('sohSnapTime');
+  const tzEl=document.getElementById('sohTimezone');
+  if(timeEl)timeEl.value=state.sohSnapTime||'21:00';
+  if(tzEl)tzEl.value=state.sohTimezone||'Africa/Cairo';
+
+  const keys=matKeys();
+  let h='';
+  keys.forEach(k=>{
+    const m=state.materials[k];
+    const sk=stockKey(k);
+    const enabled=m.scanEnabled!==false;
+    h+='<div class="soh-cfg-card">'+
+      '<div class="soh-cfg-head">'+
+        '<div><div class="soh-cfg-name">'+matDisplay(k)+'</div>'+
+        '<div style="font-size:11px;color:var(--text-mut)">'+matIcon(k)+' · '+(m.kind==='forecasted'?'Forecasted':'Count-Only')+'</div></div>'+
+        '<label class="toggle-switch"><input type="checkbox" '+(enabled?'checked':'')+' id="se_'+sk+'"><span class="toggle-slider"></span></label>'+
+      '</div>'+
+      '<div class="soh-cfg-grid">'+
+        '<div class="soh-cfg-field"><label>Barcode / SKU</label><input class="soh-barcode-input" type="text" id="bc_'+sk+'" value="'+((m.barcode||'').replace(/"/g,'&quot;'))+'" placeholder="e.g. SPLLBBIP"></div>'+
+        '<div class="soh-cfg-field"><label>Qty per Carton</label><input type="number" id="qpc_'+sk+'" value="'+(m.qtyPerCarton||m.units||'')+'" placeholder="250"></div>'+
+        '<div class="soh-cfg-field"><label>UOM</label><input type="text" id="uom_'+sk+'" value="'+((m.uom||'EA').replace(/"/g,'&quot;'))+'"></div>'+
+        '<div class="soh-cfg-field"><label>Packaging Category</label><input type="text" id="pkg_'+sk+'" value="'+((m.packagingCategory||'').replace(/"/g,'&quot;'))+'" placeholder="Brown Bags"></div>'+
+        '<div class="soh-cfg-field"><label>Vendor</label><input type="text" id="vnd_'+sk+'" value="'+((m.vendor||'').replace(/"/g,'&quot;'))+'" placeholder="Industria Packaging"></div>'+
+        '<div class="soh-cfg-field"><label>HS Code</label><input type="text" id="hs_'+sk+'" value="'+((m.hscode||'').replace(/"/g,'&quot;'))+'"></div>'+
+        '<div class="soh-cfg-field"><label>Carton Weight (kg)</label><input type="number" step="0.01" id="cw_'+sk+'" value="'+(m.cartonWeight||'')+'"></div>'+
+        '<div class="soh-cfg-field"><label>Carton CBM</label><input type="number" step="0.001" id="ccbm_'+sk+'" value="'+(m.cartonCBM||'')+'"></div>'+
+        '<div class="soh-cfg-field"><label>Carton Dimensions</label><input type="text" id="cdim_'+sk+'" value="'+((m.cartonDimensions||'').replace(/"/g,'&quot;'))+'" placeholder="W30 x G14 x L41 cm"></div>'+
+      '</div>'+
+    '</div>';
+  });
+  document.getElementById('sohConfigList').innerHTML=h||'<div class="empty"><div class="ic">No Materials</div><p>Add materials in the Dashboard Configuration first.</p></div>';
+}
+
+async function saveSohConfig(){
+  if(!canManageSettings()){denyAccess('manage settings');return}
+  const seen={};
+  let dupError=null;
+  matKeys().forEach(k=>{
+    const sk=stockKey(k);
+    const bc=(document.getElementById('bc_'+sk)?.value||'').trim().toUpperCase();
+    if(bc){
+      if(seen[bc]){dupError=bc+' (used by '+seen[bc]+' and '+k+')'}
+      seen[bc]=k;
+    }
+  });
+  if(dupError){toast('Duplicate barcode: '+dupError,'error');return}
+
+  matKeys().forEach(k=>{
+    const sk=stockKey(k);
+    const m=state.materials[k];
+    if(!m)return;
+    const g=id=>document.getElementById(id+'_'+sk);
+    m.barcode=(g('bc')?.value||'').trim();
+    m.qtyPerCarton=+g('qpc')?.value||m.units||1;
+    m.uom=(g('uom')?.value||'EA').trim();
+    m.packagingCategory=(g('pkg')?.value||'').trim();
+    m.vendor=(g('vnd')?.value||'').trim();
+    m.hscode=(g('hs')?.value||'').trim();
+    m.cartonWeight=+g('cw')?.value||null;
+    m.cartonCBM=+g('ccbm')?.value||null;
+    m.cartonDimensions=(g('cdim')?.value||'').trim();
+    m.scanEnabled=g('se')?.checked!==false;
+  });
+
+  state.sohSnapTime=document.getElementById('sohSnapTime')?.value||'21:00';
+  state.sohTimezone=document.getElementById('sohTimezone')?.value||'Africa/Cairo';
+
+  await saveMaterialsCloud();
+  await saveSettingCloud('sohSnapTime',state.sohSnapTime);
+  await saveSettingCloud('sohTimezone',state.sohTimezone);
+  toast('SOH config saved');
+}
+
+function initSohScanner(){
+  toast('Scan Station coming next — Config is ready');
+}
+
+function enterSohView(){
+  currentView='soh';
+  document.querySelectorAll('.tab').forEach(t=>{
+    const v=t.dataset.view;
+    if(v==='soh'){t.style.display='inline-flex';t.classList.remove('active')}
+    else if(v==='hub'){t.style.display='inline-flex'}
+    else if(v==='dashboard'||v==='history'){t.style.display='none';t.classList.remove('active')}
+  });
+  if(isSuperAdmin()){
+    const adminTab=document.getElementById('adminTab');
+    if(adminTab)adminTab.style.display='inline-flex';
+  }
+
+  // Phase 2: Scan pane not built yet — land on Config tab
+  const scanPane=document.getElementById('sohScan');
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
+  if(scanPane){
+    const scanTab=document.querySelector('[data-tab="sohScan"]');
+    if(scanTab)scanTab.classList.add('active');
+    scanPane.classList.add('active');
+    window.scrollTo(0,0);
+    initSohScanner();
+  } else {
+    const cfgTab=document.querySelector('[data-tab="sohConfig"]');
+    if(cfgTab)cfgTab.classList.add('active');
+    const cfgPane=document.getElementById('sohConfig');
+    if(cfgPane)cfgPane.classList.add('active');
+    window.scrollTo(0,0);
+    renderSohConfig();
+  }
+
+
 
   
 // ============================================
@@ -3163,6 +3407,9 @@ function enterView(view){
     document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
     document.getElementById('historical').classList.add('active');
     initHistoricalView();
+  } else if(view==='soh'){
+    enterSohView();
+    return;
   }
   window.scrollTo(0,0);
 }
@@ -3707,6 +3954,8 @@ async function loadFromCloud(){
       else if(s.key==='cons'&&s.value)state.cons=s.value;
       else if(s.key==='materials'&&s.value)state.materials=(typeof s.value==='object'&&!Array.isArray(s.value))?s.value:{};
       else if(s.key==='extraMaterials'&&s.value)extraMaterials=Array.isArray(s.value)?s.value:[];
+      else if(s.key==='sohSnapTime')state.sohSnapTime=s.value||'21:00';
+      else if(s.key==='sohTimezone')state.sohTimezone=s.value||'Africa/Cairo';
     });
     // Auto-migrate: if no materials defined yet, convert old cons (9 core) to dynamic
     if(!state.materials||Object.keys(state.materials).length===0){
@@ -7116,14 +7365,19 @@ document.querySelectorAll('.tab').forEach(el=>{
     document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
     el.classList.add('active');
     document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
+    const paneEl=document.getElementById(tabId);
+    if(paneEl)paneEl.classList.add('active');
     window.scrollTo(0,0);
     if(tabId==='activity')renderActivity();
     if(tabId==='stock')renderStockUpdateInfo();
     if(tabId==='historical')initHistoricalView();
     if(tabId==='replenlog'){renderReplenLog();renderWarehouse();renderWarehouseLog();}
+    if(tabId==='sohConfig')renderSohConfig();
+    if(tabId==='sohScan')initSohScanner();
+    if(tabId==='sohHistory')toast('SOH History coming in Phase 6');
   };
 });
+
 
 document.querySelectorAll('.subtab').forEach(el=>{
   el.onclick=()=>{
