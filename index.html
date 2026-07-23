@@ -2239,6 +2239,66 @@ input[type="number"]{
   </div>
 </section>
 
+
+<!-- ═══════ SCAN STATION ═══════ -->
+<section class="pane" id="sohScan">
+  <div class="breadcrumb"><a onclick="goToHub()">Operations</a><span class="sep">/</span><a onclick="enterView('soh')">SOH Scanner</a><span class="sep">/</span><span>Scan Station</span></div>
+  <div class="page-head">
+    <div><h1>Scan Station</h1><p>Scan a barcode, then add or remove cartons — updates live</p></div>
+  </div>
+
+  <div class="scan-store-bar">
+    <span class="ssb-label">Active Store</span>
+    <select id="sohStoreSelect" onchange="onSohStoreChange()"></select>
+    <span class="online-indicator" style="margin-left:auto" title="Live count">
+      <span class="online-dot"></span> Live
+    </span>
+  </div>
+
+  <div class="scan-input-wrap">
+    <input class="scan-input-big" id="sohScanInput" type="text"
+           placeholder="SCAN OR TYPE BARCODE" autocomplete="off"
+           onkeydown="if(event.key==='Enter')handleScanInput()">
+    <div class="scan-input-hint">Focus is auto-kept here. Scan a barcode or type it and press Enter.</div>
+  </div>
+
+  <div id="sohScanCard"></div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title"><span class="icon">RT</span>Real-Time SOH — <span id="sohGridStoreName">-</span></div>
+      <button class="btn btn-sm" onclick="renderSohGrid()">Refresh</button>
+    </div>
+    <div class="card-body">
+      <div id="sohGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><div class="card-title"><span class="icon">FD</span>Recent Activity</div></div>
+    <div class="scan-feed" id="sohFeed"></div>
+  </div>
+</section>
+
+<!-- ═══════ SOH HISTORY ═══════ -->
+<section class="pane" id="sohHistory">
+  <div class="breadcrumb"><a onclick="goToHub()">Operations</a><span class="sep">/</span><a onclick="enterView('soh')">SOH Scanner</a><span class="sep">/</span><span>SOH History</span></div>
+  <div class="page-head">
+    <div><h1>SOH History</h1><p>All scan events across stores</p></div>
+    <div class="page-actions"><button class="btn btn-cta" onclick="exportSohHistoryCSV()">Export CSV</button></div>
+  </div>
+  <div class="card">
+    <div class="filters">
+      <select class="select" id="sohHistStore" onchange="renderSohHistory()"><option value="">All Stores</option></select>
+      <select class="select" id="sohHistMat" onchange="renderSohHistory()"><option value="">All Materials</option></select>
+      <div style="margin-left:auto;color:var(--text-mut);font-size:12px" id="sohHistCount"></div>
+    </div>
+    <div class="tbl-wrap"><div class="tbl-scroll"><table id="tblSohHistory"></table></div></div>
+  </div>
+</section>
+
+  
+  
 <section class="pane" id="sohConfig">
   <div class="breadcrumb"><a onclick="goToHub()">Operations</a><span class="sep">/</span><a onclick="enterView('soh')">SOH Scanner</a><span class="sep">/</span><span>Barcode Config</span></div>
   <div class="page-head">
@@ -3296,9 +3356,279 @@ async function saveSohConfig(){
   toast('SOH config saved');
 }
 
-function initSohScanner(){
-  toast('Scan Station coming next — Config is ready');
+
+// ════════════════════════════════════════
+// 📟 SOH SCANNER — SCAN STATION + LIVE COUNT
+// ════════════════════════════════════════
+
+async function initSohScanner(){
+  // Populate store dropdown
+  const sel=document.getElementById('sohStoreSelect');
+  const live=state.stores.filter(s=>s.status==='Live')
+    .sort((a,b)=>a.code.localeCompare(b.code));
+  sel.innerHTML=live.map(s=>'<option value="'+s.code+'">'+s.code+' — '+(s.area||'')+'</option>').join('')
+    || '<option value="">No live stores</option>';
+
+  // Restore last active store or pick first
+  const saved=localStorage.getItem('sohActiveStore_'+activeWorkspace.id);
+  sohActiveStore = (saved && live.find(s=>s.code===saved)) ? saved : (live[0]?.code||null);
+  if(sohActiveStore)sel.value=sohActiveStore;
+
+  await loadSohEvents();
+  subscribeSohRealtime();
+  renderSohGrid();
+  renderSohFeed();
+  clearScanCard();
+  focusScanInput();
 }
+
+function focusScanInput(){
+  const el=document.getElementById('sohScanInput');
+  if(el)setTimeout(()=>el.focus(),100);
+}
+
+function onSohStoreChange(){
+  sohActiveStore=document.getElementById('sohStoreSelect').value;
+  localStorage.setItem('sohActiveStore_'+activeWorkspace.id,sohActiveStore);
+  renderSohGrid();
+  renderSohFeed();
+  clearScanCard();
+  focusScanInput();
+}
+
+// ── Load events & compute live counts ──
+async function loadSohEvents(){
+  if(!activeWorkspace){sohEvents=[];return}
+  try{
+    const {data,error}=await supabaseClient.from('soh_events')
+      .select('*').eq('workspace_id',activeWorkspace.id)
+      .order('created_at',{ascending:false}).limit(3000);
+    if(error)throw error;
+    sohEvents=data||[];
+  }catch(e){sohEvents=[];console.error('SOH load:',e.message)}
+  recomputeSohCurrent();
+}
+
+// Build sohCurrent[store][matKey] = net cartons
+function recomputeSohCurrent(){
+  sohCurrent={};
+  // start from today's daily stock as baseline
+  state.stores.forEach(s=>{
+    sohCurrent[s.code]={};
+    matKeys().forEach(m=>{
+      sohCurrent[s.code][stockKey(m)]=readDailyStock(s.code,m);
+    });
+  });
+  // apply scan events (newest→oldest, so reverse to apply chronologically)
+  [...sohEvents].reverse().forEach(ev=>{
+    if(!sohCurrent[ev.store_code])sohCurrent[ev.store_code]={};
+    const k=ev.material_key;
+    const cur=+sohCurrent[ev.store_code][k]||0;
+    const delta=ev.action==='add'?(+ev.cartons):-(+ev.cartons);
+    sohCurrent[ev.store_code][k]=cur+delta;
+  });
+}
+
+function getSohCount(store,matName){
+  return +sohCurrent[store]?.[stockKey(matName)]||0;
+}
+
+// ── Handle a scan ──
+function handleScanInput(){
+  const input=document.getElementById('sohScanInput');
+  const code=input.value.trim();
+  input.value='';
+  if(!code)return;
+  if(!sohActiveStore){toast('Select a store first','error');return}
+  const matName=resolveBarcodeToMaterial(code);
+  if(!matName){
+    toast('Unknown barcode: '+code,'error');
+    focusScanInput();
+    return;
+  }
+  showScanCard(matName);
+  focusScanInput();
+}
+
+function showScanCard(matName){
+  sohScanMaterial=matName;
+  sohScanAction='add';
+  const m=state.materials[matName];
+  const cur=getSohCount(sohActiveStore,matName);
+  const el=document.getElementById('sohScanCard');
+  el.innerHTML=
+    '<div class="scan-card"><div class="scan-card-head">'+
+      '<div><div class="scan-card-mat">'+matDisplay(matName)+'</div>'+
+      '<div class="scan-card-meta">'+(m.barcode||'-')+' · '+(m.vendor||'')+'</div></div>'+
+      '<div class="scan-card-soh"><div class="num">'+cur+'</div><div class="lbl">current cartons</div></div>'+
+    '</div>'+
+    '<div class="scan-action-toggle">'+
+      '<button class="scan-action-btn add active" id="sohBtnAdd" onclick="setScanAction(\'add\')">+ ADD</button>'+
+      '<button class="scan-action-btn remove" id="sohBtnRemove" onclick="setScanAction(\'remove\')">− REMOVE</button>'+
+    '</div>'+
+    '<div class="scan-qty-row">'+
+      '<button class="scan-qty-btn" onclick="adjustScanQty(-1)">−</button>'+
+      '<input class="scan-qty-input" id="sohQty" type="number" value="1" min="1">'+
+      '<button class="scan-qty-btn" onclick="adjustScanQty(1)">+</button>'+
+    '</div>'+
+    '<button class="scan-confirm-btn add" id="sohConfirmBtn" onclick="confirmScan()">Confirm ADD</button>'+
+    '</div>';
+}
+
+function clearScanCard(){
+  const el=document.getElementById('sohScanCard');
+  if(el)el.innerHTML='';
+  sohScanMaterial=null;
+}
+
+function setScanAction(action){
+  sohScanAction=action;
+  document.getElementById('sohBtnAdd').classList.toggle('active',action==='add');
+  document.getElementById('sohBtnRemove').classList.toggle('active',action==='remove');
+  const btn=document.getElementById('sohConfirmBtn');
+  btn.className='scan-confirm-btn '+action;
+  btn.textContent='Confirm '+(action==='add'?'ADD':'REMOVE');
+}
+
+function adjustScanQty(delta){
+  const el=document.getElementById('sohQty');
+  el.value=Math.max(1,(+el.value||1)+delta);
+}
+
+async function confirmScan(){
+  if(!canEdit()){denyAccess('scan');return}
+  if(!sohScanMaterial||!sohActiveStore)return;
+  const qty=+document.getElementById('sohQty').value||1;
+  if(qty<=0)return;
+  const matName=sohScanMaterial;
+  showSync('Saving scan...');
+  try{
+    const {data,error}=await supabaseClient.from('soh_events').insert({
+      workspace_id:activeWorkspace.id,
+      store_code:sohActiveStore,
+      material_name:matName,
+      material_key:stockKey(matName),
+      action:sohScanAction,
+      cartons:qty,
+      scanned_by:currentUser.id,
+      scanned_by_email:currentUser.email
+    }).select().single();
+    if(error)throw error;
+    // local update (realtime will also fire but we update immediately)
+    sohEvents.unshift(data);
+    const k=stockKey(matName);
+    const cur=+sohCurrent[sohActiveStore]?.[k]||0;
+    if(!sohCurrent[sohActiveStore])sohCurrent[sohActiveStore]={};
+    sohCurrent[sohActiveStore][k]=cur+(sohScanAction==='add'?qty:-qty);
+    renderSohGrid();renderSohFeed();
+    toast((sohScanAction==='add'?'Added ':'Removed ')+qty+' '+matDisplay(matName));
+    clearScanCard();
+  }catch(e){toast('Scan failed: '+e.message,'error')}
+  hideSync();
+  focusScanInput();
+}
+
+// ── Real-Time subscription ──
+function subscribeSohRealtime(){
+  if(sohRealtimeChannel){supabaseClient.removeChannel(sohRealtimeChannel);sohRealtimeChannel=null}
+  sohRealtimeChannel=supabaseClient.channel('soh_'+activeWorkspace.id)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'soh_events',
+        filter:'workspace_id=eq.'+activeWorkspace.id},payload=>{
+      const ev=payload.new;
+      // avoid double-count if it's our own just-inserted event
+      if(sohEvents.some(e=>e.id===ev.id))return;
+      sohEvents.unshift(ev);
+      const k=ev.material_key;
+      if(!sohCurrent[ev.store_code])sohCurrent[ev.store_code]={};
+      const cur=+sohCurrent[ev.store_code][k]||0;
+      sohCurrent[ev.store_code][k]=cur+(ev.action==='add'?+ev.cartons:-+ev.cartons);
+      if(ev.store_code===sohActiveStore){renderSohGrid();renderSohFeed()}
+    }).subscribe();
+}
+
+// ── Real-Time Overview Grid ──
+function renderSohGrid(){
+  const nameEl=document.getElementById('sohGridStoreName');
+  if(nameEl)nameEl.textContent=sohActiveStore||'-';
+  const grid=document.getElementById('sohGrid');
+  if(!grid)return;
+  if(!sohActiveStore){grid.innerHTML='<div class="empty"><div class="ic">No Store</div></div>';return}
+  const store=state.stores.find(s=>s.code===sohActiveStore);
+  let h='';
+  matKeys().forEach(m=>{
+    const cnt=getSohCount(sohActiveStore,m);
+    const cap=+store?.matCap?.[stockKey(m)]||0;
+    let cls='';
+    if(cap>0){
+      const pct=cnt/cap;
+      cls=cnt<=0?'crit':pct<0.2?'warn':'ok';
+    }
+    h+='<div class="soh-grid-tile '+cls+'">'+
+      '<div class="sgt-mat">'+matDisplay(m)+'</div>'+
+      '<div class="sgt-num">'+cnt+'</div>'+
+      '<div class="sgt-cap">'+(cap>0?'of '+cap+' cap':'cartons')+'</div>'+
+    '</div>';
+  });
+  grid.innerHTML=h||'<div class="empty"><div class="ic">No Materials</div></div>';
+}
+
+// ── Activity Feed ──
+function renderSohFeed(){
+  const feed=document.getElementById('sohFeed');
+  if(!feed)return;
+  const list=sohEvents.filter(e=>e.store_code===sohActiveStore).slice(0,30);
+  if(!list.length){feed.innerHTML='<div class="empty"><div class="ic">No Activity</div></div>';return}
+  feed.innerHTML=list.map(e=>
+    '<div class="scan-feed-item">'+
+      '<span class="scan-feed-badge '+e.action+'">'+(e.action==='add'?'+'+e.cartons:'−'+e.cartons)+'</span>'+
+      '<span class="scan-feed-mat">'+matDisplay(e.material_name)+'</span>'+
+      '<span class="scan-feed-meta">'+(e.scanned_by_email||'').split('@')[0]+' · '+formatLogTime(e.created_at)+'</span>'+
+    '</div>').join('');
+}
+
+// ── SOH History tab ──
+function renderSohHistory(){
+  const sf=document.getElementById('sohHistStore');
+  if(sf&&sf.options.length<=1){
+    sf.innerHTML='<option value="">All Stores</option>'+
+      state.stores.map(s=>'<option value="'+s.code+'">'+s.code+'</option>').join('');
+  }
+  const mf=document.getElementById('sohHistMat');
+  if(mf&&mf.options.length<=1){
+    mf.innerHTML='<option value="">All Materials</option>'+
+      matKeys().map(m=>'<option value="'+m+'">'+matDisplay(m)+'</option>').join('');
+  }
+  const storeF=sf?.value||'', matF=mf?.value||'';
+  let rows=sohEvents.filter(e=>
+    (!storeF||e.store_code===storeF)&&(!matF||e.material_name===matF));
+  document.getElementById('sohHistCount').textContent=rows.length+' events';
+  let h='<tr><th>Time</th><th>Store</th><th>Material</th><th>Action</th><th class="nums">Cartons</th><th>By</th></tr>';
+  if(!rows.length)h+='<tr><td colspan="6" style="padding:40px;text-align:center;color:var(--text-mut)">No scan events</td></tr>';
+  else rows.slice(0,500).forEach(e=>{
+    h+='<tr><td class="mono">'+new Date(e.created_at).toLocaleString()+'</td>'+
+      '<td><b>'+e.store_code+'</b></td><td>'+matDisplay(e.material_name)+'</td>'+
+      '<td><span class="scan-feed-badge '+e.action+'">'+e.action.toUpperCase()+'</span></td>'+
+      '<td class="nums">'+e.cartons+'</td>'+
+      '<td style="font-size:12px;color:var(--text-mut)">'+(e.scanned_by_email||'-').split('@')[0]+'</td></tr>';
+  });
+  document.getElementById('tblSohHistory').innerHTML=h;
+}
+
+function exportSohHistoryCSV(){
+  if(!sohEvents.length){toast('No data','error');return}
+  const wsName=activeWorkspace?.name||'ws';
+  let csv='Time,Store,Material,Action,Cartons,By\n';
+  sohEvents.forEach(e=>{
+    csv+='"'+new Date(e.created_at).toLocaleString()+'","'+e.store_code+'","'+
+      e.material_name+'","'+e.action+'",'+e.cartons+',"'+(e.scanned_by_email||'')+'"\n';
+  });
+  const b=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);
+  a.download='soh_history_'+wsName+'.csv';a.click();
+  toast('Exported');
+}
+
+
 
 function enterSohView(){
   currentView='soh';
@@ -3312,24 +3642,12 @@ function enterSohView(){
     const adminTab=document.getElementById('adminTab');
     if(adminTab)adminTab.style.display='inline-flex';
   }
-
-  // Phase 2: Scan pane not built yet — land on Config tab
-  const scanPane=document.getElementById('sohScan');
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
-  if(scanPane){
-    const scanTab=document.querySelector('[data-tab="sohScan"]');
-    if(scanTab)scanTab.classList.add('active');
-    scanPane.classList.add('active');
-    window.scrollTo(0,0);
-    initSohScanner();
-  } else {
-    const cfgTab=document.querySelector('[data-tab="sohConfig"]');
-    if(cfgTab)cfgTab.classList.add('active');
-    const cfgPane=document.getElementById('sohConfig');
-    if(cfgPane)cfgPane.classList.add('active');
-    window.scrollTo(0,0);
-    renderSohConfig();
-  }
+  document.querySelector('[data-tab="sohScan"]').classList.add('active');
+  document.getElementById('sohScan').classList.add('active');
+  window.scrollTo(0,0);
+  initSohScanner();
+ }
 }
 
 
@@ -7375,7 +7693,7 @@ document.querySelectorAll('.tab').forEach(el=>{
     if(tabId==='replenlog'){renderReplenLog();renderWarehouse();renderWarehouseLog();}
     if(tabId==='sohConfig')renderSohConfig();
     if(tabId==='sohScan')initSohScanner();
-    if(tabId==='sohHistory')toast('SOH History coming in Phase 6');
+    if(tabId==='sohHistory')renderSohHistory();
   };
 });
 
