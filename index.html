@@ -1730,7 +1730,12 @@ input[type="number"]{
   <div class="breadcrumb"><a onclick="goToHub()">Operations</a><span class="sep">/</span><a onclick="enterView('dashboard')">Dashboard</a><span class="sep">/</span><span>Stores</span></div>
   <div class="page-head">
     <div><h1>Store Network Management</h1><p>Manage locations, capacities, and launch status</p></div>
-    <div class="page-actions"><button class="btn btn-action" onclick="openStore()">+ Add New Store</button></div>
+    <div class="page-actions">
+      <button class="btn" onclick="downloadStoresTemplate()" title="Download Excel template for bulk store upload">Template</button>
+      <button class="btn btn-action" onclick="document.getElementById('storesBulkFile').click()" title="Upload Excel file with stores">Bulk Upload</button>
+      <input type="file" id="storesBulkFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="importStoresBulk(event)">
+      <button class="btn btn-cta" onclick="openStore()">+ Add New Store</button>
+    </div>
   </div>
   <div class="card">
     <div class="filters">
@@ -2421,6 +2426,22 @@ input[type="number"]{
   </div>
 </div>
 
+  <div class="modal" id="mdStoresBulk">
+  <div class="modal-box" style="max-width:840px">
+    <div class="modal-head">
+      <h3>Stores Bulk Upload Preview</h3>
+      <button class="modal-close" onclick="closeStoresBulkModal()">X</button>
+    </div>
+    <div class="modal-body">
+      <div id="storesBulkPreview"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeStoresBulkModal()">Cancel</button>
+      <button class="btn btn-cta" id="storesBulkConfirmBtn" onclick="confirmStoresBulkImport()">Import</button>
+    </div>
+  </div>
+</div>
+  
 <div class="modal" id="mdStockUpdate">
   <div class="modal-box">
     <div class="modal-head">
@@ -3067,15 +3088,18 @@ function applyButtonPermissions(){
     if(!canEdit()){btn.disabled=true;btn.title='Need Member role+';btn.style.opacity='0.5';btn.style.cursor='not-allowed'}
     else{btn.disabled=false;btn.title='';btn.style.opacity='1';btn.style.cursor='pointer'}
   });
-  document.querySelectorAll('[onclick*="xlsFile"], [onclick*="fcXlsFile"], [onclick*="stockBulkFile"]').forEach(btn=>{
+
+  document.querySelectorAll('[onclick*="xlsFile"], [onclick*="fcXlsFile"], [onclick*="stockBulkFile"], [onclick*="storesBulkFile"]').forEach(btn=>{
     if(!canEdit()){btn.disabled=true;btn.title='Need Member role+';btn.style.opacity='0.5';btn.style.cursor='not-allowed'}
     else{btn.disabled=false;btn.title='';btn.style.opacity='1';btn.style.cursor='pointer'}
   });
+
   document.querySelectorAll('[onclick*="resetWorkspaceData"]').forEach(btn=>{
     if(!canDeleteWorkspace()){btn.disabled=true;btn.title='Owner only';btn.style.opacity='0.5';btn.style.cursor='not-allowed'}
     else{btn.disabled=false;btn.title='';btn.style.opacity='1';btn.style.cursor='pointer'}
   });
-  document.querySelectorAll('[onclick*="bulkFc"], [onclick*="markStockUpdated"], [onclick*="manualSnapshot"]').forEach(btn=>{
+
+  document.querySelectorAll('[onclick*="bulkFc"], [onclick*="markStockUpdated"], [onclick*="manualSnapshot"], [onclick*="openReplenEntry"], [onclick*="openWarehouseAdd"]').forEach(btn=>{
     if(!canEdit()){btn.disabled=true;btn.title='Need Member role+';btn.style.opacity='0.5';btn.style.cursor='not-allowed'}
     else{btn.disabled=false;btn.title='';btn.style.opacity='1';btn.style.cursor='pointer'}
   });
@@ -6772,6 +6796,253 @@ function downloadStockTemplate(){
   toast('Template downloaded');
 }
 
+
+// ============================================
+// STORES BULK UPLOAD
+// ============================================
+
+let pendingStoresImport = null;
+
+function closeStoresBulkModal(){
+  const m=document.getElementById('mdStoresBulk');
+  if(m)m.classList.remove('show');
+  pendingStoresImport=null;
+  const f=document.getElementById('storesBulkFile');
+  if(f)f.value='';
+}
+
+function downloadStoresTemplate(){
+  if(!activeWorkspace){toast('No workspace','error');return}
+  const wsCode=activeWorkspace.code||'XX';
+  const mats=matKeys();
+  const header=['Store Code','Area','Status','OB Launch','Store Capacity',...mats];
+  const rows=[header];
+
+  // sample rows (delete before upload)
+  const samples=[
+    ['QCA1','New Cairo','Live','2025-01-15',100],
+    ['QCA2','Nasr City','Not Live','',80]
+  ];
+  samples.forEach(s=>{const r=[...s];mats.forEach(()=>r.push(''));rows.push(r)});
+  for(let i=0;i<10;i++)rows.push(new Array(header.length).fill(''));
+
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=header.map((h,i)=>({wch:i===1?24:i===0?13:16}));
+  XLSX.utils.book_append_sheet(wb,ws,'Stores');
+
+  const info=[
+    ['STORES BULK UPLOAD — INSTRUCTIONS'],[''],
+    ['1. "Store Code" is REQUIRED and must be unique (e.g. QCA1).'],
+    ['2. "Status" must be Live or Not Live (blank = Live).'],
+    ['3. "Store Capacity" = total capacity (number, optional).'],
+    ['4. Material columns are OPTIONAL per-material carton capacities.'],
+    ['   Leave blank or 0 = no limit for that material.'],
+    ['5. Existing store codes will be UPDATED; new codes will be CREATED.'],
+    ['6. Delete the two sample rows before uploading.'],[''],
+    ['Materials in this workspace:'],
+    ...mats.map(m=>['  - '+m])
+  ];
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(info),'Instructions');
+
+  XLSX.writeFile(wb,'stores_template_'+wsCode+'_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  toast('Template downloaded');
+}
+
+async function importStoresBulk(e){
+  if(!canEdit()){denyAccess('import stores');e.target.value='';return}
+  const f=e.target.files[0];
+  if(!f)return;
+  showSync('Reading file...');
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      let wb;
+      if(f.name.toLowerCase().endsWith('.csv')){
+        const text=new TextDecoder().decode(new Uint8Array(ev.target.result));
+        wb=XLSX.read(text,{type:'string',cellDates:true});
+      }else{
+        wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array',cellDates:true});
+      }
+      const result=parseStoresBulkFile(wb,f.name);
+      hideSync();
+      showStoresPreview(result);
+    }catch(err){hideSync();toast('Failed: '+err.message,'error')}
+  };
+  r.readAsArrayBuffer(f);
+  e.target.value='';
+}
+
+function parseStoresBulkFile(wb,fileName){
+  const result={fileName,valid:[],skipped:[],errors:[],newCount:0,updateCount:0,matColCount:0};
+  let target=null;
+  for(const sheetName of wb.SheetNames){
+    if(/instruction/i.test(sheetName))continue;
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,defval:null,raw:false});
+    if(!rows.length)continue;
+    for(let i=0;i<Math.min(rows.length,8);i++){
+      const cells=(rows[i]||[]).map(c=>normKey(c));
+      if(cells.some(c=>c==='storecode'||c==='store'||c==='sitecode'||c==='storeid')){
+        target={rows,headerIdx:i};break;
+      }
+    }
+    if(target)break;
+  }
+  if(!target){
+    result.errors.push({row:0,reason:'No header row found — need a "Store Code" column'});
+    return result;
+  }
+
+  const raw=target.rows[target.headerIdx]||[];
+  const hdr=raw.map(c=>normKey(c));
+  const codeCol=hdr.findIndex(c=>c==='storecode'||c==='store'||c==='sitecode'||c==='storeid');
+  const areaCol=hdr.findIndex(c=>c==='area'||c==='location'||c==='arealocation');
+  const statusCol=hdr.findIndex(c=>c==='status');
+  const launchCol=hdr.findIndex(c=>c==='oblaunch'||c==='launch'||c==='launchdate');
+  const capCol=hdr.findIndex(c=>c==='storecapacity'||c==='capacity'||c==='totalcapacity'||c==='cap');
+
+  // detect material capacity columns
+  const matCols={};
+  raw.forEach((h,i)=>{
+    if([codeCol,areaCol,statusCol,launchCol,capCol].indexOf(i)>=0)return;
+    const m=matchMaterialColumn(h);
+    if(m)matCols[i]=stockKey(m);
+  });
+  result.matColCount=Object.keys(matCols).length;
+
+  const seen=new Set();
+  for(let i=target.headerIdx+1;i<target.rows.length;i++){
+    const row=target.rows[i];
+    if(!row||row.every(c=>c==null||c===''))continue;
+    const rowNum=i+1;
+
+    const code=normStr(row[codeCol]).toUpperCase();
+    if(!code){result.skipped.push({row:rowNum,reason:'Empty store code'});continue}
+    if(seen.has(code)){result.errors.push({row:rowNum,reason:'Duplicate code "'+code+'" in file'});continue}
+    seen.add(code);
+
+    const area=areaCol>=0?normStr(row[areaCol]):'';
+    const status=normalizeStatus(statusCol>=0?row[statusCol]:'Live');
+    let launch='';
+    if(launchCol>=0&&row[launchCol]){
+      launch=parseAnyDate(row[launchCol])||normStr(row[launchCol]);
+    }
+    const capVal=capCol>=0?toNum(row[capCol]):null;
+    if(capCol>=0&&row[capCol]&&capVal==null){
+      result.errors.push({row:rowNum,reason:'Invalid capacity for "'+code+'"'});continue;
+    }
+
+    const matCap={};let hasMatCap=false;
+    Object.entries(matCols).forEach(([ciStr,key])=>{
+      const v=toNum(row[+ciStr]);
+      if(v!=null&&v>0){matCap[key]=Math.round(v);hasMatCap=true}
+    });
+
+    const isNew=!state.stores.find(s=>s.code===code);
+    if(isNew)result.newCount++;else result.updateCount++;
+    result.valid.push({code,area,status,launch,cap:capVal,matCap,hasMatCap,isNew});
+  }
+  return result;
+}
+
+function showStoresPreview(result){
+  pendingStoresImport=result;
+  const el=document.getElementById('storesBulkPreview');
+  const btn=document.getElementById('storesBulkConfirmBtn');
+
+  let html='<div class="stock-meta"><b>File:</b> '+result.fileName+
+    ' &nbsp;·&nbsp; <b>Workspace:</b> '+activeWorkspace.name+
+    (result.matColCount?' &nbsp;·&nbsp; <b>Material capacity columns:</b> '+result.matColCount:'')+'</div>';
+
+  html+='<div class="stock-preview-stats">'+
+    '<div class="stock-stat valid"><div class="stock-stat-num">'+result.newCount+'</div><div class="stock-stat-lbl">New</div></div>'+
+    '<div class="stock-stat info"><div class="stock-stat-num">'+result.updateCount+'</div><div class="stock-stat-lbl">Updates</div></div>'+
+    '<div class="stock-stat skip"><div class="stock-stat-num">'+result.skipped.length+'</div><div class="stock-stat-lbl">Skipped</div></div>'+
+    '<div class="stock-stat error"><div class="stock-stat-num">'+result.errors.length+'</div><div class="stock-stat-lbl">Errors</div></div>'+
+    '</div>';
+
+  if(result.valid.length){
+    html+='<div style="font-weight:700;font-size:13px;margin-bottom:6px">Preview (first 15):</div>'+
+      '<div class="stock-table-wrap"><table><thead><tr><th>Code</th><th>Area</th><th>Status</th><th>Launch</th><th class="nums">Cap</th><th class="nums">Mat. Caps</th><th>Action</th></tr></thead><tbody>';
+    result.valid.slice(0,15).forEach(v=>{
+      const mc=Object.keys(v.matCap).length;
+      html+='<tr><td><b>'+v.code+'</b></td><td>'+(v.area||'-')+'</td>'+
+        '<td><span class="pill '+(v.status==='Live'?'pill-live':'pill-nl')+'">'+v.status+'</span></td>'+
+        '<td class="mono">'+(v.launch||'-')+'</td>'+
+        '<td class="nums">'+(v.cap!=null?v.cap:'-')+'</td>'+
+        '<td class="nums">'+(mc||'-')+'</td>'+
+        '<td>'+(v.isNew?'<span class="pill pill-ok">CREATE</span>':'<span class="pill pill-hi">UPDATE</span>')+'</td></tr>';
+    });
+    html+='</tbody></table></div>';
+    if(result.valid.length>15)html+='<div style="font-size:11px;color:var(--text-mut);margin-bottom:10px">+ '+(result.valid.length-15)+' more rows</div>';
+  }
+
+  const issues=[...result.errors,...result.skipped];
+  if(issues.length){
+    html+='<div class="stock-issues"><h5>Issues ('+issues.length+'):</h5><ul>';
+    issues.slice(0,12).forEach(x=>{html+='<li>Row <b>'+x.row+'</b>: '+x.reason+'</li>'});
+    if(issues.length>12)html+='<li>+ '+(issues.length-12)+' more…</li>';
+    html+='</ul></div>';
+  }
+
+  el.innerHTML=html;
+  if(!result.valid.length){btn.textContent='No valid rows';btn.disabled=true}
+  else{btn.textContent='Import '+result.valid.length+' stores';btn.disabled=false}
+  document.getElementById('mdStoresBulk').classList.add('show');
+}
+
+async function confirmStoresBulkImport(){
+  if(!canEdit()){denyAccess('import stores');return}
+  if(!pendingStoresImport||!pendingStoresImport.valid.length){toast('Nothing to import','error');return}
+  const res=pendingStoresImport;
+  showSync('Importing stores...');
+  try{
+    res.valid.forEach(v=>{
+      const ex=state.stores.find(s=>s.code===v.code);
+      if(ex){
+        if(v.area)ex.area=v.area;
+        ex.status=v.status;
+        if(v.launch)ex.launch=v.launch;
+        if(v.cap!=null)ex.cap=v.cap;
+        if(v.hasMatCap)ex.matCap={...(ex.matCap||{}),...v.matCap};
+      }else{
+        state.stores.push({
+          code:v.code,
+          area:v.area||'(no area)',
+          status:v.status,
+          launch:v.launch||'',
+          cap:v.cap||0,
+          matCap:v.matCap||{}
+        });
+        if(!state.stock[v.code])state.stock[v.code]={};
+      }
+    });
+
+    const rows=res.valid.map(v=>{
+      const s=state.stores.find(x=>x.code===v.code);
+      return {
+        workspace_id:activeWorkspace.id,
+        code:s.code,area:s.area,status:s.status,launch:s.launch,
+        cap:s.cap,mat_cap:s.matCap||{},
+        updated_at:new Date().toISOString()
+      };
+    });
+    const {error}=await supabaseClient.from('stores').upsert(rows);
+    if(error)throw error;
+
+    await logActivity('bulk_import','store',null,null,null,null,{
+      fileName:res.fileName,created:res.newCount,updated:res.updateCount
+    });
+
+    hideSync();
+    closeStoresBulkModal();
+    toast('Imported: '+res.newCount+' new, '+res.updateCount+' updated');
+    render();
+  }catch(e){hideSync();toast('Failed: '+e.message,'error')}
+}
+
+
+  
 // ============================================
 // SNAPSHOT SYSTEM
 // ============================================
